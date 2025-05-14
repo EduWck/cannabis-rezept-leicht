@@ -3,11 +3,10 @@ import { User } from "@supabase/supabase-js";
 import { useState } from "react";
 import { UserRole, Profile } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export function useRoleDetection() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const { toast } = useToast();
   
   const detectUserRole = async (currentUser: User, setProfile: (profile: Profile | null) => void, setIsLoading: (loading: boolean) => void) => {
     try {

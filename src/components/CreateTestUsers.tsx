@@ -20,12 +20,14 @@ const CreateTestUsers = () => {
 
       setResults(data?.results || []);
       
-      toast("Testbenutzer erstellt", {
+      toast({
+        title: "Testbenutzer erstellt",
         description: "Die Testkonten wurden erfolgreich angelegt."
       });
     } catch (error: any) {
-      toast("Fehler", {
-        description: error.message || "Fehler beim Erstellen der Testbenutzer",
+      toast({
+        title: "Fehler", 
+        description: error.message || "Fehler beim Erstellen der Testbenutzer", 
         variant: "destructive"
       });
     } finally {

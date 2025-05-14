@@ -8,14 +8,13 @@ import { Loader2, ShoppingCart, PackageOpen, Truck, Check, AlertCircle, FileText
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { TableHead, TableHeader } from "@/components/ui/table";
 
 const OrdersPage = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -43,7 +42,7 @@ const OrdersPage = () => {
         toast({
           title: "Fehler",
           description: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-          variant: "destructive",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
@@ -53,7 +52,7 @@ const OrdersPage = () => {
     if (user?.id) {
       fetchOrders();
     }
-  }, [user, toast]);
+  }, [user]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

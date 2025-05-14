@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,13 +7,12 @@ import { Prescription } from "@/types";
 import { Loader2, FileText, Download, AlertTriangle, CheckCircle, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 const PrescriptionsPage = () => {
   const { user } = useAuth();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
@@ -35,7 +33,7 @@ const PrescriptionsPage = () => {
         toast({
           title: "Fehler",
           description: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-          variant: "destructive",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
@@ -45,7 +43,7 @@ const PrescriptionsPage = () => {
     if (user?.id) {
       fetchPrescriptions();
     }
-  }, [user, toast]);
+  }, [user]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

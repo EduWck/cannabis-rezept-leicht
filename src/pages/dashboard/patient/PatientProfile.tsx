@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Profile } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Loader2, Save } from "lucide-react";
 
 const PatientProfile = () => {
@@ -16,7 +15,6 @@ const PatientProfile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchFullProfile = async () => {
@@ -40,7 +38,7 @@ const PatientProfile = () => {
         toast({
           title: "Fehler",
           description: "Profildaten konnten nicht geladen werden.",
-          variant: "destructive",
+          variant: "destructive"
         });
       } finally {
         setLoading(false);
@@ -53,7 +51,7 @@ const PatientProfile = () => {
     }
     
     fetchFullProfile();
-  }, [user, authProfile, toast]);
+  }, [user, authProfile]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -85,14 +83,14 @@ const PatientProfile = () => {
       
       toast({
         title: "Profil aktualisiert",
-        description: "Ihre Daten wurden erfolgreich gespeichert.",
+        description: "Ihre Daten wurden erfolgreich gespeichert."
       });
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
         title: "Fehler",
         description: "Profil konnte nicht aktualisiert werden.",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setSaving(false);

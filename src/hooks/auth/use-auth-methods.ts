@@ -19,9 +19,10 @@ export function useAuthMethods() {
 
       if (error) {
         console.error("Login error:", error.message);
-        toast("Login fehlgeschlagen", {
-          description: error.message,
-          variant: "destructive",
+        toast({
+          title: "Login fehlgeschlagen", 
+          description: error.message, 
+          variant: "destructive"
         });
         return false;
       }
@@ -30,9 +31,10 @@ export function useAuthMethods() {
       return true;
     } catch (error: any) {
       console.error("Unexpected login error:", error.message);
-      toast("Unerwarteter Fehler", {
-        description: "Bei der Anmeldung ist ein unerwarteter Fehler aufgetreten.",
-        variant: "destructive",
+      toast({
+        title: "Unerwarteter Fehler", 
+        description: "Bei der Anmeldung ist ein unerwarteter Fehler aufgetreten.", 
+        variant: "destructive"
       });
       return false;
     } finally {
@@ -48,9 +50,10 @@ export function useAuthMethods() {
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error.message);
-        toast("Logout fehlgeschlagen", {
-          description: error.message,
-          variant: "destructive",
+        toast({
+          title: "Logout fehlgeschlagen", 
+          description: error.message, 
+          variant: "destructive"
         });
       }
     } catch (error: any) {
@@ -72,14 +75,16 @@ export function useAuthMethods() {
       
       if (response.error) {
         console.error("Error requesting login code:", response.error);
-        toast("Code konnte nicht gesendet werden", {
-          description: typeof response.error === 'string' ? response.error : "Ein Fehler ist aufgetreten.",
+        toast({
+          title: "Code konnte nicht gesendet werden", 
+          description: typeof response.error === 'string' ? response.error : "Ein Fehler ist aufgetreten.", 
           variant: "destructive"
         });
         return { success: false };
       }
       
-      toast("Code gesendet", {
+      toast({
+        title: "Code gesendet", 
         description: "Bitte überprüfen Sie Ihre E-Mails für den Login-Code."
       });
       
@@ -94,13 +99,15 @@ export function useAuthMethods() {
       
       // Check for rate limit error
       if (error.message && error.message.includes("after 59 seconds")) {
-        toast("Zu viele Anfragen", {
-          description: "Bitte warten Sie eine Minute, bevor Sie einen neuen Code anfordern.",
+        toast({
+          title: "Zu viele Anfragen", 
+          description: "Bitte warten Sie eine Minute, bevor Sie einen neuen Code anfordern.", 
           variant: "destructive"
         });
       } else {
-        toast("Code konnte nicht gesendet werden", {
-          description: error.message || "Ein unbekannter Fehler ist aufgetreten",
+        toast({
+          title: "Code konnte nicht gesendet werden", 
+          description: error.message || "Ein unbekannter Fehler ist aufgetreten", 
           variant: "destructive"
         });
       }
@@ -127,8 +134,9 @@ export function useAuthMethods() {
       
       if (response.error) {
         console.error("Error verifying code:", response.error);
-        toast("Code konnte nicht verifiziert werden", {
-          description: typeof response.error === 'string' ? response.error : "Ein Fehler ist aufgetreten.",
+        toast({
+          title: "Code konnte nicht verifiziert werden", 
+          description: typeof response.error === 'string' ? response.error : "Ein Fehler ist aufgetreten.", 
           variant: "destructive"
         });
         return false;
@@ -162,8 +170,9 @@ export function useAuthMethods() {
             
             if (otpError) {
               console.error("Fallback OTP error:", otpError);
-              toast("Login fehlgeschlagen", {
-                description: "Der automatische Login konnte nicht durchgeführt werden. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link.",
+              toast({
+                title: "Login fehlgeschlagen", 
+                description: "Der automatische Login konnte nicht durchgeführt werden. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link.", 
                 variant: "destructive"
               });
               // Despite errors, verification was successful - user will need to click email link
@@ -176,13 +185,15 @@ export function useAuthMethods() {
             email: email
           });
           
-          toast("Login-Link gesendet", {
+          toast({
+            title: "Login-Link gesendet", 
             description: "Bitte überprüfen Sie Ihre E-Mails für einen Login-Link."
           });
         }
         
         // Show success message to the user
-        toast("Code bestätigt", {
+        toast({
+          title: "Code bestätigt", 
           description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
         });
         
@@ -191,16 +202,18 @@ export function useAuthMethods() {
       }
       
       // If we reach here, something unexpected happened with the response format
-      toast("Unerwartete Antwort", {
-        description: "Die Bestätigung war erfolgreich, aber die Anmeldung konnte nicht abgeschlossen werden.",
+      toast({
+        title: "Unerwartete Antwort", 
+        description: "Die Bestätigung war erfolgreich, aber die Anmeldung konnte nicht abgeschlossen werden.", 
         variant: "destructive"
       });
       return false;
       
     } catch (error: any) {
       console.error("Error verifying code:", error);
-      toast("Code konnte nicht verifiziert werden", {
-        description: typeof error === 'object' && error.message ? error.message : "Ein unbekannter Fehler ist aufgetreten",
+      toast({
+        title: "Code konnte nicht verifiziert werden", 
+        description: typeof error === 'object' && error.message ? error.message : "Ein unbekannter Fehler ist aufgetreten", 
         variant: "destructive"
       });
       return false;

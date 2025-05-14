@@ -5,7 +5,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 
 const TestUsers = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.reload(); // Reload page after logout to clear state
+  };
 
   return (
     <div className="container max-w-md mx-auto py-8 px-4">
@@ -16,7 +21,7 @@ const TestUsers = () => {
           <p className="text-sm text-muted-foreground mb-4">
             Sie sind bereits als <strong>{user.email}</strong> angemeldet. 
             Sie können sich <Link to="/dashboard" className="text-cannabis-green-600 hover:underline">zum Dashboard</Link> begeben
-            oder sich <Button variant="link" className="p-0 h-auto text-cannabis-green-600 hover:underline">abmelden</Button>, 
+            oder sich <Button variant="link" onClick={handleSignOut} className="p-0 h-auto text-cannabis-green-600 hover:underline">abmelden</Button>, 
             um einen anderen Testbenutzer zu verwenden.
           </p>
         </div>

@@ -37,7 +37,7 @@ const CreateTestUsers = () => {
 
   return (
     <div className="space-y-4">
-      <Button onClick={handleCreateTestUsers} disabled={isLoading}>
+      <Button onClick={handleCreateTestUsers} disabled={isLoading} className="w-full">
         {isLoading ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -94,4 +94,3 @@ const CreateTestUsers = () => {
 };
 
 export default CreateTestUsers;
-

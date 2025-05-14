@@ -66,13 +66,14 @@ serve(async (req) => {
           
         if (existingUsers && existingUsers.users.length > 0) {
           console.log(`User ${user.email} already exists, updating...`);
-          // User already exists, update their metadata
-          const { data, error } = await supabase.auth.admin.updateUserById(
+          
+          // First update the user metadata and password
+          const { error } = await supabase.auth.admin.updateUserById(
             existingUsers.users[0].id,
             {
-              user_metadata: { role: user.role },
               password: user.password,
-              email_confirm: true
+              email_confirm: true,
+              user_metadata: { role: user.role }
             }
           );
           
@@ -98,6 +99,12 @@ serve(async (req) => {
             
           if (profileError) {
             console.error(`Error updating profile for ${user.email}:`, profileError);
+            results.push({
+              email: user.email,
+              status: "warning",
+              message: `User updated but profile failed: ${profileError.message}`
+            });
+            continue;
           }
           
           results.push({ 
@@ -111,8 +118,8 @@ serve(async (req) => {
           const { data, error } = await supabase.auth.admin.createUser({
             email: user.email,
             password: user.password,
-            user_metadata: { role: user.role },
-            email_confirm: true
+            email_confirm: true,
+            user_metadata: { role: user.role }
           });
           
           if (error) {
@@ -138,6 +145,12 @@ serve(async (req) => {
               
             if (profileError) {
               console.error(`Error updating profile for ${user.email}:`, profileError);
+              results.push({
+                email: user.email,
+                status: "warning",
+                message: `User created but profile failed: ${profileError.message}`
+              });
+              continue;
             }
           }
           

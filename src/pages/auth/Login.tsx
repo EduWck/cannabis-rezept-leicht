@@ -26,6 +26,7 @@ const Login = () => {
     redirectUserBasedOnRole
   } = useLoginLogic();
   const [redirectAttempted, setRedirectAttempted] = useState(false);
+  const [loginDetectionCount, setLoginDetectionCount] = useState(0);
 
   // Effect to redirect user when authenticated
   useEffect(() => {
@@ -43,13 +44,54 @@ const Login = () => {
       setTimeout(() => {
         redirectUserBasedOnRole(userRole);
       }, 200);
+    } 
+    // Handle case when user is loaded but no role detected yet
+    else if (!authIsLoading && user && !userRole && loginDetectionCount < 5) {
+      setLoginDetectionCount(prev => prev + 1);
+      console.log(`User authenticated but no role detected yet, attempt ${loginDetectionCount}...`);
+      
+      // After a few attempts, show a toast with info
+      if (loginDetectionCount === 2) {
+        toast({
+          title: "Rolle wird erkannt",
+          description: "Ihre Benutzerrolle wird ermittelt..."
+        });
+      }
+      
+      // Try to get role from email on last attempt
+      if (loginDetectionCount === 4 && user.email) {
+        const email = user.email.toLowerCase();
+        let detectedRole = null;
+        
+        if (email.includes('admin')) {
+          detectedRole = 'admin';
+        } else if (email.includes('doctor')) {
+          detectedRole = 'doctor';
+        } else if (email.includes('patient')) {
+          detectedRole = 'patient';
+        }
+        
+        if (detectedRole) {
+          console.log(`Falling back to email detection for role: ${detectedRole}`);
+          toast({
+            title: "Rolle erkannt",
+            description: `Sie werden als ${detectedRole} weitergeleitet...`
+          });
+          
+          // Use a timeout to ensure the state updates before redirect
+          setTimeout(() => {
+            redirectUserBasedOnRole(detectedRole as any);
+          }, 200);
+        }
+      }
     }
-  }, [authIsLoading, user, userRole, redirectUserBasedOnRole, redirectAttempted]);
+  }, [authIsLoading, user, userRole, redirectUserBasedOnRole, redirectAttempted, loginDetectionCount]);
 
   // Reset redirect attempted when user or role changes
   useEffect(() => {
     if (!user || !userRole) {
       setRedirectAttempted(false);
+      setLoginDetectionCount(0);
     }
   }, [user, userRole]);
 
@@ -93,7 +135,7 @@ const Login = () => {
         </Alert>
       )}
       
-      <Tabs defaultValue="patient" className="w-full max-w-md">
+      <Tabs defaultValue="staff" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="patient">Patient</TabsTrigger>
           <TabsTrigger value="staff">Arzt / Admin</TabsTrigger>

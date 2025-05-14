@@ -69,6 +69,38 @@ export function useAuthMethods() {
       }
 
       console.log("Login successful:", data.user?.id);
+      
+      // Check if this is a test account and try to set the role based on email
+      if (data.user && isTestAccount) {
+        try {
+          const role = normalizedEmail.includes('admin') ? 'admin' : 
+                      normalizedEmail.includes('doctor') ? 'doctor' : 'patient';
+                      
+          console.log(`Setting role for test account to ${role} based on email`);
+          
+          // Update user metadata to include role
+          const { error: metadataError } = await supabase.auth.updateUser({
+            data: { role }
+          });
+          
+          if (metadataError) {
+            console.error("Error updating user role in metadata:", metadataError);
+          }
+          
+          // Also update profile in database
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update({ role, updated_at: new Date().toISOString() })
+            .eq("id", data.user.id);
+            
+          if (profileError) {
+            console.error("Error updating role in profile:", profileError);
+          }
+        } catch (roleError) {
+          console.error("Error setting role for test account:", roleError);
+        }
+      }
+      
       toast({
         title: "Login erfolgreich",
         description: "Sie wurden erfolgreich angemeldet."
@@ -248,7 +280,7 @@ export function useAuthMethods() {
       // Show success message to the user
       toast({
         title: "Code bestätigt", 
-        description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
+        description: `Ihr Code wurde erfolgreich verifiziert. Sie werden als ${response.data?.role || 'Benutzer'} eingeloggt.`
       });
       
       // Step 2: If verification was successful and we received a magic link, use it

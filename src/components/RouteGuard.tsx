@@ -77,6 +77,9 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       const doctorMainRoute = "/dashboard";
       const adminMainRoute = "/dashboard";
 
+      // Log detected role and allowed roles
+      console.log(`User has role: ${userRole}, Allowed roles for this route: ${allowedRoles?.join(', ') || 'any'}`);
+
       // If no roles are specified or user's role is in the allowed roles, authorize access
       const noRolesSpecified = !allowedRoles || allowedRoles.length === 0;
       const userHasAllowedRole = allowedRoles?.includes(userRole);

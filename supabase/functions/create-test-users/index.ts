@@ -62,7 +62,7 @@ serve(async (req) => {
         }
         
         // Create the user with password
-        console.log(`Creating user: ${user.email}`);
+        console.log(`Creating user: ${user.email} with role: ${user.role}`);
         const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
           email: user.email,
           password: user.password,
@@ -96,7 +96,7 @@ serve(async (req) => {
           const profileData = {
             id: newUser.user.id,
             email: user.email,
-            role: user.role,
+            role: user.role, // IMPORTANT: Explicitly set the role here
             first_name: user.first_name,
             last_name: user.last_name,
             created_at: new Date().toISOString(),
@@ -126,7 +126,7 @@ serve(async (req) => {
             id: newUser.user.id
           });
           
-          console.log(`Successfully created user and profile for ${user.email}`);
+          console.log(`Successfully created user and profile for ${user.email} with role ${user.role}`);
         }
       } catch (error) {
         console.error(`Error processing user ${user.email}:`, error);

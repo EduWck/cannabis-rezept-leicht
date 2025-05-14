@@ -56,17 +56,20 @@ serve(async (req) => {
       );
     }
     
-    // Determine user role based on email address
-    let userRole = 'patient';
+    // Determine user role based on email address - HIGHEST PRIORITY
+    let userRole = 'patient'; // Default role
     
-    if (normalizedEmail.includes('doctor')) {
-      userRole = 'doctor';
-      console.log(`Setting doctor role for: ${normalizedEmail}`);
-    } else if (normalizedEmail.includes('admin')) {
+    if (normalizedEmail.includes('admin')) {
       userRole = 'admin';
-      console.log(`Setting admin role for: ${normalizedEmail}`);
+      console.log(`Email contains 'admin', setting admin role for: ${normalizedEmail}`);
+    } else if (normalizedEmail.includes('doctor')) {
+      userRole = 'doctor';
+      console.log(`Email contains 'doctor', setting doctor role for: ${normalizedEmail}`);
+    } else if (normalizedEmail.includes('patient')) {
+      userRole = 'patient';
+      console.log(`Email contains 'patient', setting patient role for: ${normalizedEmail}`);
     } else {
-      console.log(`Setting default patient role for: ${normalizedEmail}`);
+      console.log(`No role indicator in email, setting default patient role for: ${normalizedEmail}`);
     }
     
     console.log(`Determined role for ${normalizedEmail}: ${userRole}`);
@@ -157,11 +160,15 @@ serve(async (req) => {
       try {
         const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .select("id")
+          .select("id, role")
           .eq("id", userId)
           .maybeSingle();
           
-        if (profileError || !profileData) {
+        if (profileError) {
+          console.error("Error checking profile:", profileError);
+        }
+          
+        if (!profileData) {
           console.log("Profile doesn't exist, creating new profile for user:", userId);
           
           const { error: insertError } = await supabase
@@ -177,14 +184,15 @@ serve(async (req) => {
           if (insertError) {
             console.error("Error creating profile:", insertError);
           } else {
-            console.log("Profile created successfully");
+            console.log("Profile created successfully with role:", userRole);
           }
         } else {
           // Update existing profile to ensure role is correct
+          // ALWAYS update to match the role determined by email
           const { error: updateProfileError } = await supabase
             .from("profiles")
             .update({
-              role: userRole,
+              role: userRole, // Force the role based on email
               updated_at: new Date().toISOString(),
             })
             .eq("id", userId);
@@ -192,7 +200,12 @@ serve(async (req) => {
           if (updateProfileError) {
             console.error("Error updating profile:", updateProfileError);
           } else {
-            console.log("Profile updated successfully");
+            console.log("Profile updated successfully with role:", userRole);
+          }
+          
+          // Log if there was a role mismatch that we fixed
+          if (profileData.role !== userRole) {
+            console.log(`Role mismatch fixed! Changed from ${profileData.role} to ${userRole} based on email.`);
           }
         }
       } catch (profileError) {

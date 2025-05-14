@@ -21,11 +21,11 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
     e.preventDefault();
     setError(null);
     
-    if (!staffEmail || !password) {
-      setError("Bitte geben Sie E-Mail und Passwort ein.");
+    if (!staffEmail) {
+      setError("Bitte geben Sie eine E-Mail-Adresse ein.");
       toast({
         title: "Fehlende Angaben",
-        description: "Bitte geben Sie E-Mail und Passwort ein."
+        description: "Bitte geben Sie eine E-Mail-Adresse ein."
       });
       return;
     }
@@ -57,11 +57,6 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
       
       if (!success) {
         setError("Login fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.");
-        toast({
-          title: "Login fehlgeschlagen",
-          description: "Bitte überprüfen Sie Ihre Anmeldedaten.",
-          variant: "destructive"
-        });
       } else {
         // Success notification
         toast({
@@ -113,7 +108,6 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
                 placeholder="Passwort"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
               />
               <div className="text-sm text-muted-foreground">
                 Für Test-Accounts: Passwort ist "password"

@@ -1,12 +1,43 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useEffect } from 'react';
+import Navbar from '../components/Navbar';
+import Hero from '../components/Hero';
+import OptionsSection from '../components/OptionsSection';
+import BenefitsSection from '../components/BenefitsSection';
+import ProcessSection from '../components/ProcessSection';
+import TrustSection from '../components/TrustSection';
+import FAQSection from '../components/FAQSection';
+import Footer from '../components/Footer';
+import ScrollToTopButton from '../components/ScrollToTopButton';
+import { setupScrollAnimations } from '../utils/scrollAnimation';
 
 const Index = () => {
+  useEffect(() => {
+    const cleanupAnimations = setupScrollAnimations();
+    
+    // Update page title
+    document.title = 'MediCannabis - Dein Weg zum medizinischen Cannabis-Rezept';
+    
+    return () => {
+      cleanupAnimations();
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen">
+      <Navbar />
+      
+      <main>
+        <Hero />
+        <OptionsSection />
+        <BenefitsSection />
+        <ProcessSection />
+        <TrustSection />
+        <FAQSection />
+      </main>
+
+      <Footer />
+      <ScrollToTopButton />
     </div>
   );
 };

@@ -15,14 +15,7 @@ const AdminDashboard = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="text-center py-20">
-        <p>Kein Benutzer angemeldet.</p>
-      </div>
-    );
-  }
-
+  // Show dashboard content even without a logged-in user
   return (
     <div className="container mx-auto">
       <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>

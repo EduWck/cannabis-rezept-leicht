@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // We'll try first with a direct select without using RLS
       // This is a workaround for the infinite recursion in RLS policy
-      const { data: adminData, error: adminError } = await supabase.rpc<Profile>(
+      const { data: adminData, error: adminError } = await supabase.rpc<Profile, { user_id: string }>(
         'get_profile_by_id',
         { user_id: userId }
       );

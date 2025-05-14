@@ -1,6 +1,6 @@
 
 import { User } from "@supabase/supabase-js";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { UserRole, Profile } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast";
 export function useRoleDetection() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   
-  const detectUserRole = async (currentUser: User, setProfile: (profile: Profile | null) => void, setIsLoading: (loading: boolean) => void) => {
+  const detectUserRole = useCallback(async (currentUser: User, setProfile: (profile: Profile | null) => void, setIsLoading: (loading: boolean) => void) => {
     try {
       console.log("Detecting user role for:", currentUser.id);
       console.log("User metadata:", JSON.stringify(currentUser.user_metadata));
@@ -63,6 +63,17 @@ export function useRoleDetection() {
           }
         } else {
           console.log("No profile found in database, will create minimal profile");
+          
+          // If no profile is found, create one based on email
+          if (email.includes('admin')) {
+            detectedRole = 'admin';
+          } else if (email.includes('doctor')) {
+            detectedRole = 'doctor';
+          } else {
+            detectedRole = 'patient';
+          }
+          
+          console.log("Defaulting role based on email to:", detectedRole);
         }
       } catch (profileError) {
         console.error("Profile fetch failed, falling back to serverless function:", profileError);
@@ -93,10 +104,10 @@ export function useRoleDetection() {
         }
       }
       
-      // If we still don't have a role, use 'patient' as default
+      // If we still don't have a role, use the email domain as final fallback
       if (!detectedRole) {
+        detectedRole = 'patient'; // Default fallback
         console.log("Using default role: patient");
-        detectedRole = 'patient';
         
         toast({
           title: "Standard-Rolle zugewiesen",
@@ -199,7 +210,7 @@ export function useRoleDetection() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   return {
     userRole,

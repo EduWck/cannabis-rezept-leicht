@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { UserRole } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,11 +12,14 @@ export function useLoginLogic() {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [pendingRedirect, setPendingRedirect] = useState(false);
+  const redirectAttempts = useRef(0);
   
-  // Set error message from location state if present
+  // Reset error message when location changes
   useEffect(() => {
     if (location.state?.error) {
       setErrorMessage(location.state.error);
+    } else {
+      setErrorMessage("");
     }
   }, [location.state]);
 
@@ -37,26 +40,39 @@ export function useLoginLogic() {
     handleHashParams();
   }, []);
 
-  // Redirect if already logged in (with debounce to prevent loops)
+  // Redirect if already logged in, with safeguards against redirect loops
   useEffect(() => {
-    // Avoid redirect check if we're already processing a redirect
-    if (pendingRedirect) {
+    // Skip if we're already processing a redirect or still loading auth state
+    if (pendingRedirect || isLoading) {
       return;
     }
     
-    // Only redirect if auth state is fully loaded and we have a user with a role
-    if (!isLoading && user && userRole) {
+    // Only redirect if we have a user with a role
+    if (user && userRole) {
       console.log("User is logged in, redirecting based on role:", userRole);
       
-      // Set flag to prevent multiple redirects
+      // Prevent multiple redirects
       setPendingRedirect(true);
       
-      // Use timeout to ensure state updates complete first
-      setTimeout(() => {
-        redirectUserBasedOnRole(userRole);
-      }, 100);
+      // Check if we're on the login page
+      const isLoginPage = location.pathname === '/login';
+      
+      // Only redirect if we're on the login page or we haven't tried too many times
+      if (isLoginPage || redirectAttempts.current < 3) {
+        redirectAttempts.current += 1;
+        
+        // Use timeout to ensure state updates complete first
+        setTimeout(() => {
+          redirectUserBasedOnRole(userRole);
+        }, 100);
+      } else {
+        // Reset redirect attempts and pending status if we've tried too many times
+        console.log("Too many redirect attempts, stopping redirect loop");
+        redirectAttempts.current = 0;
+        setPendingRedirect(false);
+      }
     }
-  }, [user, userRole, isLoading, pendingRedirect]);
+  }, [user, userRole, isLoading, pendingRedirect, location.pathname]);
 
   // Helper function to redirect users based on their role
   const redirectUserBasedOnRole = (role: UserRole) => {
@@ -115,6 +131,7 @@ export function useLoginLogic() {
     // Reset pending redirect flag after navigation
     setTimeout(() => {
       setPendingRedirect(false);
+      redirectAttempts.current = 0;
     }, 200);
   };
 

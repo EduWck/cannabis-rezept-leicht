@@ -17,10 +17,23 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectCount, setRedirectCount] = useState(0);
 
   useEffect(() => {
     // Prevent checking auth if we're in the middle of a redirect
     if (isRedirecting) {
+      return;
+    }
+
+    // Track redirect attempts to prevent infinite loops
+    if (redirectCount > 5) {
+      console.error("Too many redirect attempts, possible redirect loop detected");
+      toast({
+        title: "Navigation Error", 
+        description: "Too many redirects detected. Please try refreshing the page.", 
+        variant: "destructive"
+      });
+      setAuthChecked(true);
       return;
     }
 
@@ -38,6 +51,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       if (!user) {
         console.log("No user detected, redirecting to login");
         setIsRedirecting(true);
+        setRedirectCount(prev => prev + 1);
         navigate("/login", { state: { from: location.pathname } });
         return;
       }
@@ -75,6 +89,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         if (userRole === "patient" && location.pathname === "/dashboard") {
           console.log("Patient detected on dashboard, redirecting to profile");
           setIsRedirecting(true);
+          setRedirectCount(prev => prev + 1);
           navigate(patientMainRoute, { replace: true });
         }
         
@@ -84,6 +99,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       // User does not have permission for this route, redirect based on role
       console.log(`User role ${userRole} not authorized for this route`);
       setIsRedirecting(true);
+      setRedirectCount(prev => prev + 1);
       
       if (userRole === "patient") {
         console.log("Patient redirected to profile");
@@ -115,7 +131,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, isRedirecting]);
+  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, isRedirecting, redirectCount]);
 
   // Show loading state only when authorization check is in progress
   if (isLoading || (user && !userRole) || !authChecked) {

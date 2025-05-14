@@ -8,7 +8,7 @@ import { PatientLoginForm } from "@/components/auth/PatientLoginForm";
 import { StaffLoginForm } from "@/components/auth/StaffLoginForm";
 import { DemoAccountsInfo } from "@/components/auth/DemoAccountsInfo";
 import { useLoginLogic } from "@/hooks/use-login-logic";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
@@ -25,19 +25,33 @@ const Login = () => {
     verifyLoginCode,
     redirectUserBasedOnRole
   } = useLoginLogic();
+  const [redirectAttempted, setRedirectAttempted] = useState(false);
 
   // Effect to redirect user when authenticated
   useEffect(() => {
-    if (!authIsLoading && user && userRole) {
+    if (!authIsLoading && user && userRole && !redirectAttempted) {
       console.log(`User authenticated with role: ${userRole}, redirecting...`);
+      setRedirectAttempted(true);
+      
       // Add toast notification to let the user know we're redirecting
       toast({
         title: "Erfolgreiche Anmeldung",
         description: "Sie werden zur Dashboard weitergeleitet..."
       });
-      redirectUserBasedOnRole(userRole);
+      
+      // Use a timeout to ensure the state updates before redirect
+      setTimeout(() => {
+        redirectUserBasedOnRole(userRole);
+      }, 100);
     }
-  }, [authIsLoading, user, userRole, redirectUserBasedOnRole]);
+  }, [authIsLoading, user, userRole, redirectUserBasedOnRole, redirectAttempted]);
+
+  // Reset redirect attempted when user or role changes
+  useEffect(() => {
+    if (!user || !userRole) {
+      setRedirectAttempted(false);
+    }
+  }, [user, userRole]);
 
   // If already loaded and authenticated, don't show login form
   if (!authIsLoading && user && userRole) {

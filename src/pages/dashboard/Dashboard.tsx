@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -8,13 +8,17 @@ import { Loader2 } from "lucide-react";
 const Dashboard = () => {
   const { user, userRole, isLoading } = useAuth();
   const navigate = useNavigate();
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !redirecting) {
       // If user is a patient, redirect to profile immediately
       if (user && userRole === "patient") {
         console.log("User is patient in Dashboard component, redirecting to profile");
-        navigate("/dashboard/profile", { replace: true });
+        setRedirecting(true);
+        setTimeout(() => {
+          navigate("/dashboard/profile", { replace: true });
+        }, 100);
       } else if (!userRole && user) {
         console.log("No user role detected in Dashboard, but user exists");
       } else if (!user) {
@@ -23,7 +27,7 @@ const Dashboard = () => {
         console.log(`User is ${userRole}, staying on dashboard`);
       }
     }
-  }, [user, userRole, isLoading, navigate]);
+  }, [user, userRole, isLoading, navigate, redirecting]);
 
   // If still loading, show a loading indicator
   if (isLoading) {

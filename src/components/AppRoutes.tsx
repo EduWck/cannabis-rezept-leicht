@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -18,6 +17,9 @@ import TestUsers from "@/pages/auth/TestUsers";
 import RouteGuard from "@/components/RouteGuard";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import Dashboard from "@/pages/dashboard/Dashboard";
+import AdminDashboard from "@/pages/dashboard/admin/AdminDashboard";
+import DoctorDashboard from "@/pages/dashboard/doctor/DoctorDashboard";
+import PatientDashboard from "@/pages/dashboard/patient/PatientDashboard";
 import PatientProfile from "@/pages/dashboard/patient/PatientProfile";
 import PrescriptionsPage from "@/pages/dashboard/patient/PrescriptionsPage";
 import OrdersPage from "@/pages/dashboard/patient/OrdersPage";
@@ -102,7 +104,15 @@ const AppRoutes = () => {
       {/* Protected Dashboard Routes */}
       <Route element={<RouteGuard />}>
         <Route element={<DashboardLayout />}>
+          {/* Main dashboard route - handles role-based routing */}
           <Route path="/dashboard" element={<Dashboard />} />
+          
+          {/* Direct access routes for specific dashboards */}
+          <Route path="/dashboard/admin" element={<AdminDashboard />} />
+          <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
+          <Route path="/dashboard/patient" element={<PatientDashboard />} />
+          
+          {/* Existing patient routes */}
           <Route path="/dashboard/profile" element={<PatientProfile />} />
           <Route path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
           <Route path="/dashboard/orders" element={<OrdersPage />} />

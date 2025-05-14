@@ -10,6 +10,7 @@ import { DemoAccountsInfo } from "@/components/auth/DemoAccountsInfo";
 import { useLoginLogic } from "@/hooks/use-login-logic";
 import { useEffect, useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { UserRole } from "@/types";
 
 const Login = () => {
   const { 
@@ -31,7 +32,7 @@ const Login = () => {
   // Effect to redirect user when authenticated
   useEffect(() => {
     if (!authIsLoading && user && userRole && !redirectAttempted) {
-      console.log(`User authenticated with role: ${userRole}, redirecting...`);
+      console.log(`Benutzer authentifiziert mit Rolle: ${userRole}, leite weiter...`);
       setRedirectAttempted(true);
       
       // Add toast notification to let the user know we're redirecting
@@ -46,9 +47,9 @@ const Login = () => {
       }, 200);
     } 
     // Handle case when user is loaded but no role detected yet
-    else if (!authIsLoading && user && !userRole && loginDetectionCount < 5) {
+    else if (!authIsLoading && user && !userRole && loginDetectionCount < 10) {
       setLoginDetectionCount(prev => prev + 1);
-      console.log(`User authenticated but no role detected yet, attempt ${loginDetectionCount}...`);
+      console.log(`Benutzer authentifiziert, aber keine Rolle erkannt, Versuch ${loginDetectionCount}...`);
       
       // After a few attempts, show a toast with info
       if (loginDetectionCount === 2) {
@@ -58,21 +59,22 @@ const Login = () => {
         });
       }
       
-      // Try to get role from email on last attempt
+      // Try to get role from email on later attempts
       if (loginDetectionCount === 4 && user.email) {
+        console.log("Versuche Rolle aus E-Mail zu bestimmen...");
         const email = user.email.toLowerCase();
-        let detectedRole = null;
+        let detectedRole: UserRole | null = null;
         
         if (email.includes('admin')) {
           detectedRole = 'admin';
-        } else if (email.includes('doctor')) {
+        } else if (email.includes('doctor') || email.includes('arzt')) {
           detectedRole = 'doctor';
-        } else if (email.includes('patient')) {
+        } else if (email.includes('patient') || email.includes('patien')) {
           detectedRole = 'patient';
         }
         
         if (detectedRole) {
-          console.log(`Falling back to email detection for role: ${detectedRole}`);
+          console.log(`Fallback zur E-Mail-Erkennung für Rolle: ${detectedRole}`);
           toast({
             title: "Rolle erkannt",
             description: `Sie werden als ${detectedRole} weitergeleitet...`
@@ -80,7 +82,7 @@ const Login = () => {
           
           // Use a timeout to ensure the state updates before redirect
           setTimeout(() => {
-            redirectUserBasedOnRole(detectedRole as any);
+            redirectUserBasedOnRole(detectedRole as UserRole);
           }, 200);
         }
       }
@@ -135,7 +137,7 @@ const Login = () => {
         </Alert>
       )}
       
-      <Tabs defaultValue="staff" className="w-full max-w-md">
+      <Tabs defaultValue="patient" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="patient">Patient</TabsTrigger>
           <TabsTrigger value="staff">Arzt / Admin</TabsTrigger>

@@ -52,7 +52,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         console.log("No user detected, redirecting to login");
         setIsRedirecting(true);
         setRedirectCount(prev => prev + 1);
-        navigate("/login", { replace: true });
+        navigate("/login", { replace: true, state: { from: location.pathname } });
         return;
       }
 
@@ -63,10 +63,44 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         setTimeout(() => {
           if (!userRole && user) {
             console.log("Role still not detected after delay");
-            toast({
-              title: "Benutzerrolle wird geladen", 
-              description: "Ihre Berechtigungen werden noch geladen. Bitte haben Sie einen Moment Geduld.", 
-            });
+            
+            // Try to determine role from email if still not available
+            let detectedRole = null;
+            if (user.email) {
+              const email = user.email.toLowerCase();
+              if (email.includes('admin')) {
+                detectedRole = 'admin';
+              } else if (email.includes('doctor')) {
+                detectedRole = 'doctor';
+              } else if (email.includes('patient')) {
+                detectedRole = 'patient';
+              }
+            }
+            
+            if (detectedRole) {
+              console.log(`Fallback role detection from email: ${detectedRole}`);
+              // Force redirect based on detected role
+              const patientMainRoute = "/dashboard/profile";
+              const doctorMainRoute = "/dashboard";
+              const adminMainRoute = "/dashboard";
+              
+              setIsRedirecting(true);
+              setRedirectCount(prev => prev + 1);
+              
+              if (detectedRole === 'patient') {
+                navigate(patientMainRoute, { replace: true });
+              } else if (detectedRole === 'doctor') {
+                navigate(doctorMainRoute, { replace: true });
+              } else if (detectedRole === 'admin') {
+                navigate(adminMainRoute, { replace: true });
+              }
+            } else {
+              // If no role can be detected, show toast
+              toast({
+                title: "Benutzerrolle wird geladen", 
+                description: "Ihre Berechtigungen werden noch geladen. Bitte haben Sie einen Moment Geduld.", 
+              });
+            }
           }
         }, 2000);
         return;

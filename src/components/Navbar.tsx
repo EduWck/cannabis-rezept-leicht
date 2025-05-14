@@ -49,25 +49,28 @@ const userLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  let user, userRole, signOut;
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  
+  // Benutze ein try-catch, um Fehler beim Zugriff auf den Auth-Kontext sicher zu handhaben
+  let user = null;
+  let userRole = null;
+  let signOut = async () => {
+    console.error("Sign out not available - AuthContext not found");
+  };
+  let isLoading = false;
   
   try {
-    // Safely attempt to use the Auth context
+    // Versuche sicher, den Auth-Kontext zu verwenden
     const auth = useAuth();
     user = auth.user;
     userRole = auth.userRole;
     signOut = auth.signOut;
+    isLoading = auth.isLoading;
   } catch (error) {
-    // If AuthContext is not available, use fallback values
-    user = null;
-    userRole = null;
-    signOut = async () => {
-      console.error("Sign out not available - AuthContext not found");
-    };
+    console.error("AuthContext nicht verfügbar in NavBar:", error);
+    // Fallback-Werte werden oben bereits definiert
   }
-  
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     try {
@@ -86,6 +89,26 @@ export default function Navbar() {
         description: "Es gab ein Problem beim Abmelden.",
         variant: "destructive"
       });
+    }
+  };
+
+  // User-Anzeigename für Avatar
+  const getUserInitial = () => {
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return "U";
+  };
+  
+  // Benutzerrolle für Anzeige
+  const displayRole = () => {
+    if (!userRole) return "Lädt...";
+    
+    switch(userRole) {
+      case 'patient': return "Patient";
+      case 'doctor': return "Arzt";
+      case 'admin': return "Administrator";
+      default: return userRole;
     }
   };
 
@@ -115,13 +138,18 @@ export default function Navbar() {
           ))}
         </nav>
         <div className="flex items-center gap-4">
-          {user ? (
+          {isLoading ? (
+            // Zeige Lade-Indikator während Auth-Status geladen wird
+            <Button variant="ghost" size="sm" disabled>
+              Lädt...
+            </Button>
+          ) : user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar>
                     <AvatarFallback>
-                      {user.email ? user.email.charAt(0).toUpperCase() : "U"}
+                      {getUserInitial()}
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -131,7 +159,7 @@ export default function Navbar() {
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.email}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {userRole}
+                      {displayRole()}
                     </p>
                   </div>
                 </DropdownMenuLabel>

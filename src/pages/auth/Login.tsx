@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserRole } from "@/types";
-import { supabase } from "@/integrations/supabase/client"; // Add this import
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const COOLDOWN_TIME = 60; // 60 seconds cooldown
 
@@ -36,6 +37,22 @@ const Login = () => {
       setErrorMessage(location.state.error);
     }
   }, [location.state]);
+
+  // Check URL for any auth callbacks (handling magic link/token redirects)
+  useEffect(() => {
+    const handleHashParams = async () => {
+      // Check for hash parameters that might indicate a magic link or token
+      const hash = window.location.hash;
+      if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
+        toast({
+          title: "Automatische Anmeldung",
+          description: "Sie werden angemeldet..."
+        });
+      }
+    };
+
+    handleHashParams();
+  }, []);
 
   // Cooldown timer effect
   useEffect(() => {
@@ -91,10 +108,18 @@ const Login = () => {
       return;
     }
     
+    if (!email || !email.trim()) {
+      toast({
+        title: "E-Mail erforderlich",
+        description: "Bitte geben Sie eine E-Mail-Adresse ein."
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
-      const result = await requestLoginCode(email);
+      const result = await requestLoginCode(email.trim());
       if (result.success) {
         setCodeSent(true);
         setCooldown(COOLDOWN_TIME);
@@ -103,7 +128,7 @@ const Login = () => {
           setCode(result.code);
           toast({
             title: "Demo Code",
-            description: `Your login code is: ${result.code}`
+            description: `Ihr Login-Code ist: ${result.code}`
           });
         }
       }
@@ -117,38 +142,40 @@ const Login = () => {
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     clearErrors();
+    
+    if (!code || code.length < 6) {
+      toast({
+        title: "Code erforderlich",
+        description: "Bitte geben Sie einen gültigen 6-stelligen Code ein."
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
       console.log(`Attempting to verify code for email: ${email} with code: ${code}`);
-      const success = await verifyLoginCode(email, code);
+      const success = await verifyLoginCode(email.trim(), code.trim());
       
       if (success) {
-        // After verification succeeded, try to check for an existing session
-        // Normally this would be handled by the Edge Function directly creating a session
-        
-        // For the demo environment, we'll just attempt to sign in via email link
-        try {
-          // This is a fallback - we might get an invalid email error but that's OK
-          // as our edge function has already authenticated the user
-          await supabase.auth.signInWithOtp({
-            email: email,
-          });
-        } catch (e) {
-          // We can ignore errors here since we're just trying as a fallback
-          console.log("Fallback login attempt:", e);
-        }
-        
         toast({
-          title: "Login erfolgreich",
-          description: "Willkommen zurück!"
+          title: "Code bestätigt",
+          description: "Ihr Code wurde erfolgreich verifiziert."
         });
         
-        // Redirect to appropriate page based on role
-        // Note: In a real app, you might need to fetch user data here
-        navigate("/dashboard/profile", { replace: true });
+        // We don't need to redirect here - auth state change will trigger the redirect
+        // But we can show a loading state
+        setLoading(true);
+        setTimeout(() => {
+          // If we're still on this page after 5 seconds, show a message
+          setLoading(false);
+          toast({
+            title: "Fast geschafft",
+            description: "Die Anmeldung läuft. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link, falls Sie nicht automatisch weitergeleitet werden."
+          });
+        }, 5000);
       } else {
-        setErrorMessage("Ungültiger Verifizierungscode");
+        setErrorMessage("Der Code konnte nicht verifiziert werden.");
       }
     } catch (error: any) {
       console.error("Verification error:", error);
@@ -161,6 +188,15 @@ const Login = () => {
   const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     clearErrors();
+    
+    if (!staffEmail || !password) {
+      toast({
+        title: "Fehlende Angaben",
+        description: "Bitte geben Sie E-Mail und Passwort ein."
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
@@ -270,14 +306,21 @@ const Login = () => {
                 <form onSubmit={handleVerifyCode}>
                   <div className="grid gap-4">
                     <div className="grid gap-2">
-                      <Input
-                        type="text"
-                        placeholder="6-stelliger Code"
-                        value={code}
-                        onChange={(e) => setCode(e.target.value)}
-                        maxLength={6}
-                        required
-                      />
+                      <div className="flex justify-center mb-2">
+                        <InputOTP maxLength={6} value={code} onChange={setCode}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                      <div className="text-center text-sm text-muted-foreground">
+                        Geben Sie den 6-stelligen Code aus Ihrer E-Mail ein
+                      </div>
                     </div>
                     <Button type="submit" disabled={loading} className="w-full">
                       {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

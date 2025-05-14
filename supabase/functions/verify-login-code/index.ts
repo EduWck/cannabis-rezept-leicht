@@ -107,26 +107,31 @@ serve(async (req) => {
       .delete()
       .eq("email", email);
     
-    // Create a session for the user directly (this avoids the email validation issue)
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin
-      .createSession({
-        user_id: userData.id,
-      });
-      
-    if (sessionError) {
-      console.error("Error creating session:", sessionError);
-      // We'll still return success since verification worked, even if session creation failed
-    } else {
-      console.log("Session created successfully");
+    // Create a magic sign in link instead of trying to create a session directly
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: "magiclink",
+      email: email,
+      options: {
+        redirectTo: new URL(req.url).origin // Use the current origin as redirect URL
+      }
+    });
+    
+    if (linkError) {
+      console.error("Error generating magic link:", linkError);
+      return new Response(
+        JSON.stringify({ error: linkError.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
     
-    // Return success with session data if available
+    // Return success with user data and magic link
     return new Response(
       JSON.stringify({ 
         success: true,
         email: email,
         role: userRole,
-        session: sessionData || null,
+        user: userData,
+        magicLink: linkData.properties.action_link,
         message: "Code verification successful."
       }),
       { 

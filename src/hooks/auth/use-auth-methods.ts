@@ -125,6 +125,8 @@ export function useAuthMethods() {
     try {
       setIsProcessing(true);
       
+      console.log(`Attempting to verify code for email: ${email} with code: ${code}`);
+      
       // Step 1: Verify the code through our Edge Function
       const response = await supabase.functions.invoke('verify-login-code', {
         body: { email, code }
@@ -140,28 +142,69 @@ export function useAuthMethods() {
         return false;
       }
       
-      // Step 2: Handle login session directly instead of using magic links
-      // If verification was successful, we can now assume the user is authenticated
-      if (response.data?.success) {
-        console.log("Code verification successful for:", response.data.email);
+      // Log the full response for debugging
+      console.log("Verification response:", response.data);
+      
+      // Step 2: If verification was successful and we received a magic link, use it
+      if (response.data?.success && response.data?.magicLink) {
+        console.log("Code verification successful. Using magic link for: ", response.data.email);
         
-        // For demo purpose only, auto login the user
-        // In a real app, we'd need to use an actual session token
+        // Extract token from magic link
+        const url = new URL(response.data.magicLink);
+        const token = url.searchParams.get('token');
+        const type = url.searchParams.get('type');
+        
+        if (token && type) {
+          // Use the token to sign in directly
+          const { error: signInError } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'magiclink',
+          });
+          
+          if (signInError) {
+            console.error("Error using magic link token:", signInError);
+            // Fallback to email OTP if token doesn't work
+            const { error: otpError } = await supabase.auth.signInWithOtp({
+              email: email
+            });
+            
+            if (otpError) {
+              console.error("Fallback OTP error:", otpError);
+              toast({
+                title: "Login fehlgeschlagen",
+                description: "Der automatische Login konnte nicht durchgeführt werden. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link.",
+                variant: "destructive"
+              });
+              // Despite errors, verification was successful - user will need to click email link
+              return true;
+            }
+          }
+        } else {
+          // Fallback if we can't extract token from URL
+          await supabase.auth.signInWithOtp({
+            email: email
+          });
+          
+          toast({
+            title: "Login-Link gesendet",
+            description: "Bitte überprüfen Sie Ihre E-Mails für einen Login-Link."
+          });
+        }
         
         // Show success message to the user
         toast({
-          title: "Login erfolgreich",
-          description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze zur Anwendung weitergeleitet."
+          title: "Code bestätigt",
+          description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
         });
         
-        // Let the UI know verification was successful so it can redirect
+        // Let the UI know verification was successful
         return true;
       }
       
-      // If we reach here, something unexpected happened
+      // If we reach here, something unexpected happened with the response format
       toast({
-        title: "Login fehlgeschlagen",
-        description: "Unerwartete Antwort vom Server.",
+        title: "Unerwartete Antwort",
+        description: "Die Bestätigung war erfolgreich, aber die Anmeldung konnte nicht abgeschlossen werden.",
         variant: "destructive"
       });
       return false;

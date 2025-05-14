@@ -22,17 +22,19 @@ const OrdersPage = () => {
       if (!user?.id) return;
       
       await executeQuery(
-        () => supabase
-          .from("orders")
-          .select(`
-            *,
-            prescription:prescription_id (
-              id,
-              symptoms
-            )
-          `)
-          .eq("patient_id", user.id)
-          .order("created_at", { ascending: false }),
+        async () => {
+          return await supabase
+            .from("orders")
+            .select(`
+              *,
+              prescription:prescription_id (
+                id,
+                symptoms
+              )
+            `)
+            .eq("patient_id", user.id)
+            .order("created_at", { ascending: false });
+        },
         {
           errorTitle: "Fehler",
           errorMessage: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."

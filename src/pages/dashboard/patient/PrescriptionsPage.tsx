@@ -20,10 +20,12 @@ const PrescriptionsPage = () => {
       if (!user?.id) return;
       
       await executeQuery(
-        () => supabase
-          .from("prescriptions")
-          .select("*")
-          .eq("patient_id", user.id),
+        async () => {
+          return await supabase
+            .from("prescriptions")
+            .select("*")
+            .eq("patient_id", user.id);
+        },
         {
           errorTitle: "Fehler",
           errorMessage: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut."

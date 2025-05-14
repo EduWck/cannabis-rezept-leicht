@@ -140,14 +140,14 @@ export function useAuthMethods() {
       }
       
       // Instead of using setSession which causes the "Auth session missing!" error,
-      // We'll use signInWithPassword to set the session properly
+      // We'll use signInWithIdToken to set the session properly
       try {
         // We're using the tokens from the serverless function to sign in directly
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: 'magic_link',
           token: response.data.session.access_token,
-          access_token: response.data.session.access_token,
-          refresh_token: response.data.session.refresh_token
+          // Remove the refresh_token property as it's not part of SignInWithIdTokenCredentials
+          access_token: response.data.session.access_token
         });
         
         if (error) {

@@ -1,128 +1,173 @@
 
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export function useAuthMethods() {
-  const { toast } = useToast();
-
-  const signIn = async (email: string, password: string) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  /**
+   * Sign in with email and password
+   */
+  const signIn = async (email: string, password: string): Promise<boolean> => {
     try {
-      console.log(`Attempting login for: ${email}`);
-      
-      // Clear any existing session first to prevent conflicts
-      await supabase.auth.signOut();
-      
+      setIsProcessing(true);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        console.error("Login error details:", error);
-        throw error;
+        console.error("Login error:", error.message);
+        toast({
+          title: "Login fehlgeschlagen",
+          description: error.message,
+          variant: "destructive",
+        });
+        return false;
       }
 
-      console.log("Login successful:", data.user);
-      console.log("User metadata:", data.user.user_metadata);
-      
-      // Show success toast on successful login
-      toast({
-        title: "Login erfolgreich",
-        description: "Willkommen zurück!",
-      });
-      
+      console.log("Login successful:", data.user?.id);
       return true;
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Unexpected login error:", error.message);
       toast({
-        title: "Login fehlgeschlagen",
-        description: error.message,
-        variant: "destructive"
+        title: "Unerwarteter Fehler",
+        description: "Bei der Anmeldung ist ein unerwarteter Fehler aufgetreten.",
+        variant: "destructive",
       });
-      throw error;
+      return false;
+    } finally {
+      setIsProcessing(false);
     }
   };
 
-  const signOut = async () => {
+  /**
+   * Sign out
+   */
+  const signOut = async (): Promise<void> => {
     try {
-      await supabase.auth.signOut();
-      
-      toast({
-        title: "Abgemeldet",
-        description: "Sie wurden erfolgreich abgemeldet",
-      });
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Logout error:", error.message);
+        toast({
+          title: "Logout fehlgeschlagen",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
-      toast({
-        title: "Abmeldung fehlgeschlagen",
-        description: error.message,
-        variant: "destructive"
-      });
+      console.error("Unexpected logout error:", error.message);
     }
   };
 
+  /**
+   * Request a login code for passwordless login
+   */
   const requestLoginCode = async (email: string) => {
     try {
+      setIsProcessing(true);
+      
+      // For development environment, use the serverless function
       const response = await supabase.functions.invoke('send-login-code', {
         body: { email }
       });
-
+      
       if (response.error) {
-        throw new Error(response.error.message);
+        console.error("Error requesting login code:", response.error);
+        toast({
+          title: "Code konnte nicht gesendet werden",
+          description: response.error,
+          variant: "destructive"
+        });
+        return { success: false };
       }
-
+      
       toast({
         title: "Code gesendet",
-        description: "Prüfen Sie Ihre E-Mail nach dem Login-Code",
+        description: "Bitte überprüfen Sie Ihre E-Mails für den Login-Code."
       });
-
-      // Return the code for testing purposes (would be removed in production)
-      return { success: true, code: response.data.code };
+      
+      // For demo purposes, return the code from the function response (if available)
+      return { 
+        success: true,
+        code: response.data?.code || null
+      };
+      
     } catch (error: any) {
       console.error("Error requesting login code:", error);
       toast({
         title: "Code konnte nicht gesendet werden",
-        description: error.message,
+        description: error.message || "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive"
       });
       return { success: false };
+    } finally {
+      setIsProcessing(false);
     }
   };
-
-  const verifyLoginCode = async (email: string, code: string) => {
+  
+  /**
+   * Verify login code for passwordless login
+   */
+  const verifyLoginCode = async (email: string, code: string): Promise<boolean> => {
     try {
-      console.log(`Verifying login code for email: ${email}`);
+      setIsProcessing(true);
+      
+      // For development environment, use the serverless function
       const response = await supabase.functions.invoke('verify-login-code', {
         body: { email, code }
       });
-
+      
       if (response.error) {
-        console.error("Error in verify-login-code function:", response.error);
-        throw new Error(response.error.message);
+        console.error("Error verifying code:", response.error);
+        toast({
+          title: "Code konnte nicht verifiziert werden",
+          description: response.error,
+          variant: "destructive"
+        });
+        return false;
       }
-
-      // Set the session from the response
-      const newSession = response.data.session;
       
-      console.log("Login code verified successfully, setting session:", newSession);
-      console.log("User role from session:", 
-        newSession.user.user_metadata?.role || "No role in metadata");
+      if (!response.data?.session) {
+        console.error("No session returned");
+        toast({
+          title: "Login fehlgeschlagen",
+          description: "Der Server hat keine gültige Sitzung zurückgegeben.",
+          variant: "destructive"
+        });
+        return false;
+      }
       
-      await supabase.auth.setSession(newSession);
-      
-      toast({
-        title: "Login erfolgreich",
-        description: "Willkommen zurück!",
+      // Set the session in Supabase
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: response.data.session.access_token,
+        refresh_token: response.data.session.refresh_token
       });
-
+      
+      if (sessionError) {
+        console.error("Error setting session:", sessionError);
+        toast({
+          title: "Login fehlgeschlagen",
+          description: sessionError.message,
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      console.log("Login successful with code");
       return true;
+      
     } catch (error: any) {
-      console.error("Error verifying login code:", error);
+      console.error("Error verifying code:", error);
       toast({
-        title: "Verifizierung fehlgeschlagen",
-        description: error.message,
+        title: "Code konnte nicht verifiziert werden",
+        description: error.message || "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive"
       });
       return false;
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -130,6 +175,7 @@ export function useAuthMethods() {
     signIn,
     signOut,
     requestLoginCode,
-    verifyLoginCode
+    verifyLoginCode,
+    isProcessing
   };
 }

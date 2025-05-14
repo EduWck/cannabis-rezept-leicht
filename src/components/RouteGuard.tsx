@@ -46,19 +46,17 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         return;
       }
 
+      // Patient redirection - If user is a patient, always redirect to profile page when on main dashboard
+      if (userRole === "patient" && location.pathname === "/dashboard") {
+        console.log("Patient detected on dashboard, redirecting to profile");
+        navigate("/dashboard/profile", { replace: true });
+        return;
+      }
+      
       // Check if user has permission for this route
       if (!allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
         console.log(`User authorized with role: ${userRole}`);
         setIsAuthorized(true);
-        
-        // Special redirects for dashboard route based on role
-        if (location.pathname === "/dashboard") {
-          if (userRole === "patient") {
-            console.log("Patient on main dashboard, redirecting to profile");
-            navigate("/dashboard/profile", { replace: true });
-          }
-          // doctors and admins stay on dashboard
-        }
       } else {
         console.log(`User role ${userRole} not authorized for this route`);
         

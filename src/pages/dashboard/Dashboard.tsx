@@ -1,22 +1,24 @@
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
-  const { user, userRole, profile, isLoading } = useAuth();
+  const { user, userRole, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoading && user) {
-      // If user is a patient, redirect to profile
-      if (userRole === "patient") {
-        console.log("User is patient, redirecting to profile");
+    if (!isLoading) {
+      // If user is a patient, redirect to profile immediately
+      if (user && userRole === "patient") {
+        console.log("User is patient in Dashboard component, redirecting to profile");
         navigate("/dashboard/profile", { replace: true });
-      } else if (!userRole) {
-        console.log("No user role detected in Dashboard");
+      } else if (!userRole && user) {
+        console.log("No user role detected in Dashboard, but user exists");
+      } else if (!user) {
+        console.log("No user detected in Dashboard");
       } else {
         console.log(`User is ${userRole}, staying on dashboard`);
       }
@@ -50,6 +52,16 @@ const Dashboard = () => {
     );
   }
 
+  // Patient users should never see this screen as they get redirected
+  if (userRole === "patient") {
+    return (
+      <div className="text-center py-20">
+        <p>Weiterleitung zum Patientenprofil...</p>
+        <Loader2 className="h-6 w-6 animate-spin text-cannabis-green-500 mx-auto mt-2" />
+      </div>
+    );
+  }
+
   // Display appropriate dashboard based on user role
   const renderDashboardContent = () => {
     switch (userRole) {
@@ -57,13 +69,6 @@ const Dashboard = () => {
         return renderAdminDashboard();
       case "doctor":
         return renderDoctorDashboard();
-      case "patient":
-        // This shouldn't usually happen as patients are redirected
-        return (
-          <div className="text-center py-20">
-            <p>Weiterleitung zum Patientenprofil...</p>
-          </div>
-        );
       default:
         return (
           <div className="text-center py-20">

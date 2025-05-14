@@ -209,7 +209,12 @@ export function useAuthMethods() {
       // Step 2: If verification was successful and we received a magic link, use it
       if (response.data?.magicLink) {
         console.log("Received magic link, redirecting to:", response.data.magicLink);
-        window.location.href = response.data.magicLink;
+        
+        // Add a small delay before redirecting
+        setTimeout(() => {
+          window.location.href = response.data.magicLink;
+        }, 500);
+        
         return true;
       }
       

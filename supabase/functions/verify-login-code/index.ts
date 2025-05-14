@@ -34,7 +34,7 @@ serve(async (req) => {
       .select("*")
       .eq("email", email)
       .eq("code", code)
-      .single();
+      .maybeSingle();
     
     if (fetchError || !authCode) {
       console.error("Invalid code or fetch error:", fetchError);
@@ -117,7 +117,7 @@ serve(async (req) => {
         .from("profiles")
         .select("id")
         .eq("id", userData.id)
-        .single();
+        .maybeSingle();
         
       if (profileError || !profileData) {
         console.log("Profile doesn't exist, creating new profile for user:", userData.id);
@@ -163,12 +163,30 @@ serve(async (req) => {
     
     console.log("Deleted auth code after successful verification");
     
-    // Create a magic sign in link
+    // First, sign the user in directly with email/password (for doctor and admin)
+    if (userRole === 'doctor' || userRole === 'admin') {
+      // Generate a secure password for admin/doctor accounts
+      const tempPassword = Math.random().toString(36).slice(-8);
+      
+      // Set the password for the user to enable password login
+      const { error: updatePwError } = await supabase.auth.admin.updateUserById(
+        userData.id,
+        { password: tempPassword }
+      );
+      
+      if (updatePwError) {
+        console.error("Error setting temporary password:", updatePwError);
+      } else {
+        console.log("Set temporary password for user");
+      }
+    }
+    
+    // Create a magic sign in link for all users
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: email,
       options: {
-        redirectTo: `${new URL(req.url).origin}/login`, // Add callback parameter
+        redirectTo: `${new URL(req.url).origin}/login`,
         data: {
           role: userRole
         }

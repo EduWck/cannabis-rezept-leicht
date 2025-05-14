@@ -28,6 +28,7 @@ export const PatientLoginForm = ({
   const [codeSent, setCodeSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const [verificationAttempted, setVerificationAttempted] = useState(false);
+  const [verificationSuccess, setVerificationSuccess] = useState(false);
 
   // Cooldown timer effect
   useEffect(() => {
@@ -41,6 +42,22 @@ export const PatientLoginForm = ({
       if (interval) clearInterval(interval);
     };
   }, [cooldown]);
+  
+  // Effect to show status message after verification
+  useEffect(() => {
+    if (verificationSuccess) {
+      const timer = setTimeout(() => {
+        if (document.location.pathname === '/login') {
+          toast({
+            title: "Anmeldung...",
+            description: "Sie werden automatisch weitergeleitet sobald die Anmeldung abgeschlossen ist."
+          });
+        }
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [verificationSuccess]);
 
   const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,23 +125,11 @@ export const PatientLoginForm = ({
       const success = await verifyLoginCode(email.trim(), code.trim());
       
       if (success) {
+        setVerificationSuccess(true);
         toast({
           title: "Code bestätigt",
-          description: "Ihr Code wurde erfolgreich verifiziert."
+          description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze weitergeleitet."
         });
-        
-        // We don't need to redirect here - auth state change will trigger the redirect
-        // But we can show a loading state
-        setTimeout(() => {
-          // If we're still on this page after 5 seconds, show a message
-          if (verificationAttempted) {
-            setLoading(false);
-            toast({
-              title: "Fast geschafft",
-              description: "Die Anmeldung läuft. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link, falls Sie nicht automatisch weitergeleitet werden."
-            });
-          }
-        }, 5000);
       } else {
         toast({
           title: "Fehler",
@@ -153,7 +158,13 @@ export const PatientLoginForm = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {!codeSent ? (
+        {verificationSuccess ? (
+          <div className="text-center py-4">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-cannabis-green-500" />
+            <p className="mt-4">Anmeldung wird durchgeführt...</p>
+            <p className="text-sm text-muted-foreground mt-2">Sie werden in Kürze weitergeleitet.</p>
+          </div>
+        ) : !codeSent ? (
           <form onSubmit={handleRequestCode}>
             <div className="grid gap-4">
               <div className="grid gap-2">
@@ -206,7 +217,7 @@ export const PatientLoginForm = ({
                   setVerificationAttempted(false);
                 }}
                 className="px-0 text-sm"
-                disabled={loading}
+                disabled={loading || verificationSuccess}
               >
                 Zurück zur E-Mail-Eingabe
               </Button>

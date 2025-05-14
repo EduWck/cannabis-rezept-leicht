@@ -1,30 +1,32 @@
 
 import * as React from "react";
-import { toast as sonnerToast } from "sonner";
+import { toast } from "sonner";
 
 export type ToastActionElement = React.ReactElement<unknown>;
 
-export interface ToastProps {
+export type ToastProps = {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
   variant?: "default" | "destructive";
-  duration?: number;
-}
-
-export function useToast() {
-  return {
-    toast,
-    dismiss: sonnerToast.dismiss,
-  };
-}
-
-export const toast = ({ title, description, variant, action, ...props }: ToastProps) => {
-  // Correctly use sonner toast API
-  return sonnerToast(title as string, {
-    description,
-    action,
-    duration: props.duration,
-    className: variant === "destructive" ? "bg-destructive text-destructive-foreground" : undefined,
-  });
 };
+
+export const useToast = () => {
+  const showToast = React.useCallback(
+    ({ title, description, action, variant = "default" }: ToastProps) => {
+      toast(title as string, {
+        description: description as string,
+        action: action,
+        className: variant === "destructive" ? "bg-destructive text-destructive-foreground" : ""
+      });
+    },
+    []
+  );
+
+  return {
+    toast: showToast,
+  };
+};
+
+// Re-export the toast function for direct usage
+export { toast };

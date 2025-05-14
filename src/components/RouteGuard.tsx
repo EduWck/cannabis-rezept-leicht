@@ -42,16 +42,19 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         return;
       }
 
-      // If user exists but no role is detected, show toast with error
+      // If user exists but no role is detected, wait a bit more and show toast with error if it persists
       if (!userRole) {
-        console.log("User exists but role is not detected");
-        toast({
-          title: "Benutzerrolle nicht erkannt", 
-          description: "Es wurden keine Berechtigungen erkannt. Bitte melden Sie sich ab und wieder an.", 
-          variant: "destructive"
-        });
-        // Don't redirect yet, let the user see the error
-        setIsAuthorized(false);
+        console.log("User exists but role is not detected yet");
+        // Give it a little more time before showing an error
+        setTimeout(() => {
+          if (!userRole && user) {
+            console.log("Role still not detected after delay");
+            toast({
+              title: "Benutzerrolle wird geladen", 
+              description: "Ihre Berechtigungen werden noch geladen. Bitte haben Sie einen Moment Geduld.", 
+            });
+          }
+        }, 2000);
         return;
       }
 
@@ -115,7 +118,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, isRedirecting]);
 
   // Show loading state only when authorization check is in progress
-  if (isLoading || !authChecked) {
+  if (isLoading || (user && !userRole) || !authChecked) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500" />

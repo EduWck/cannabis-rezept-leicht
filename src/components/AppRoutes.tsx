@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -24,6 +23,7 @@ import PatientDashboard from "@/pages/dashboard/patient/PatientDashboard";
 import PatientProfile from "@/pages/dashboard/patient/PatientProfile";
 import PrescriptionsPage from "@/pages/dashboard/patient/PrescriptionsPage";
 import OrdersPage from "@/pages/dashboard/patient/OrdersPage";
+import UsersManagementPage from "@/pages/dashboard/admin/UsersManagementPage";
 
 // Create placeholder components for missing pages
 const DummyPage = ({ title }: { title: string }) => (
@@ -34,7 +34,6 @@ const DummyPage = ({ title }: { title: string }) => (
 );
 
 // Admin pages
-const UsersManagementPage = () => <DummyPage title="Benutzer verwalten" />;
 const AllPrescriptionsPage = () => <DummyPage title="Alle Rezepte" />;
 const AllOrdersPage = () => <DummyPage title="Alle Bestellungen" />;
 const ProductsPage = () => <DummyPage title="Produkte verwalten" />;

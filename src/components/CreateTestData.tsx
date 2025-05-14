@@ -1,139 +1,110 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { createTestData } from "@/integrations/supabase/client";
+import { Check, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { createTestUsers, createTestData } from "@/integrations/supabase/client";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 
-export const CreateTestData = () => {
-  const [creatingUsers, setCreatingUsers] = useState(false);
-  const [creatingData, setCreatingData] = useState(false);
-  const [userCreated, setUserCreated] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-
-  const handleCreateTestUsers = async () => {
-    setCreatingUsers(true);
-    setError(null);
-    setSuccess(null);
-    
-    try {
-      const data = await createTestUsers();
-      
-      toast({
-        title: "Test-Benutzer erstellt",
-        description: `${data?.results?.length || 0} Benutzer wurden erfolgreich erstellt oder aktualisiert.`,
-      });
-      
-      setUserCreated(true);
-      setSuccess("Test-Benutzer wurden erfolgreich erstellt.");
-      return data;
-    } catch (error: any) {
-      console.error("Error creating test users:", error);
-      
-      setError(`Test-Benutzer konnten nicht erstellt werden: ${error.message}`);
-      
-      toast({
-        title: "Fehler",
-        description: `Test-Benutzer konnten nicht erstellt werden: ${error.message}`,
-        variant: "destructive",
-      });
-      
-      throw error;
-    } finally {
-      setCreatingUsers(false);
-    }
-  };
+const CreateTestData = () => {
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isComplete, setIsComplete] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleCreateTestData = async () => {
-    setCreatingData(true);
-    setError(null);
-    setSuccess(null);
+    setIsLoading(true);
+    setErrorMessage(null);
     
     try {
-      // First ensure test users exist
-      if (!userCreated) {
-        try {
-          await handleCreateTestUsers();
-        } catch (error) {
-          // Error already handled in handleCreateTestUsers
-          setCreatingData(false);
-          return;
-        }
+      toast({
+        title: "Testdaten werden erstellt",
+        description: "Bitte warten Sie einen Moment..."
+      });
+      
+      const response = await createTestData();
+      console.log("Test data creation response:", response);
+      
+      if (!response || response.error) {
+        throw new Error(response?.error || "Could not create test data");
       }
       
-      const result = await createTestData();
-      
       toast({
-        title: "Test-Daten erstellt",
-        description: "Rezepte und Bestellungen wurden erfolgreich erstellt.",
+        title: "Testdaten erstellt",
+        description: "Die Testdaten wurden erfolgreich erstellt. Sie können nun die Anwendung mit den Testdaten testen."
       });
       
-      setSuccess("Rezepte und Bestellungen wurden erfolgreich erstellt.");
+      setIsComplete(true);
+      
+      // Reset completion state after a delay
+      setTimeout(() => {
+        setIsComplete(false);
+      }, 20000);
     } catch (error: any) {
       console.error("Error creating test data:", error);
-      
-      setError(`Test-Daten konnten nicht erstellt werden: ${error.message}`);
+      setErrorMessage(error.message || "Ein unbekannter Fehler ist aufgetreten");
       
       toast({
-        title: "Fehler",
-        description: `Test-Daten konnten nicht erstellt werden: ${error.message}`,
-        variant: "destructive",
+        title: "Fehler beim Erstellen",
+        description: error.message || "Die Testdaten konnten nicht erstellt werden.",
+        variant: "destructive"
       });
     } finally {
-      setCreatingData(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-4">
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Fehler</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      
-      {success && (
-        <Alert variant="default" className="bg-green-50 text-green-800 border-green-200">
-          <AlertCircle className="h-4 w-4 text-green-600" />
-          <AlertTitle>Erfolg</AlertTitle>
-          <AlertDescription>{success}</AlertDescription>
-        </Alert>
-      )}
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Test-Benutzer erstellen</h3>
-        <Button 
-          onClick={handleCreateTestUsers}
-          disabled={creatingUsers}
-          className="w-full sm:w-auto"
-        >
-          {creatingUsers && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Test-Benutzer erstellen
-        </Button>
-        <p className="text-sm text-muted-foreground mt-2">
-          Erstellt drei Benutzer: patient@example.com, doctor@example.com und admin@example.com (alle mit Passwort "password").
-        </p>
-      </div>
-      
-      <div>
-        <h3 className="text-lg font-semibold mb-2">Test-Daten erstellen</h3>
-        <Button 
-          onClick={handleCreateTestData}
-          disabled={creatingData}
-          className="w-full sm:w-auto"
-        >
-          {creatingData && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Test-Rezepte und Bestellungen erstellen
-        </Button>
-        <p className="text-sm text-muted-foreground mt-2">
-          Erstellt Testrezepte und Bestellungen für den Test-Patienten. Die Test-Benutzer werden automatisch erstellt, wenn sie noch nicht existieren.
-        </p>
-      </div>
-    </div>
+    <Card>
+      <CardContent className="py-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Testdaten erstellen</h3>
+              <p className="text-sm text-muted-foreground">
+                Erstellt Test-Rezepte, Bestellungen und weitere Daten.
+              </p>
+            </div>
+            <Button
+              onClick={handleCreateTestData}
+              disabled={isLoading || isComplete}
+              className="ml-4"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Erstelle...
+                </>
+              ) : isComplete ? (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Erstellt
+                </>
+              ) : (
+                "Erstellen"
+              )}
+            </Button>
+          </div>
+          
+          {errorMessage && (
+            <div className="text-sm text-red-500">{errorMessage}</div>
+          )}
+          
+          <div className="text-sm">
+            <h4 className="font-medium mb-2">Testdaten enthalten:</h4>
+            <ul className="space-y-1 list-disc pl-5">
+              <li><strong>Rezepte:</strong> In Bearbeitung, Genehmigt, Abgelehnt</li>
+              <li><strong>Bestellungen:</strong> Ausstehend, In Bearbeitung, Versandt</li>
+              <li><strong>Benutzer:</strong> Mit verschiedenen Rollen</li>
+            </ul>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Hinweis: Testdaten werden für den Testbenutzer (patient@example.com) erstellt.
+              Stellen Sie sicher, dass Sie zuerst Testbenutzer erstellt haben.
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
+
+export default CreateTestData;

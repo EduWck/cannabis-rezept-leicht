@@ -1,13 +1,16 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, Users, Calendar, MessageSquare } from "lucide-react";
+import { Loader2, Users, Calendar, MessageSquare, FileText, User, Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useState } from "react";
 
 const DoctorDashboard = () => {
   const { user, isLoading } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
   
   const handleAppointmentClick = (patientName: string) => {
     toast({
@@ -22,20 +25,37 @@ const DoctorDashboard = () => {
       description: `Sie können jetzt einen neuen Termin für ${patientName} auswählen.`
     });
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500" />
-        <span className="ml-2">Lade Arztdaten...</span>
-      </div>
-    );
-  }
+  
+  const handleViewPatient = (patientName: string) => {
+    toast({
+      title: "Patientenakte",
+      description: `Die Akte von ${patientName} wird geöffnet.`
+    });
+  };
 
   // Show dashboard content even without a logged-in user
   return (
     <div className="container mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Arzt Dashboard</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Arzt Dashboard</h1>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Patient suchen..."
+              className="pl-8 h-9 w-[200px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <Button 
+            onClick={() => toast({ title: "Neuer Patient", description: "Formular zum Hinzufügen eines neuen Patienten geöffnet." })}
+          >
+            <Plus className="mr-1 h-4 w-4" /> Neuer Patient
+          </Button>
+        </div>
+      </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card>
@@ -87,6 +107,64 @@ const DoctorDashboard = () => {
         </Card>
       </div>
       
+      {/* Prescription Requests */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Rezeptanfragen</h2>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Offene Anfragen</CardTitle>
+            <CardDescription>Zu prüfende Rezeptanfragen</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-2">Patient</th>
+                    <th className="text-left py-3 px-2">Symptome</th>
+                    <th className="text-left py-3 px-2">Datum</th>
+                    <th className="text-right py-3 px-2">Aktion</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    { name: "Lisa Müller", symptoms: ["Schlaflosigkeit", "Schmerzen"], date: "Heute" },
+                    { name: "Klaus Weber", symptoms: ["Angststörung"], date: "Gestern" },
+                    { name: "Sophie Bauer", symptoms: ["Chronische Schmerzen"], date: "Vorgestern" }
+                  ].map((request, i) => (
+                    <tr key={i} className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-2 cursor-pointer" onClick={() => handleViewPatient(request.name)}>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4" />
+                          <span>{request.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-2">{request.symptoms.join(", ")}</td>
+                      <td className="py-3 px-2">{request.date}</td>
+                      <td className="py-3 px-2 text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => toast({
+                              title: "Rezeptanfrage prüfen",
+                              description: `Rezeptanfrage von ${request.name} wird zur Prüfung geöffnet.`
+                            })}
+                          >
+                            <FileText className="h-3.5 w-3.5 mr-1" />
+                            Prüfen
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
       <h2 className="text-xl font-semibold mt-8 mb-4">Heutige Termine</h2>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-4 border-b dark:border-gray-700">
@@ -132,10 +210,62 @@ const DoctorDashboard = () => {
         </div>
       </div>
       
-      <div className="mt-8 mb-4 flex justify-end">
-        <Link to="/dashboard/calendar">
-          <Button>Alle Termine anzeigen</Button>
-        </Link>
+      {/* Weekly Calendar Preview */}
+      <div className="mt-8 mb-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Wochenübersicht</h2>
+          <Link to="/dashboard/calendar">
+            <Button>Alle Termine anzeigen</Button>
+          </Link>
+        </div>
+        
+        <Card className="mt-4">
+          <CardContent className="pt-6">
+            <AspectRatio ratio={21/9}>
+              <div className="bg-muted w-full h-full rounded-md p-4 flex flex-col">
+                <div className="grid grid-cols-5 gap-2 h-full">
+                  {['Mo', 'Di', 'Mi', 'Do', 'Fr'].map((day, dayIndex) => (
+                    <div key={day} className="flex flex-col h-full">
+                      <div className="text-center font-medium pb-2 border-b">{day}</div>
+                      <div className="flex-1 overflow-hidden">
+                        {dayIndex === 0 && (
+                          <div className="mt-2 p-1 bg-blue-100 dark:bg-blue-900/30 rounded text-xs">
+                            <p className="font-bold">09:15 - 10:00</p>
+                            <p>Karl Heinz</p>
+                          </div>
+                        )}
+                        {dayIndex === 1 && (
+                          <div className="mt-2 p-1 bg-green-100 dark:bg-green-900/30 rounded text-xs">
+                            <p className="font-bold">11:30 - 12:15</p>
+                            <p>Maria Schmidt</p>
+                          </div>
+                        )}
+                        {dayIndex === 2 && (
+                          <div className="mt-2 p-1 bg-purple-100 dark:bg-purple-900/30 rounded text-xs">
+                            <p className="font-bold">14:00 - 14:45</p>
+                            <p>Thomas Weber</p>
+                          </div>
+                        )}
+                        {dayIndex === 3 && (
+                          <>
+                            <div className="mt-2 p-1 bg-orange-100 dark:bg-orange-900/30 rounded text-xs">
+                              <p className="font-bold">10:15 - 11:00</p>
+                              <p>Lisa Müller</p>
+                            </div>
+                            <div className="mt-2 p-1 bg-yellow-100 dark:bg-yellow-900/30 rounded text-xs">
+                              <p className="font-bold">15:30 - 16:15</p>
+                              <p>Hans Peter</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </AspectRatio>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

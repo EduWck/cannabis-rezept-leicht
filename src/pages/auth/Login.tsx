@@ -11,6 +11,8 @@ import { toast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserRole } from "@/types";
 
+const COOLDOWN_TIME = 60; // 60 seconds cooldown
+
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -22,6 +24,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   
   // Staff login with password
   const [staffEmail, setStaffEmail] = useState("");
@@ -33,6 +36,19 @@ const Login = () => {
       setErrorMessage(location.state.error);
     }
   }, [location.state]);
+
+  // Cooldown timer effect
+  useEffect(() => {
+    let interval: number | undefined;
+    if (cooldown > 0) {
+      interval = window.setInterval(() => {
+        setCooldown((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [cooldown]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -66,12 +82,22 @@ const Login = () => {
   const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
     clearErrors();
+    
+    if (cooldown > 0) {
+      toast({
+        title: "Bitte warten",
+        description: `Sie können in ${cooldown} Sekunden einen neuen Code anfordern.`
+      });
+      return;
+    }
+    
     setLoading(true);
     
     try {
       const result = await requestLoginCode(email);
       if (result.success) {
         setCodeSent(true);
+        setCooldown(COOLDOWN_TIME);
         // For demo purposes, auto-fill the code if provided by the function
         if (result.code) {
           setCode(result.code);
@@ -231,9 +257,11 @@ const Login = () => {
                         required
                       />
                     </div>
-                    <Button type="submit" disabled={loading} className="w-full">
+                    <Button type="submit" disabled={loading || cooldown > 0} className="w-full">
                       {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      Code anfordern
+                      {cooldown > 0 
+                        ? `Bitte warten (${cooldown}s)` 
+                        : "Code anfordern"}
                     </Button>
                   </div>
                 </form>

@@ -96,11 +96,21 @@ export function useAuthMethods() {
       
     } catch (error: any) {
       console.error("Error requesting login code:", error);
-      toast({
-        title: "Code konnte nicht gesendet werden",
-        description: error.message || "Ein unbekannter Fehler ist aufgetreten",
-        variant: "destructive"
-      });
+      
+      // Check for rate limit error
+      if (error.message && error.message.includes("after 59 seconds")) {
+        toast({
+          title: "Zu viele Anfragen",
+          description: "Bitte warten Sie eine Minute, bevor Sie einen neuen Code anfordern.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Code konnte nicht gesendet werden",
+          description: error.message || "Ein unbekannter Fehler ist aufgetreten",
+          variant: "destructive"
+        });
+      }
       return { success: false };
     } finally {
       setIsProcessing(false);
@@ -133,19 +143,49 @@ export function useAuthMethods() {
       if (response.data?.success) {
         console.log("Code verification successful for:", response.data.email);
         
-        // Send magic link to complete login
-        const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-          email: email,
-        });
-        
-        if (magicLinkError) {
-          console.error("Error sending magic link:", magicLinkError);
-          toast({
-            title: "Login fehlgeschlagen",
-            description: magicLinkError.message,
-            variant: "destructive"
+        try {
+          // Send magic link to complete login
+          const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+            email: email,
           });
-          return false;
+          
+          if (magicLinkError) {
+            // Check for rate limit error
+            if (magicLinkError.message && magicLinkError.message.includes("after 59 seconds")) {
+              console.log("Rate limit error when sending magic link");
+              toast({
+                title: "Login erfolgreich",
+                description: "Aufgrund von Sicherheitsbeschränkungen müssen Sie kurz warten, bevor Sie erneut einen Anmeldelink anfordern können. Versuchen Sie es in 60 Sekunden erneut."
+              });
+              return true; // Still return true as verification was successful
+            } else {
+              console.error("Error sending magic link:", magicLinkError);
+              toast({
+                title: "Login fehlgeschlagen",
+                description: magicLinkError.message || "Fehler beim Senden des Anmeldelinks",
+                variant: "destructive"
+              });
+              return false;
+            }
+          }
+        } catch (otpError: any) {
+          // Special handling for rate limit errors
+          if (otpError.message && otpError.message.includes("after 59 seconds")) {
+            console.log("Rate limit error when sending magic link");
+            toast({
+              title: "Login erfolgreich",
+              description: "Aufgrund von Sicherheitsbeschränkungen müssen Sie kurz warten, bevor Sie erneut einen Anmeldelink anfordern können. Versuchen Sie es in 60 Sekunden erneut."
+            });
+            return true; // Still return true as verification was successful
+          } else {
+            console.error("Unexpected error sending magic link:", otpError);
+            toast({
+              title: "Login fehlgeschlagen",
+              description: "Ein unerwarteter Fehler ist aufgetreten",
+              variant: "destructive"
+            });
+            return false;
+          }
         }
         
         toast({

@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Prescription, Order } from "@/types";
 import { Loader2, FileText, ShoppingCart, Calendar } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Dashboard = () => {
-  const { userRole } = useAuth();
+  const { user, userRole, profile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -18,14 +19,18 @@ const Dashboard = () => {
     appointments: 0,
     pendingRequests: 0,
   });
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
+        if (!user || !userRole) {
+          console.log("No user or role found, cannot fetch dashboard stats");
+          return;
+        }
+
         if (userRole === "patient") {
-          // Fix the async/await for getUserData
-          const user = await supabase.auth.getUser();
-          const userId = user.data.user?.id;
+          const userId = user.id;
           
           if (userId) {
             const [prescriptionsRes, ordersRes, appointmentsRes] = await Promise.all([
@@ -33,6 +38,10 @@ const Dashboard = () => {
               supabase.from("orders").select("id", { count: "exact" }).eq("patient_id", userId),
               supabase.from("appointments").select("id", { count: "exact" }).eq("patient_id", userId),
             ]);
+
+            if (prescriptionsRes.error || ordersRes.error || appointmentsRes.error) {
+              throw new Error("Error fetching dashboard data");
+            }
 
             setStats({
               prescriptions: prescriptionsRes.count || 0,
@@ -42,8 +51,7 @@ const Dashboard = () => {
             });
           }
         } else if (userRole === "doctor") {
-          const user = await supabase.auth.getUser();
-          const userId = user.data.user?.id;
+          const userId = user.id;
           
           if (userId) {
             const pendingRes = await supabase
@@ -56,6 +64,10 @@ const Dashboard = () => {
               supabase.from("prescriptions").select("id", { count: "exact" }).eq("doctor_id", userId),
               supabase.from("appointments").select("id", { count: "exact" }).eq("doctor_id", userId),
             ]);
+
+            if (pendingRes.error || prescriptionsRes.error || appointmentsRes.error) {
+              throw new Error("Error fetching dashboard data");
+            }
 
             setStats({
               prescriptions: prescriptionsRes.count || 0,
@@ -72,6 +84,10 @@ const Dashboard = () => {
             supabase.from("prescriptions").select("id", { count: "exact" }).eq("status", "in_review"),
           ]);
 
+          if (prescriptionsRes.error || ordersRes.error || appointmentsRes.error || pendingRes.error) {
+            throw new Error("Error fetching dashboard data");
+          }
+
           setStats({
             prescriptions: prescriptionsRes.count || 0,
             orders: ordersRes.count || 0,
@@ -81,15 +97,22 @@ const Dashboard = () => {
         }
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
+        toast({
+          title: "Fehler",
+          description: "Dashboarddaten konnten nicht geladen werden.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (userRole) {
+    if (user && userRole) {
       fetchDashboardStats();
+    } else {
+      setIsLoading(false);
     }
-  }, [userRole]);
+  }, [user, userRole, toast]);
 
   if (isLoading) {
     return (

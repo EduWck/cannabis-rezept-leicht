@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,8 +55,7 @@ export function useAuthProvider() {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // Skip the RPC function that's causing the error
-      // and directly query the profiles table
+      // Direkter Zugriff auf die profiles Tabelle
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -97,12 +97,6 @@ export function useAuthProvider() {
           setProfile(minimalProfile);
         }
       }
-      
-      toast({
-        title: "Hinweis",
-        description: "Benutzerprofil konnte nicht vollständig geladen werden",
-        variant: "default"
-      });
     }
   };
 

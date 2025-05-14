@@ -15,9 +15,13 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [redirectedOnce, setRedirectedOnce] = useState(false);
 
   useEffect(() => {
-    const checkAuthorization = async () => {
+    // Prevent repeated authorization checks if we already redirected once
+    if (redirectedOnce) return;
+
+    const checkAuthorization = () => {
       // If still loading authentication state, wait
       if (isLoading) {
         console.log("RouteGuard: Still loading auth state...");
@@ -29,6 +33,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       // If no user is logged in, redirect to login
       if (!user) {
         console.log("No user detected, redirecting to login");
+        setRedirectedOnce(true);
         navigate("/login", { state: { from: location.pathname } });
         return;
       }
@@ -49,6 +54,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       // Patient redirection - If user is a patient, always redirect to profile page when on main dashboard
       if (userRole === "patient" && location.pathname === "/dashboard") {
         console.log("Patient detected on dashboard, redirecting to profile");
+        setRedirectedOnce(true);
         navigate("/dashboard/profile", { replace: true });
         return;
       }
@@ -59,6 +65,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         setIsAuthorized(true);
       } else {
         console.log(`User role ${userRole} not authorized for this route`);
+        setRedirectedOnce(true);
         
         // Redirect based on role
         if (userRole === "patient") {
@@ -84,7 +91,18 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
     };
 
     checkAuthorization();
-  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname]);
+  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, redirectedOnce]);
+
+  // Reset redirectedOnce when location changes significantly
+  useEffect(() => {
+    const pathname = location.pathname;
+    return () => {
+      // Only reset if navigating to a completely different section
+      if (!pathname.includes(location.pathname.split('/')[1])) {
+        setRedirectedOnce(false);
+      }
+    };
+  }, [location.pathname]);
 
   if (isLoading) {
     return (

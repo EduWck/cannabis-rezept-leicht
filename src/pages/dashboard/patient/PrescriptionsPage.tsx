@@ -18,15 +18,14 @@ const PrescriptionsPage = () => {
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
-      if (!user) return;
+      if (!user?.id) return;
       
       setLoading(true);
       try {
         const { data, error } = await supabase
           .from("prescriptions")
           .select("*")
-          .eq("patient_id", user.id)
-          .order("created_at", { ascending: false });
+          .eq("patient_id", user.id);
           
         if (error) throw error;
         
@@ -43,7 +42,9 @@ const PrescriptionsPage = () => {
       }
     };
     
-    fetchPrescriptions();
+    if (user?.id) {
+      fetchPrescriptions();
+    }
   }, [user, toast]);
 
   const getStatusDetails = (status: string) => {

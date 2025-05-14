@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,10 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  TableHead, 
-  TableHeader, 
-} from "@/components/ui/table";
+import { TableHead, TableHeader } from "@/components/ui/table";
 
 const OrdersPage = () => {
   const { user } = useAuth();
@@ -23,7 +19,7 @@ const OrdersPage = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user) return;
+      if (!user?.id) return;
       
       setLoading(true);
       try {
@@ -54,7 +50,9 @@ const OrdersPage = () => {
       }
     };
     
-    fetchOrders();
+    if (user?.id) {
+      fetchOrders();
+    }
   }, [user, toast]);
 
   const getStatusDetails = (status: string) => {

@@ -57,9 +57,9 @@ export const ThemeToggle = () => {
   
   return (
     <div className="flex items-center gap-2">
-      <SunIcon size={18} className={`${theme === 'light' ? 'text-cannabis-green-500' : 'text-gray-400'}`} />
+      <SunIcon size={18} className={`${theme === 'light' ? 'text-cannabis-green-500' : 'text-gray-400 dark:text-gray-500'}`} />
       <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
-      <MoonIcon size={18} className={`${theme === 'dark' ? 'text-cannabis-green-500' : 'text-gray-400'}`} />
+      <MoonIcon size={18} className={`${theme === 'dark' ? 'text-cannabis-green-500' : 'text-gray-400 dark:text-gray-500'}`} />
     </div>
   );
 };

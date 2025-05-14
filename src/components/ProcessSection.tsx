@@ -1,5 +1,6 @@
 
 import { ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const ProcessSection = () => {
   const steps = [
@@ -21,7 +22,7 @@ const ProcessSection = () => {
     {
       number: '04',
       title: 'Bezahlung',
-      description: '4,99€ Rezeptgebühr plus die Preise für die ausgewählten Produkte. 10€ Versandkosten bei Bestellungen unter 100€.'
+      description: '14,99€ Rezeptgebühr plus die Preise für die ausgewählten Produkte. 10€ Versandkosten bei Bestellungen unter 100€.'
     },
     {
       number: '05',
@@ -31,12 +32,12 @@ const ProcessSection = () => {
   ];
 
   return (
-    <section id="fragebogen-details" className="py-16 bg-gray-50">
+    <section id="fragebogen-details" className="py-16 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 md:px-6">
         <div className="text-center mb-12">
-          <span className="bg-cannabis-green-100 text-cannabis-green-700 px-4 py-1.5 rounded-full text-sm font-medium">Digitaler Prozess</span>
-          <h2 className="text-3xl md:text-4xl font-bold text-dark-gray mt-4 mb-4">So funktioniert der digitale Fragebogen</h2>
-          <p className="text-lg text-dark-gray-light max-w-2xl mx-auto">
+          <span className="bg-cannabis-green-100 dark:bg-cannabis-green-900/30 text-cannabis-green-700 dark:text-cannabis-green-400 px-4 py-1.5 rounded-full text-sm font-medium">Digitaler Prozess</span>
+          <h2 className="text-3xl md:text-4xl font-bold text-dark-gray dark:text-white mt-4 mb-4">So funktioniert der digitale Fragebogen</h2>
+          <p className="text-lg text-dark-gray-light dark:text-gray-300 max-w-2xl mx-auto">
             Erhalte dein Rezept in nur wenigen Schritten - schnell, unkompliziert und vollständig legal.
           </p>
         </div>
@@ -44,22 +45,22 @@ const ProcessSection = () => {
         <div className="max-w-4xl mx-auto">
           <div className="space-y-8 relative">
             {/* Connecting line */}
-            <div className="absolute left-12 top-0 bottom-0 w-0.5 bg-cannabis-green-200 hidden md:block" style={{ left: '44px' }}></div>
+            <div className="absolute left-12 top-0 bottom-0 w-0.5 bg-cannabis-green-200 dark:bg-cannabis-green-800 hidden md:block" style={{ left: '44px' }}></div>
             
             {steps.map((step, index) => (
               <div key={index} className="flex flex-col md:flex-row gap-6 items-start">
-                <div className="flex-shrink-0 w-24 h-24 rounded-full bg-cannabis-green-100 flex items-center justify-center text-cannabis-green-700 font-bold text-xl relative z-10">
+                <div className="flex-shrink-0 w-24 h-24 rounded-full bg-cannabis-green-100 dark:bg-cannabis-green-900/30 flex items-center justify-center text-cannabis-green-700 dark:text-cannabis-green-400 font-bold text-xl relative z-10">
                   {step.number}
                 </div>
                 <div className="flex-grow pt-2">
-                  <h3 className="text-xl font-semibold mb-2 text-dark-gray">{step.title}</h3>
-                  <p className="text-dark-gray-light">{step.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-dark-gray dark:text-white">{step.title}</h3>
+                  <p className="text-dark-gray-light dark:text-gray-300">{step.description}</p>
                   
                   {index === steps.length - 1 && (
                     <div className="mt-6">
-                      <button className="btn-primary flex items-center">
+                      <Link to="/fragebogen" className="btn-primary flex items-center">
                         Fragebogen starten <ArrowRight size={16} className="ml-2" />
-                      </button>
+                      </Link>
                     </div>
                   )}
                 </div>

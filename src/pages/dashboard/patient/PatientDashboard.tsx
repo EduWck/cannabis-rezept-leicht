@@ -25,13 +25,14 @@ const PatientDashboard = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="text-center py-20">
-        <p>Kein Benutzer angemeldet.</p>
-      </div>
-    );
-  }
+  // Testdaten für Dashboard-Anzeige wenn kein Benutzer angemeldet ist
+  const testProfile = {
+    first_name: "Max",
+    last_name: "Mustermann",
+    street_address: "Musterstraße 123",
+    postal_code: "12345",
+    city: "Musterstadt"
+  };
 
   return (
     <div className="container mx-auto">
@@ -47,9 +48,9 @@ const PatientDashboard = () => {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p><strong>Name:</strong> {profile?.first_name || 'Nicht angegeben'} {profile?.last_name || ''}</p>
-              <p><strong>Email:</strong> {user.email}</p>
-              <p><strong>Adresse:</strong> {profile?.street_address ? `${profile.street_address}, ${profile.postal_code} ${profile.city}` : 'Nicht angegeben'}</p>
+              <p><strong>Name:</strong> {profile?.first_name || testProfile.first_name} {profile?.last_name || testProfile.last_name}</p>
+              <p><strong>Email:</strong> {user?.email || "patient@example.com"}</p>
+              <p><strong>Adresse:</strong> {profile?.street_address || testProfile.street_address}, {profile?.postal_code || testProfile.postal_code} {profile?.city || testProfile.city}</p>
             </div>
             <div className="mt-4">
               <Link to="/dashboard/profile">

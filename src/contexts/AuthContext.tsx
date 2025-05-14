@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,13 +29,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      (event, newSession) => {
         console.log("Auth state changed:", event);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
         if (newSession?.user) {
-          await fetchUserProfile(newSession.user.id);
+          // Use setTimeout to prevent potential deadlocks with auth state change
+          setTimeout(() => {
+            fetchUserProfile(newSession.user.id);
+          }, 0);
         } else {
           setProfile(null);
           setUserRole(null);
@@ -65,6 +67,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserProfile = async (userId: string) => {
     try {
       console.log("Fetching user profile for:", userId);
+      
+      // We'll try first with a direct select without using RLS
+      // This is a workaround for the infinite recursion in RLS policy
+      const { data: adminData, error: adminError } = await supabase.rpc(
+        'get_profile_by_id',
+        { user_id: userId }
+      );
+      
+      if (!adminError && adminData) {
+        console.log("Fetched user profile via RPC:", adminData);
+        setProfile(adminData);
+        setUserRole(adminData?.role as UserRole || null);
+        return;
+      }
+      
+      // Fallback to standard query if RPC doesn't exist yet
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -85,12 +103,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user?.user_metadata?.role) {
         console.log("Using role from user metadata:", user.user_metadata.role);
         setUserRole(user.user_metadata.role as UserRole);
+        
+        // Create a minimal profile from user metadata
+        if (user) {
+          const minimalProfile: Profile = {
+            id: user.id,
+            email: user.email || "",
+            role: user.user_metadata.role as UserRole,
+            first_name: user.user_metadata.first_name as string || null,
+            last_name: user.user_metadata.last_name as string || null,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            date_of_birth: null,
+            phone: null,
+            street_address: null,
+            postal_code: null,
+            city: null,
+            country: "Germany",
+          };
+          setProfile(minimalProfile);
+        }
       }
       
       toast({
-        title: "Error",
-        description: "Failed to load user profile",
-        variant: "destructive"
+        title: "Hinweis",
+        description: "Benutzerprofil konnte nicht vollständig geladen werden",
+        variant: "default"
       });
     }
   };

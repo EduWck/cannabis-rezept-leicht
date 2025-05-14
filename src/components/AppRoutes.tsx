@@ -38,6 +38,7 @@ import SettingsPage from "@/pages/dashboard/admin/SettingsPage";
 import PatientsPage from "@/pages/dashboard/doctor/PatientsPage";
 import CalendarPage from "@/pages/dashboard/doctor/CalendarPage";
 import RequestsPage from "@/pages/dashboard/doctor/RequestsPage";
+import DoctorPrescriptionsPage from "@/pages/dashboard/doctor/DoctorPrescriptionsPage";
 
 const AppRoutes = () => {
   return (
@@ -144,6 +145,7 @@ const AppRoutes = () => {
         <Route path="/dashboard/patients" element={<PatientsPage />} />
         <Route path="/dashboard/calendar" element={<CalendarPage />} />
         <Route path="/dashboard/requests" element={<RequestsPage />} />
+        <Route path="/dashboard/doctor-prescriptions" element={<DoctorPrescriptionsPage />} />
       </Route>
 
       {/* Catch-all route */}

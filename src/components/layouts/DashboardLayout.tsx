@@ -18,7 +18,11 @@ import {
   ShoppingBag,
   Stethoscope,
   MessageSquare,
-  PackageOpen
+  PackageOpen,
+  FileCheck,
+  Bell,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -35,8 +39,9 @@ const patientRoutes = [
 const doctorRoutes = [
   { name: "Dashboard", href: "/dashboard/doctor", icon: LayoutDashboard },
   { name: "Behandlungsanfragen", href: "/dashboard/requests", icon: MessageSquare },
-  { name: "Patienten", href: "/dashboard/patients", icon: User },
+  { name: "Patienten", href: "/dashboard/patients", icon: Users },
   { name: "Terminkalender", href: "/dashboard/calendar", icon: Calendar },
+  { name: "Rezepte verwalten", href: "/dashboard/doctor-prescriptions", icon: FileCheck }
 ];
 
 const adminRoutes = [
@@ -55,6 +60,7 @@ const DashboardLayout = () => {
   const { pathname } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isMobile = useIsMobile();
+  const [expandedRoleSwitcher, setExpandedRoleSwitcher] = useState(false);
 
   // Determine which role's navigation to show based on current path
   const [currentRole, setCurrentRole] = useState<"admin" | "doctor" | "patient" | null>(null);
@@ -146,10 +152,49 @@ const DashboardLayout = () => {
               })}
             </nav>
             
-            {/* Role switcher in mobile menu */}
-            {currentRole && (
-              <div className="my-4 border-t pt-4 dark:border-gray-700">
-                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Wechseln zu</h3>
+            {/* Role switcher in mobile menu - expanded */}
+            <div className="my-4 border-t pt-4 dark:border-gray-700">
+              <div 
+                className="flex items-center justify-between cursor-pointer mb-2"
+                onClick={() => setExpandedRoleSwitcher(!expandedRoleSwitcher)}
+              >
+                <h3 className="text-sm font-medium text-muted-foreground">Wechseln zu</h3>
+                {expandedRoleSwitcher ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+              
+              {expandedRoleSwitcher && (
+                <div className="space-y-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate("/dashboard/patient")}
+                    className="w-full justify-start"
+                  >
+                    <User className="mr-2 h-4 w-4" /> Patient Dashboard
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate("/dashboard/doctor")}
+                    className="w-full justify-start"
+                  >
+                    <Stethoscope className="mr-2 h-4 w-4" /> Arzt Dashboard
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate("/dashboard/admin")}
+                    className="w-full justify-start"
+                  >
+                    <Users className="mr-2 h-4 w-4" /> Admin Dashboard
+                  </Button>
+                </div>
+              )}
+              {!expandedRoleSwitcher && (
                 <div className="grid grid-cols-3 gap-2">
                   <Button 
                     variant={currentRole === "patient" ? "default" : "outline"} 
@@ -176,8 +221,8 @@ const DashboardLayout = () => {
                     <Users className="mr-1 h-4 w-4" /> Admin
                   </Button>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
             
             <div className="mt-auto border-t pt-4 dark:border-gray-700">
               <div className="mb-2 flex items-center">
@@ -234,10 +279,48 @@ const DashboardLayout = () => {
             </nav>
           </div>
           
-          {/* Role switcher in desktop sidebar */}
-          {currentRole && (
-            <div className="mx-2 my-4 border-t pt-4 dark:border-gray-700">
-              <h3 className="mb-2 px-2 text-sm font-medium text-muted-foreground">Wechseln zu</h3>
+          {/* Role switcher in desktop sidebar - expanded with better descriptions */}
+          <div className="mx-2 my-4 border-t pt-4 dark:border-gray-700">
+            <div 
+              className="flex items-center justify-between cursor-pointer px-2 mb-2"
+              onClick={() => setExpandedRoleSwitcher(!expandedRoleSwitcher)}
+            >
+              <h3 className="text-sm font-medium text-muted-foreground">Dashboard wechseln</h3>
+              {expandedRoleSwitcher ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
+            
+            {expandedRoleSwitcher ? (
+              <div className="space-y-2 px-2">
+                <Button 
+                  variant={currentRole === "patient" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => navigate("/dashboard/patient")}
+                  className="w-full justify-start"
+                >
+                  <User className="mr-2 h-4 w-4" /> Patient Dashboard
+                </Button>
+                <Button 
+                  variant={currentRole === "doctor" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => navigate("/dashboard/doctor")}
+                  className="w-full justify-start"
+                >
+                  <Stethoscope className="mr-2 h-4 w-4" /> Arzt Dashboard
+                </Button>
+                <Button 
+                  variant={currentRole === "admin" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => navigate("/dashboard/admin")}
+                  className="w-full justify-start"
+                >
+                  <Users className="mr-2 h-4 w-4" /> Admin Dashboard
+                </Button>
+              </div>
+            ) : (
               <div className="grid grid-cols-3 gap-2">
                 <Button 
                   variant={currentRole === "patient" ? "default" : "outline"} 
@@ -261,13 +344,16 @@ const DashboardLayout = () => {
                   <Users className="h-4 w-4" />
                 </Button>
               </div>
+            )}
+            
+            {!expandedRoleSwitcher && (
               <div className="mt-1 grid grid-cols-3 gap-2 text-center text-xs">
                 <div>Patient</div>
                 <div>Arzt</div>
                 <div>Admin</div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
           
           <div className="border-t p-4 dark:border-gray-700">
             <div className="mb-4 flex items-center">

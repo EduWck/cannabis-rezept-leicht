@@ -52,13 +52,10 @@ serve(async (req) => {
     }
     
     // Check if user exists
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("email", email)
-      .single();
+    const { data: user, error: userError } = await supabase.auth
+      .admin.getUserByEmail(email);
       
-    if (profileError) {
+    if (userError || !user) {
       // User doesn't exist, create a new user
       const { data: newUser, error: signUpError } = await supabase.auth.admin.createUser({
         email,
@@ -67,30 +64,29 @@ serve(async (req) => {
       });
       
       if (signUpError) {
-        throw new Error("Failed to create new user");
+        throw new Error(`Failed to create new user: ${signUpError.message}`);
       }
+      
+      // Get the newly created user
+      const { data: createdUser, error: retrieveError } = await supabase.auth
+        .admin.getUserByEmail(email);
+        
+      if (retrieveError || !createdUser) {
+        throw new Error("Failed to retrieve newly created user");
+      }
+      
+      user = createdUser;
     }
     
-    // Generate a new session for the user
-    const { data: user, error: getUserError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", email)
-      .single();
+    // Create a new JWT token for the user
+    const { data: sessionData, error: tokenError } = await supabase.auth
+      .admin.generateLink({
+        type: 'magiclink',
+        email: email,
+      });
     
-    if (getUserError || !user) {
-      throw new Error("Failed to retrieve user");
-    }
-    
-    const { data, error: sessionError } = await supabase.auth.admin.createSession({
-      user_id: user.id,
-      properties: {
-        created_with: "login_code",
-      }
-    });
-    
-    if (sessionError) {
-      throw new Error("Failed to create session");
+    if (tokenError) {
+      throw new Error(`Failed to generate session: ${tokenError.message}`);
     }
     
     // Delete the used code
@@ -101,7 +97,12 @@ serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        session: data.session
+        session: {
+          access_token: sessionData.properties.token,
+          refresh_token: null,
+          expires_in: 3600,
+          user: user
+        }
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

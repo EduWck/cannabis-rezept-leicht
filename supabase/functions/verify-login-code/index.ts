@@ -52,10 +52,11 @@ serve(async (req) => {
     }
     
     // Check if user exists
-    const { data: user, error: userError } = await supabase.auth
-      .admin.getUserByEmail(email);
+    let userData;
+    const { data: existingUser, error: userError } = await supabase.auth
+      .admin.listUsers({ filter: `email eq "${email}"` });
       
-    if (userError || !user) {
+    if (userError || !existingUser || existingUser.users.length === 0) {
       // User doesn't exist, create a new user
       const { data: newUser, error: signUpError } = await supabase.auth.admin.createUser({
         email,
@@ -67,22 +68,18 @@ serve(async (req) => {
         throw new Error(`Failed to create new user: ${signUpError.message}`);
       }
       
-      // Get the newly created user
-      const { data: createdUser, error: retrieveError } = await supabase.auth
-        .admin.getUserByEmail(email);
-        
-      if (retrieveError || !createdUser) {
-        throw new Error("Failed to retrieve newly created user");
-      }
-      
-      user = createdUser;
+      userData = newUser;
+    } else {
+      userData = existingUser.users[0];
     }
     
     // Create a new JWT token for the user
     const { data: sessionData, error: tokenError } = await supabase.auth
-      .admin.generateLink({
-        type: 'magiclink',
-        email: email,
+      .admin.createSession({
+        userId: userData.id,
+        properties: {
+          provider: "email"
+        }
       });
     
     if (tokenError) {
@@ -98,10 +95,10 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         session: {
-          access_token: sessionData.properties.token,
-          refresh_token: null,
+          access_token: sessionData.access_token,
+          refresh_token: sessionData.refresh_token,
           expires_in: 3600,
-          user: user
+          user: userData
         }
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

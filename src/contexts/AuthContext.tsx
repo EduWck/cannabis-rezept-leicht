@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole, Profile } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 type AuthContextType = {
   session: Session | null;
@@ -73,9 +73,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setProfile(data);
-      setUserRole(data.role as UserRole);
+      setUserRole(data?.role as UserRole || user?.user_metadata?.role as UserRole);
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      // Fallback to user metadata if profile isn't available
+      if (user?.user_metadata?.role) {
+        setUserRole(user.user_metadata.role as UserRole);
+      }
+      
       toast({
         title: "Error",
         description: "Failed to load user profile",
@@ -101,6 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         description: "Welcome back!",
       });
     } catch (error: any) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: error.message,
@@ -143,6 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Return the code for testing purposes (would be removed in production)
       return { success: true, code: response.data.code };
     } catch (error: any) {
+      console.error("Error requesting login code:", error);
       toast({
         title: "Failed to send code",
         description: error.message,
@@ -164,7 +171,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Set the session from the response
       const newSession = response.data.session;
-      supabase.auth.setSession(newSession);
+      await supabase.auth.setSession(newSession);
       
       toast({
         title: "Login successful",
@@ -173,6 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return true;
     } catch (error: any) {
+      console.error("Error verifying login code:", error);
       toast({
         title: "Verification failed",
         description: error.message,

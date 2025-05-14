@@ -14,157 +14,85 @@ serve(async (req) => {
   }
   
   try {
-    // Initialize Supabase admin client
+    // Initialize Supabase client with service role key
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
+    
+    // Create test users
     const testUsers = [
       {
         email: "patient@example.com",
         password: "password",
-        role: "patient",
-        first_name: "Max",
-        last_name: "Mustermann"
+        user_metadata: { role: "patient" },
       },
       {
         email: "doctor@example.com",
         password: "password",
-        role: "doctor",
-        first_name: "Dr. Hans",
-        last_name: "Weber"
+        user_metadata: { role: "doctor" },
       },
       {
         email: "admin@example.com",
         password: "password",
-        role: "admin",
-        first_name: "Admin",
-        last_name: "User"
-      }
+        user_metadata: { role: "admin" },
+      },
     ];
-
-    const results = [];
-
-    // Create each test user
+    
+    const createdUsers = [];
+    
     for (const user of testUsers) {
       try {
         // Check if user already exists
-        const { data: existingUser } = await supabase
-          .from("profiles")
-          .select("email")
-          .eq("email", user.email)
-          .single();
-
-        if (existingUser) {
-          results.push({ email: user.email, status: "already exists" });
-          continue;
+        const { data: existingUsers } = await supabase.auth
+          .admin.listUsers({ filter: `email eq "${user.email}"` });
+          
+        if (existingUsers && existingUsers.users.length > 0) {
+          // User already exists, update their metadata
+          const { data, error } = await supabase.auth.admin.updateUserById(
+            existingUsers.users[0].id,
+            {
+              user_metadata: user.user_metadata,
+              password: user.password,
+              email_confirm: true
+            }
+          );
+          
+          if (error) throw error;
+          createdUsers.push({ email: user.email, role: user.user_metadata.role, status: "updated" });
+        } else {
+          // Create new user
+          const { data, error } = await supabase.auth.admin.createUser({
+            email: user.email,
+            password: user.password,
+            user_metadata: user.user_metadata,
+            email_confirm: true
+          });
+          
+          if (error) throw error;
+          createdUsers.push({ email: user.email, role: user.user_metadata.role, status: "created" });
         }
-
-        // Create the user
-        const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-          email: user.email,
-          password: user.password,
-          email_confirm: true,
-          user_metadata: { role: user.role }
-        });
-
-        if (userError) {
-          results.push({ email: user.email, status: "error", message: userError.message });
-          continue;
-        }
-
-        // Update profile with role and other information
-        await supabase
-          .from("profiles")
-          .update({
-            role: user.role,
-            first_name: user.first_name,
-            last_name: user.last_name
-          })
-          .eq("id", userData.user.id);
-
-        results.push({ email: user.email, status: "created", id: userData.user.id });
-
-        // Add mock data for patients
-        if (user.role === "patient") {
-          // Create a test prescription
-          const { data: prescription } = await supabase
-            .from("prescriptions")
-            .insert({
-              patient_id: userData.user.id,
-              symptoms: ["Chronische Schmerzen", "Schlafstörungen"],
-              questionnaire_data: {
-                pain_level: "Mittel bis stark",
-                previous_treatments: ["Konventionelle Schmerzmittel", "Physiotherapie"],
-                medical_history: "Keine relevanten Vorerkrankungen"
-              },
-              status: "approved"
-            })
-            .select()
-            .single();
-
-          // Create a test order
-          if (prescription) {
-            await supabase
-              .from("orders")
-              .insert({
-                patient_id: userData.user.id,
-                prescription_id: prescription.id,
-                status: "delivered",
-                total_amount: 59.90,
-                shipping_address: {
-                  first_name: user.first_name,
-                  last_name: user.last_name,
-                  street_address: "Musterstraße 123",
-                  postal_code: "12345",
-                  city: "Berlin",
-                  country: "Deutschland"
-                },
-                invoice_url: "https://example.com/dummy-invoice.pdf"
-              });
-          }
-        }
-
-        // Assign prescriptions to the doctor
-        if (user.role === "doctor") {
-          // Find patients
-          const { data: patients } = await supabase
-            .from("profiles")
-            .select("id")
-            .eq("role", "patient");
-
-          if (patients && patients.length > 0) {
-            // Create pending prescription requests for the doctor
-            await supabase
-              .from("prescriptions")
-              .insert([
-                {
-                  patient_id: patients[0].id,
-                  doctor_id: userData.user.id,
-                  symptoms: ["Migräne", "Übelkeit"],
-                  status: "in_review"
-                }
-              ]);
-          }
-        }
-
       } catch (error) {
-        results.push({ email: user.email, status: "error", message: error.message });
+        console.error(`Error processing user ${user.email}:`, error);
       }
     }
-
+    
     return new Response(
       JSON.stringify({
-        message: "Test users setup completed",
-        results
+        success: true,
+        users: createdUsers,
+        message: "Test users have been created or updated successfully."
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+    
   } catch (error) {
     console.error("Error creating test users:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message || "Failed to create test users" }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "An error occurred while creating test users" 
+      }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

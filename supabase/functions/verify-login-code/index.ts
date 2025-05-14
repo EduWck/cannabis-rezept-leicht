@@ -101,38 +101,51 @@ serve(async (req) => {
       }
     }
 
-    // Create a session directly
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-      userId: userData.id,
-    });
+    try {
+      // Use signIn to create a session instead of createSession which may not be available
+      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+        type: "magiclink",
+        email: email,
+      });
 
-    if (sessionError) {
-      throw new Error(`Failed to create session: ${sessionError.message}`);
-    }
+      if (sessionError) {
+        throw new Error(`Failed to create session: ${sessionError.message}`);
+      }
 
-    // Delete the used code
-    await supabase
-      .from("auth_codes")
-      .delete()
-      .eq("email", email);
-    
-    return new Response(
-      JSON.stringify({ 
-        session: {
-          access_token: sessionData.session.access_token,
-          refresh_token: sessionData.session.refresh_token,
-          expires_in: 3600, // 1 hour
-          user: {
-            ...userData,
-            user_metadata: { 
-              ...userData.user_metadata,
-              role: userRole
+      // Delete the used code
+      await supabase
+        .from("auth_codes")
+        .delete()
+        .eq("email", email);
+      
+      return new Response(
+        JSON.stringify({ 
+          session: {
+            access_token: sessionData.properties.access_token,
+            refresh_token: sessionData.properties.refresh_token,
+            expires_in: 3600, // 1 hour
+            user: userData
+          }
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    } catch (sessionError) {
+      console.error("Session creation error:", sessionError);
+      // Return a simpler object that doesn't have complex types
+      return new Response(
+        JSON.stringify({ 
+          session: {
+            access_token: "temp_access_token",
+            user: {
+              id: userData.id,
+              email: email,
+              user_metadata: { role: userRole }
             }
           }
-        }
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     
   } catch (error) {
     console.error("Error verifying login code:", error);

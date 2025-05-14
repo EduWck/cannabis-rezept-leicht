@@ -77,7 +77,7 @@ export function useAuthMethods() {
         console.error("Error requesting login code:", response.error);
         toast({
           title: "Code konnte nicht gesendet werden",
-          description: response.error,
+          description: typeof response.error === 'string' ? response.error : "Ein Fehler ist aufgetreten.",
           variant: "destructive"
         });
         return { success: false };
@@ -123,7 +123,7 @@ export function useAuthMethods() {
         console.error("Error verifying code:", response.error);
         toast({
           title: "Code konnte nicht verifiziert werden",
-          description: response.error,
+          description: typeof response.error === 'string' ? response.error : "Ein Fehler ist aufgetreten.",
           variant: "destructive"
         });
         return false;
@@ -189,7 +189,7 @@ export function useAuthMethods() {
           console.error("Fallback login failed:", fallbackError);
           toast({
             title: "Login fehlgeschlagen",
-            description: "Bitte versuchen Sie es später erneut.",
+            description: fallbackError.message || "Bitte versuchen Sie es später erneut.",
             variant: "destructive"
           });
           return false;
@@ -200,7 +200,7 @@ export function useAuthMethods() {
       console.error("Error verifying code:", error);
       toast({
         title: "Code konnte nicht verifiziert werden",
-        description: error.message || "Ein unbekannter Fehler ist aufgetreten",
+        description: typeof error.message === 'string' ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive"
       });
       return false;

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,12 +54,11 @@ export function useAuthProvider() {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // We'll try first with a direct select without using RLS
-      // This is a workaround for the infinite recursion in RLS policy
-      const { data: adminData, error: adminError } = await supabase.rpc(
-        'get_profile_by_id',
-        { user_id: userId }
-      );
+      // Fix: Use the rpc function without specifying type parameters
+      // Let TypeScript infer the types instead
+      const { data: adminData, error: adminError } = await supabase.rpc('get_profile_by_id', {
+        user_id: userId
+      });
       
       if (!adminError && adminData) {
         console.log("Fetched user profile via RPC:", adminData);

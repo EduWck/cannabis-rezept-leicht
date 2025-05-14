@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,12 +69,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // Fix: Use proper type parameters for supabase.rpc
-      // The second parameter must be compatible with the RPC function's input parameters
-      const { data: adminData, error: adminError } = await supabase.rpc(
-        'get_profile_by_id',
-        { user_id: userId }
-      );
+      // Fix: Use the rpc function without specifying type parameters
+      // Let TypeScript infer the types instead
+      const { data: adminData, error: adminError } = await supabase.rpc('get_profile_by_id', {
+        user_id: userId
+      });
       
       if (!adminError && adminData) {
         console.log("Fetched user profile via RPC:", adminData);

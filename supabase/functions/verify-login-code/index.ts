@@ -72,20 +72,17 @@ serve(async (req) => {
     } else {
       userData = existingUser.users[0];
     }
-    
-    // Create a new JWT token for the user
-    const { data: sessionData, error: tokenError } = await supabase.auth
-      .admin.createSession({
-        userId: userData.id,
-        properties: {
-          provider: "email"
-        }
-      });
-    
-    if (tokenError) {
-      throw new Error(`Failed to generate session: ${tokenError.message}`);
+
+    // Create a sign-in link and get the session that way
+    const { data: signInData, error: signInError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: email,
+    });
+
+    if (signInError) {
+      throw new Error(`Failed to generate session: ${signInError.message}`);
     }
-    
+
     // Delete the used code
     await supabase
       .from("auth_codes")
@@ -95,8 +92,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         session: {
-          access_token: sessionData.access_token,
-          refresh_token: sessionData.refresh_token,
+          access_token: signInData.properties.access_token,
+          refresh_token: signInData.properties.refresh_token,
           expires_in: 3600,
           user: userData
         }

@@ -30,107 +30,17 @@ export async function createTestUsers() {
 // Helper function for creating test data
 export async function createTestData() {
   try {
-    // First, check if test user exists
-    const { data: patientProfile, error: profileError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", "patient@example.com")
-      .single();
-      
-    if (profileError) {
-      console.error("Error checking for test user:", profileError);
-      throw profileError;
+    // Wir verwenden hier die Edge-Function, die bereits vorhanden ist
+    // Diese Funktion wird die Berechtigungsprobleme umgehen können
+    const { data, error } = await supabase.functions.invoke('create-test-data');
+    
+    if (error) {
+      throw error;
     }
     
-    if (!patientProfile) {
-      throw new Error("Test user not found. Please create test users first.");
-    }
-    
-    // Create test prescriptions
-    const { data: prescriptionData, error: prescriptionError } = await supabase
-      .from("prescriptions")
-      .insert([
-        {
-          patient_id: patientProfile.id,
-          status: "in_review",
-          symptoms: ["Schlaflosigkeit", "Schmerzen"]
-        },
-        {
-          patient_id: patientProfile.id,
-          status: "approved",
-          symptoms: ["Angstzustände", "Übelkeit"]
-        },
-        {
-          patient_id: patientProfile.id,
-          status: "rejected",
-          rejection_reason: "Unzureichende medizinische Begründung",
-          symptoms: ["Kopfschmerzen"]
-        }
-      ])
-      .select();
-      
-    if (prescriptionError) {
-      console.error("Error creating test prescriptions:", prescriptionError);
-      throw prescriptionError;
-    }
-    
-    // Find the approved prescription for orders
-    const approvedPrescription = prescriptionData.find(p => p.status === "approved");
-    
-    if (!approvedPrescription) {
-      throw new Error("No approved prescription found.");
-    }
-    
-    // Create test orders
-    const { error: orderError } = await supabase
-      .from("orders")
-      .insert([
-        {
-          patient_id: patientProfile.id,
-          prescription_id: approvedPrescription.id,
-          status: "pending",
-          total_amount: 149.99,
-          shipping_address: {
-            street: "Musterstraße 123",
-            postal_code: "10115",
-            city: "Berlin",
-            country: "Deutschland"
-          }
-        },
-        {
-          patient_id: patientProfile.id,
-          prescription_id: approvedPrescription.id,
-          status: "processing",
-          total_amount: 99.95,
-          shipping_address: {
-            street: "Musterstraße 123",
-            postal_code: "10115",
-            city: "Berlin",
-            country: "Deutschland"
-          }
-        },
-        {
-          patient_id: patientProfile.id,
-          prescription_id: approvedPrescription.id,
-          status: "shipped",
-          total_amount: 79.90,
-          shipping_address: {
-            street: "Musterstraße 123",
-            postal_code: "10115",
-            city: "Berlin",
-            country: "Deutschland"
-          }
-        }
-      ]);
-      
-    if (orderError) {
-      console.error("Error creating test orders:", orderError);
-      throw orderError;
-    }
-    
-    return { success: true };
+    return data;
   } catch (error) {
-    console.error("Error creating test data:", error);
+    console.error('Error creating test data:', error);
     throw error;
   }
 }

@@ -1,165 +1,184 @@
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { Leaf, Menu, LogOut } from "lucide-react";
 
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Menu, X, LogOut, User } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeProvider";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-is-mobile";
+import { cn } from "@/lib/utils";
 
-const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
+const navItems = [
+  {
+    label: "Über Uns",
+    href: "/uber-uns",
+  },
+  {
+    label: "Kontakt",
+    href: "/kontakt",
+  },
+  {
+    label: "Vor Ort",
+    href: "/vor-ort",
+  },
+  {
+    label: "Fragebogen",
+    href: "/fragebogen",
+  },
+];
+
+const userLinks = [
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: null,
+  },
+];
+
+export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
-  const { user, signOut } = useAuth();
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  const navLinks = [
-    { name: "Fragebogen", href: "/fragebogen" },
-    { name: "Video-Call", href: "/video-call" },
-    { name: "Vor Ort", href: "/vor-ort" },
-    { name: "Über uns", href: "/uber-uns" },
-    { name: "Kontakt", href: "/kontakt" },
-  ];
-
-  const isActive = (path: string) => location.pathname === path;
+  const { user, userRole } = useAuth();
+  const isMobile = useIsMobile();
 
   return (
-    <header
-      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled
-          ? "bg-white/90 shadow-md backdrop-blur-sm dark:bg-gray-900/90"
-          : "bg-transparent"
-      }`}
-    >
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link to="/" className="flex items-center">
-          <span className="text-xl font-bold text-cannabis-green-600 dark:text-cannabis-green-400">
-            MediCannabis
+    <header className="fixed top-0 z-50 w-full border-b bg-background">
+      <div className="container flex h-16 items-center justify-between">
+        <Link to="/" className="flex items-center gap-2">
+          <Leaf className="h-6 w-6 text-cannabis-green-500" />
+          <span className="hidden font-semibold md:inline-block">
+            Cannabis<span className="text-cannabis-green-500">Med</span>
           </span>
         </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden items-center space-x-1 md:flex">
-          {navLinks.map((link) => (
-            <Link
-              key={link.name}
-              to={link.href}
-              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                isActive(link.href)
-                  ? "bg-cannabis-green-100 text-cannabis-green-700 dark:bg-cannabis-green-900/30 dark:text-cannabis-green-400"
-                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-              }`}
-            >
-              {link.name}
-            </Link>
+        <nav className="hidden md:flex items-center gap-6">
+          {navItems.map((item) => (
+            <NavLink key={item.href} to={item.href}>
+              {({ isActive }) => (
+                <span
+                  className={cn(
+                    "text-sm font-medium transition-colors hover:text-foreground/80",
+                    isActive ? "text-foreground" : "text-foreground/60"
+                  )}
+                >
+                  {item.label}
+                </span>
+              )}
+            </NavLink>
           ))}
-          
-          <Link to="/fragebogen">
-            <Button variant="default" className="ml-4">
-              Rezept anfordern
-            </Button>
-          </Link>
-          
+        </nav>
+        <div className="flex items-center gap-4">
           {user ? (
-            <>
-              <Link to="/dashboard/profile">
-                <Button variant="outline" className="ml-2">
-                  <User className="mr-2 h-4 w-4" /> Mein Profil
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar>
+                    <AvatarFallback>
+                      {user.email ? user.email.charAt(0).toUpperCase() : "U"}
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
-              </Link>
-              <Button variant="outline" className="ml-2" onClick={() => signOut()}>
-                <LogOut className="mr-2 h-4 w-4" /> Logout
-              </Button>
-            </>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {userRole}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {userLinks.map((link) => (
+                  <DropdownMenuItem key={link.href} asChild>
+                    <Link to={link.href}>
+                      {link.icon && <link.icon className="mr-2 h-4 w-4" />}
+                      <span>{link.label}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={() => useAuth().signOut()}
+                  className="cursor-pointer"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Abmelden</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <Link to="/login">
-              <Button variant="outline" className="ml-2">
-                Login
+              <Button variant="outline" size="sm">
+                Anmelden
               </Button>
             </Link>
           )}
-          
-          <div className="ml-2">
-            <ThemeToggle />
-          </div>
-        </nav>
-
-        {/* Mobile Navigation */}
-        <div className="flex items-center md:hidden">
-          <div className="mr-2">
-            <ThemeToggle />
-          </div>
+          <ThemeToggle />
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
+            <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
                 <Menu className="h-6 w-6" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[250px] sm:w-[300px]">
-              <nav className="flex flex-col space-y-4 pt-10">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.name}
-                    to={link.href}
-                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                      isActive(link.href)
-                        ? "bg-cannabis-green-100 text-cannabis-green-700 dark:bg-cannabis-green-900/30 dark:text-cannabis-green-400"
-                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                    }`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {link.name}
+            <SheetContent side="right">
+              <Link to="/" className="flex items-center gap-2">
+                <Leaf className="h-6 w-6 text-cannabis-green-500" />
+                <span className="font-semibold">
+                  Cannabis<span className="text-cannabis-green-500">Med</span>
+                </span>
+              </Link>
+              <div className="mt-8 flex flex-col gap-4">
+                {navItems.map((item) => (
+                  <Link key={item.href} to={item.href} onClick={() => setIsOpen(false)}>
+                    <span>{item.label}</span>
                   </Link>
                 ))}
-                
-                <Link to="/fragebogen" onClick={() => setIsOpen(false)}>
-                  <Button variant="default" className="w-full">
-                    Rezept anfordern
-                  </Button>
-                </Link>
-                
+              </div>
+              <div className="mt-8 flex flex-col gap-4">
                 {user ? (
                   <>
-                    <Link to="/dashboard/profile" onClick={() => setIsOpen(false)}>
-                      <Button variant="outline" className="w-full">
-                        <User className="mr-2 h-4 w-4" /> Mein Profil
-                      </Button>
-                    </Link>
-                    <Button variant="outline" className="w-full" onClick={() => {
-                      signOut();
-                      setIsOpen(false);
-                    }}>
-                      <LogOut className="mr-2 h-4 w-4" /> Logout
-                    </Button>
+                    {userLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        to={link.href}
+                        className="flex items-center"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        {link.icon && <link.icon className="mr-2 h-4 w-4" />}
+                        {link.label}
+                      </Link>
+                    ))}
+                    <button
+                      onClick={() => {
+                        useAuth().signOut();
+                        setIsOpen(false);
+                      }}
+                      className="flex items-center"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Abmelden
+                    </button>
                   </>
                 ) : (
                   <Link to="/login" onClick={() => setIsOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      Login
-                    </Button>
+                    Anmelden
                   </Link>
                 )}
-              </nav>
+              </div>
             </SheetContent>
           </Sheet>
         </div>
       </div>
     </header>
   );
-};
-
-export default Navbar;
+}

@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -27,10 +27,18 @@ const Dashboard = () => {
   }
 
   // If no user or no role, show appropriate message
-  if (!user || !userRole) {
+  if (!user) {
     return (
       <div className="text-center py-20">
-        <p>Kein Benutzer angemeldet oder Rolle nicht erkannt.</p>
+        <p>Kein Benutzer angemeldet.</p>
+      </div>
+    );
+  }
+  
+  if (!userRole) {
+    return (
+      <div className="text-center py-20">
+        <p>Benutzerrolle konnte nicht erkannt werden.</p>
       </div>
     );
   }
@@ -42,6 +50,13 @@ const Dashboard = () => {
         return renderAdminDashboard();
       case "doctor":
         return renderDoctorDashboard();
+      case "patient":
+        // This shouldn't usually happen as patients are redirected
+        return (
+          <div className="text-center py-20">
+            <p>Redirecting to patient profile...</p>
+          </div>
+        );
       default:
         return (
           <div className="text-center py-20">

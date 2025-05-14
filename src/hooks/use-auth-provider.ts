@@ -23,7 +23,7 @@ export function useAuthProvider() {
         if (newSession?.user) {
           // Use setTimeout to prevent potential deadlocks with auth state change
           setTimeout(() => {
-            fetchUserProfile(newSession.user.id);
+            detectUserRole(newSession.user);
           }, 0);
         } else {
           setProfile(null);
@@ -39,7 +39,7 @@ export function useAuthProvider() {
       setUser(currentSession?.user ?? null);
       
       if (currentSession?.user) {
-        await fetchUserProfile(currentSession.user.id);
+        await detectUserRole(currentSession.user);
       }
       
       setIsLoading(false);
@@ -50,66 +50,129 @@ export function useAuthProvider() {
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
+  // Function to determine user role from various sources
+  const detectUserRole = async (currentUser: User) => {
     try {
-      console.log("Fetching user profile for:", userId);
+      console.log("Detecting user role for:", currentUser.id);
+      let detectedRole: UserRole | null = null;
+      let userProfile: Profile | null = null;
       
-      // Direct access to the profiles table
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", userId)
-        .single();
-
-      if (error) {
-        console.error("Error fetching user profile:", error);
-        throw error;
-      }
-
-      console.log("Fetched user profile:", data);
-      
-      if (!data) {
-        throw new Error("No profile found");
+      // First try to get role from user metadata (most reliable)
+      if (currentUser.user_metadata?.role) {
+        detectedRole = currentUser.user_metadata.role as UserRole;
+        console.log("Role from user metadata:", detectedRole);
       }
       
-      setProfile(data as Profile);
-      setUserRole((data as Profile)?.role as UserRole || null);
-    } catch (error) {
-      console.error("Error fetching user profile:", error);
-      
-      // Fallback to user metadata if profile isn't available
-      if (user?.user_metadata?.role) {
-        console.log("Using role from user metadata:", user.user_metadata.role);
-        setUserRole(user.user_metadata.role as UserRole);
+      // Try to get profile from profiles table (might fail due to RLS)
+      try {
+        console.log("Attempting to fetch profile from database");
         
-        // Create a minimal profile from user metadata
-        if (user) {
-          const minimalProfile: Profile = {
-            id: user.id,
-            email: user.email || "",
-            role: user.user_metadata.role as UserRole,
-            first_name: user.user_metadata.first_name as string || null,
-            last_name: user.user_metadata.last_name as string || null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            date_of_birth: null,
-            phone: null,
-            street_address: null,
-            postal_code: null,
-            city: null,
-            country: "Germany",
-          };
-          setProfile(minimalProfile);
+        // Direct access to the profiles table
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", currentUser.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching profile from database:", error);
+          throw error;
         }
-      } else {
-        // Log the issue for debugging
-        console.error("Could not determine user role from profile or metadata");
-        toast({
-          title: "Error",
-          description: "Benutzerprofil konnte nicht vollständig geladen werden.",
-          variant: "destructive"
-        });
+
+        if (data) {
+          console.log("Fetched profile from database:", data);
+          userProfile = data as Profile;
+          
+          // Only use role from profile if we don't already have one from metadata
+          if (!detectedRole && userProfile.role) {
+            detectedRole = userProfile.role;
+            console.log("Role from profile:", detectedRole);
+          }
+        }
+      } catch (profileError) {
+        console.error("Profile fetch failed, falling back to other methods:", profileError);
+        
+        // If Supabase profiles table access fails, try the serverless function
+        try {
+          console.log("Attempting to fetch profile via serverless function");
+          const response = await supabase.functions.invoke('get-profile', {
+            body: { user_id: currentUser.id }
+          });
+          
+          if (response.error) {
+            throw new Error(response.error.message);
+          }
+          
+          if (response.data) {
+            console.log("Fetched profile via function:", response.data);
+            userProfile = response.data as Profile;
+            
+            // Only use role from profile if we don't already have one from metadata
+            if (!detectedRole && userProfile.role) {
+              detectedRole = userProfile.role;
+              console.log("Role from profile via function:", detectedRole);
+            }
+          }
+        } catch (functionError) {
+          console.error("Function profile fetch failed:", functionError);
+        }
       }
+      
+      // If we still don't have a role, use email-based detection as last resort
+      if (!detectedRole) {
+        console.log("Using email-based role detection as fallback");
+        const email = currentUser.email?.toLowerCase() || '';
+        
+        if (email.includes('admin')) {
+          detectedRole = 'admin';
+        } else if (email.includes('doctor')) {
+          detectedRole = 'doctor';
+        } else {
+          detectedRole = 'patient';
+        }
+        console.log("Role from email detection:", detectedRole);
+      }
+      
+      // Create a profile object if we don't have one
+      if (!userProfile) {
+        console.log("Creating minimal profile from available data");
+        userProfile = {
+          id: currentUser.id,
+          email: currentUser.email || "",
+          role: detectedRole,
+          first_name: currentUser.user_metadata?.first_name as string || null,
+          last_name: currentUser.user_metadata?.last_name as string || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          date_of_birth: null,
+          phone: null,
+          street_address: null,
+          postal_code: null,
+          city: null,
+          country: "Germany",
+        };
+      }
+      
+      // Always ensure the profile has a role set
+      if (userProfile && !userProfile.role && detectedRole) {
+        userProfile.role = detectedRole;
+      }
+      
+      // Update state with our findings
+      setUserRole(detectedRole);
+      setProfile(userProfile);
+      
+      console.log("Final detected role:", detectedRole);
+      console.log("Final profile:", userProfile);
+      
+    } catch (error) {
+      console.error("Error detecting user role:", error);
+      toast({
+        title: "Error",
+        description: "Benutzerprofil konnte nicht vollständig geladen werden.",
+        variant: "destructive"
+      });
+      setIsLoading(false);
     } finally {
       setIsLoading(false);
     }
@@ -133,15 +196,6 @@ export function useAuthProvider() {
       }
 
       console.log("Login successful:", data.user);
-      
-      // Fetch profile explicitly after successful login
-      if (data.user) {
-        try {
-          await fetchUserProfile(data.user.id);
-        } catch (profileError) {
-          console.error("Error fetching profile after login:", profileError);
-        }
-      }
       
       // Show success toast on successful login
       toast({

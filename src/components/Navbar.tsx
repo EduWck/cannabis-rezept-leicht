@@ -66,11 +66,14 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
+          
+          {/* Only show these two buttons */}
           <Link to="/fragebogen">
             <Button variant="default" className="ml-4">
               Rezept anfordern
             </Button>
           </Link>
+          
           {user ? (
             <Button variant="outline" className="ml-2" onClick={() => signOut()}>
               <LogOut className="mr-2 h-4 w-4" /> Logout
@@ -82,6 +85,7 @@ const Navbar = () => {
               </Button>
             </Link>
           )}
+          
           <div className="ml-2">
             <ThemeToggle />
           </div>
@@ -115,11 +119,14 @@ const Navbar = () => {
                     {link.name}
                   </Link>
                 ))}
+                
+                {/* Only show these two buttons in mobile menu too */}
                 <Link to="/fragebogen" onClick={() => setIsOpen(false)}>
                   <Button variant="default" className="w-full">
                     Rezept anfordern
                   </Button>
                 </Link>
+                
                 {user ? (
                   <Button variant="outline" className="w-full" onClick={() => {
                     signOut();

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,13 @@ const Login = () => {
   const [staffEmail, setStaffEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Set error message from location state if present
+  useEffect(() => {
+    if (location.state?.error) {
+      setErrorMessage(location.state.error);
+    }
+  }, [location.state]);
+
   // Redirect if already logged in
   useEffect(() => {
     if (!isLoading && user && userRole) {
@@ -37,15 +43,17 @@ const Login = () => {
 
   const redirectUserBasedOnRole = (role: UserRole) => {
     console.log("Redirecting based on role:", role);
-    const redirectMapping: Record<UserRole, string> = {
-      'patient': '/dashboard/profile',
-      'doctor': '/dashboard',
-      'admin': '/dashboard'
-    };
-    
-    const redirectPath = redirectMapping[role] || '/dashboard';
-    console.log("Redirecting to:", redirectPath);
-    navigate(redirectPath);
+    switch(role) {
+      case 'patient':
+        navigate('/dashboard/profile', { replace: true });
+        break;
+      case 'doctor':
+      case 'admin':
+        navigate('/dashboard', { replace: true });
+        break;
+      default:
+        navigate('/dashboard', { replace: true });
+    }
   };
 
   const clearErrors = () => {
@@ -87,10 +95,9 @@ const Login = () => {
       if (success) {
         toast({
           title: "Login successful",
-          description: "Redirecting to your dashboard..."
+          description: "Redirecting..."
         });
-        // Force redirect to profile for patient
-        navigate('/dashboard/profile');
+        // Patient redirection happens in RouteGuard or auth state change
       } else {
         setErrorMessage("Invalid verification code");
       }
@@ -109,16 +116,7 @@ const Login = () => {
     try {
       console.log("Attempting staff login with:", staffEmail);
       await signIn(staffEmail, password);
-      // Force redirect based on role
-      if (staffEmail.includes('doctor')) {
-        navigate('/dashboard');
-      } else if (staffEmail.includes('admin')) {
-        navigate('/dashboard');
-      }
-      toast({
-        title: "Login successful",
-        description: "Redirecting to dashboard..."
-      });
+      // Redirect happens automatically via auth state change and RouteGuard
     } catch (error: any) {
       console.error("Login error:", error);
       setErrorMessage(error.message || "Invalid login credentials");

@@ -31,18 +31,35 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       if (!allowedRoles || allowedRoles.length === 0 || (userRole && allowedRoles.includes(userRole))) {
         setIsAuthorized(true);
         
-        // Special handling for patient redirection
-        if (userRole === "patient" && location.pathname === "/dashboard") {
-          console.log("Patient on dashboard, redirecting to profile");
-          navigate("/dashboard/profile");
+        // Special handling for default routes based on role
+        if (location.pathname === "/dashboard") {
+          if (userRole === "patient") {
+            console.log("Patient on dashboard, redirecting to profile");
+            navigate("/dashboard/profile", { replace: true });
+          } else if (userRole === "doctor") {
+            console.log("Doctor on dashboard, showing doctor dashboard");
+            // Stay on dashboard, but authorized
+          } else if (userRole === "admin") {
+            console.log("Admin on dashboard, showing admin dashboard");
+            // Stay on dashboard, but authorized
+          }
         }
       } else {
         // User doesn't have the required role - redirect to appropriate page based on role
         console.log("User doesn't have required role, redirecting based on role");
         if (userRole === "patient") {
-          navigate("/dashboard/profile");
+          navigate("/dashboard/profile", { replace: true });
+        } else if (userRole) {
+          navigate("/dashboard", { replace: true });
         } else {
-          navigate("/dashboard");
+          // If no role is detected, redirect to login with error
+          console.log("No role detected, redirecting to login with error");
+          navigate("/login", { 
+            state: { 
+              from: location.pathname,
+              error: "Your account doesn't have sufficient permissions"
+            } 
+          });
         }
       }
     };

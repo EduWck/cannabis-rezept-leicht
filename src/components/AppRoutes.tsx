@@ -101,22 +101,20 @@ const AppRoutes = () => {
         </>
       } />
 
-      {/* Protected Dashboard Routes */}
-      <Route element={<RouteGuard />}>
-        <Route element={<DashboardLayout />}>
-          {/* Main dashboard route - handles role-based routing */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          
-          {/* Direct access routes for specific dashboards */}
-          <Route path="/dashboard/admin" element={<AdminDashboard />} />
-          <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
-          <Route path="/dashboard/patient" element={<PatientDashboard />} />
-          
-          {/* Existing patient routes */}
-          <Route path="/dashboard/profile" element={<PatientProfile />} />
-          <Route path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
-          <Route path="/dashboard/orders" element={<OrdersPage />} />
-        </Route>
+      {/* Dashboard Routes - Now directly accessible without authentication */}
+      <Route element={<DashboardLayout />}>
+        {/* Main dashboard route - handles role-based routing */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* Direct access routes for specific dashboards */}
+        <Route path="/dashboard/admin" element={<AdminDashboard />} />
+        <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
+        <Route path="/dashboard/patient" element={<PatientDashboard />} />
+        
+        {/* Existing patient routes */}
+        <Route path="/dashboard/profile" element={<PatientProfile />} />
+        <Route path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
+        <Route path="/dashboard/orders" element={<OrdersPage />} />
       </Route>
 
       {/* Catch-all route */}

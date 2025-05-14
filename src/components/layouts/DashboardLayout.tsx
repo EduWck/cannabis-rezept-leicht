@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -22,46 +22,14 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  // Effect to verify authentication is still valid
-  useEffect(() => {
-    if (!user && !isLoggingOut) {
-      console.log("No user in DashboardLayout, redirecting to login");
-      navigate("/login", { replace: true });
-    }
-  }, [user, navigate, isLoggingOut]);
-
-  const handleSignOut = async () => {
-    try {
-      setIsLoggingOut(true);
-      await signOut();
-      
-      toast({
-        title: "Erfolgreich abgemeldet",
-        description: "Sie wurden erfolgreich abgemeldet."
-      });
-      
-      // Use a small delay to ensure state updates before navigation
-      setTimeout(() => {
-        navigate("/login", { replace: true });
-      }, 100);
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Fehler beim Abmelden",
-        description: "Es gab ein Problem beim Abmelden.",
-        variant: "destructive"
-      });
-      setIsLoggingOut(false);
-    }
-  };
-
+  // Determine navigation items based on current path
   let navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Dashboard Auswahl", href: "/dashboard", icon: LayoutDashboard },
   ];
 
-  if (userRole === "patient") {
+  // Determine which navigation items to show based on current path
+  if (pathname.includes('/dashboard/patient')) {
     navigation = [
       ...navigation,
       { name: "Meine Rezepte", href: "/dashboard/prescriptions", icon: FileText },
@@ -71,7 +39,7 @@ const DashboardLayout = () => {
     ];
   }
 
-  if (userRole === "doctor") {
+  if (pathname.includes('/dashboard/doctor')) {
     navigation = [
       ...navigation,
       { name: "Behandlungsanfragen", href: "/dashboard/requests", icon: FileText },
@@ -80,7 +48,7 @@ const DashboardLayout = () => {
     ];
   }
 
-  if (userRole === "admin") {
+  if (pathname.includes('/dashboard/admin')) {
     navigation = [
       ...navigation,
       { name: "Benutzer verwalten", href: "/dashboard/users", icon: User },
@@ -90,15 +58,6 @@ const DashboardLayout = () => {
       { name: "Produkte", href: "/dashboard/products", icon: ShoppingCart },
       { name: "Einstellungen", href: "/dashboard/settings", icon: Settings },
     ];
-  }
-
-  // If no user or still logging out, show loading or empty state
-  if (!user || isLoggingOut) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <p>Überprüfe Anmeldung...</p>
-      </div>
-    );
   }
 
   return (
@@ -157,24 +116,24 @@ const DashboardLayout = () => {
             <div className="mt-auto border-t pt-4 dark:border-gray-700">
               <div className="mb-2 flex items-center">
                 <div className="h-8 w-8 rounded-full bg-cannabis-green-200 p-1 text-center font-semibold text-cannabis-green-800">
-                  {profile?.first_name?.[0] || profile?.email?.[0] || "U"}
+                  T
                 </div>
                 <div className="ml-2">
-                  <p className="text-sm font-medium">{profile?.first_name || profile?.email}</p>
-                  <p className="text-xs text-gray-500 capitalize">{userRole}</p>
+                  <p className="text-sm font-medium">Testmodus</p>
+                  <p className="text-xs text-gray-500 capitalize">
+                    {pathname.includes('/admin') ? 'Administrator' : 
+                     pathname.includes('/doctor') ? 'Arzt' : 
+                     pathname.includes('/patient') ? 'Patient' : 'Benutzer'}
+                  </p>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 className="flex w-full items-center justify-start"
-                onClick={() => {
-                  handleSignOut();
-                  setMobileMenuOpen(false);
-                }}
-                disabled={isLoggingOut}
+                onClick={() => navigate('/login')}
               >
                 <LogOut className="mr-2 h-5 w-5" />
-                Abmelden
+                Zum Login
               </Button>
             </div>
           </div>
@@ -214,21 +173,24 @@ const DashboardLayout = () => {
           <div className="border-t p-4 dark:border-gray-700">
             <div className="mb-4 flex items-center">
               <div className="h-10 w-10 rounded-full bg-cannabis-green-200 p-1 text-center font-semibold leading-8 text-cannabis-green-800">
-                {profile?.first_name?.[0] || profile?.email?.[0] || "U"}
+                T
               </div>
               <div className="ml-2">
-                <p className="font-medium">{profile?.first_name || profile?.email}</p>
-                <p className="text-sm text-gray-500 capitalize">{userRole}</p>
+                <p className="font-medium">Testmodus</p>
+                <p className="text-sm text-gray-500 capitalize">
+                  {pathname.includes('/admin') ? 'Administrator' : 
+                   pathname.includes('/doctor') ? 'Arzt' : 
+                   pathname.includes('/patient') ? 'Patient' : 'Benutzer'}
+                </p>
               </div>
             </div>
             <Button
               variant="outline"
               className="flex w-full items-center justify-center"
-              onClick={handleSignOut}
-              disabled={isLoggingOut}
+              onClick={() => navigate('/login')}
             >
               <LogOut className="mr-2 h-4 w-4" />
-              Abmelden
+              Zum Login
             </Button>
           </div>
         </div>

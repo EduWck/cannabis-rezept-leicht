@@ -12,10 +12,11 @@ type ToasterToast = ToastProps & {
   id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToasterToastActionElement;
+  action?: ToastActionElement;
 };
 
-type ToasterToastActionElement = React.ReactElement<typeof ToastActionElement>;
+// Fix: Use React.ReactElement type directly instead of referencing ToastActionElement as a value
+type ToasterToastActionElement = React.ReactElement;
 
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
@@ -193,4 +194,3 @@ function useToast() {
 }
 
 export { useToast, toast };
-

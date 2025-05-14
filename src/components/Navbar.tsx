@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Leaf, Menu, LogOut } from "lucide-react";
@@ -48,18 +49,36 @@ const userLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, userRole, signOut } = useAuth();
+  let user, userRole, signOut;
+  
+  try {
+    // Safely attempt to use the Auth context
+    const auth = useAuth();
+    user = auth.user;
+    userRole = auth.userRole;
+    signOut = auth.signOut;
+  } catch (error) {
+    // If AuthContext is not available, use fallback values
+    user = null;
+    userRole = null;
+    signOut = async () => {
+      console.error("Sign out not available - AuthContext not found");
+    };
+  }
+  
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     try {
-      await signOut();
-      toast({
-        title: "Erfolgreich abgemeldet",
-        description: "Sie wurden erfolgreich abgemeldet."
-      });
-      navigate("/login");
+      if (signOut) {
+        await signOut();
+        toast({
+          title: "Erfolgreich abgemeldet",
+          description: "Sie wurden erfolgreich abgemeldet."
+        });
+        navigate("/login");
+      }
     } catch (error) {
       console.error("Error signing out:", error);
       toast({

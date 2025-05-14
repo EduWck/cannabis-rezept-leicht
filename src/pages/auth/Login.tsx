@@ -214,6 +214,11 @@ const Login = () => {
           <p>Arzt: doctor@example.com / password</p>
           <p>Admin: admin@example.com / password</p>
         </div>
+        <div className="mt-4 text-center">
+          <Link to="/test-users" className="text-cannabis-green-600 hover:underline text-sm">
+            Testbenutzer erstellen
+          </Link>
+        </div>
       </div>
     </div>
   );

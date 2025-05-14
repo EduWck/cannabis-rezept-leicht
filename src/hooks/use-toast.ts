@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { toast } from "sonner";
+import { toast as sonnerToast, type Toast } from "sonner";
 
 export type ToastActionElement = React.ReactElement<unknown>;
 
@@ -14,7 +14,7 @@ export type ToastProps = {
 export const useToast = () => {
   const showToast = React.useCallback(
     ({ title, description, action, variant = "default" }: ToastProps) => {
-      toast(title as string, {
+      sonnerToast(title as string, {
         description: description as string,
         action: action,
         className: variant === "destructive" ? "bg-destructive text-destructive-foreground" : ""
@@ -28,5 +28,11 @@ export const useToast = () => {
   };
 };
 
-// Re-export the toast function for direct usage
-export { toast };
+// Re-export a wrapper around sonner's toast function to match our expected API
+export const toast = (props: ToastProps) => {
+  sonnerToast(props.title as string, {
+    description: props.description as string,
+    action: props.action,
+    className: props.variant === "destructive" ? "bg-destructive text-destructive-foreground" : ""
+  });
+};

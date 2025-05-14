@@ -98,10 +98,22 @@
   }
   
   .btn-secondary {
-    @apply bg-white hover:bg-gray-50 text-dark-gray font-medium py-2 px-6 rounded-md shadow-md border border-gray-200 transition-all duration-200 hover:shadow-lg;
+    @apply bg-white dark:bg-dark-gray-medium hover:bg-gray-50 dark:hover:bg-dark-gray-light text-dark-gray dark:text-white font-medium py-2 px-6 rounded-md shadow-md border border-gray-200 dark:border-dark-gray-light transition-all duration-200 hover:shadow-lg;
   }
   
   .container-padding {
     @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-container {
+    @apply pt-24 md:pt-28 px-4 md:px-6 container mx-auto min-h-screen pb-20;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold mb-2 text-dark-gray dark:text-white;
+  }
+
+  .section-subtitle {
+    @apply text-lg text-gray-600 dark:text-gray-300 mb-8;
   }
 }

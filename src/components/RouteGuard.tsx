@@ -56,6 +56,14 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         return;
       }
 
+      // Special logging for doctor accounts
+      if (user && user.email?.includes('doctor')) {
+        console.log("DOCTOR ACCOUNT DETECTED in RouteGuard");
+        console.log("Current role:", userRole);
+        console.log("Current path:", location.pathname);
+        console.log("Allowed roles:", allowedRoles);
+      }
+
       // If user exists but no role is detected, wait a bit more and show toast with error if it persists
       if (!userRole) {
         console.log("User exists but role is not detected yet");
@@ -90,6 +98,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
               if (detectedRole === 'patient') {
                 navigate(patientMainRoute, { replace: true });
               } else if (detectedRole === 'doctor') {
+                console.log("DOCTOR REDIRECT from RouteGuard fallback");
                 navigate(doctorMainRoute, { replace: true });
               } else if (detectedRole === 'admin') {
                 navigate(adminMainRoute, { replace: true });
@@ -102,7 +111,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
               });
             }
           }
-        }, 2000);
+        }, 800);
         return;
       }
 
@@ -128,6 +137,14 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
           setIsRedirecting(true);
           setRedirectCount(prev => prev + 1);
           navigate(patientMainRoute, { replace: true });
+        }
+        
+        // Special case for doctor to ensure they go to dashboard
+        if (userRole === "doctor" && location.pathname === "/" && !isRedirecting) {
+          console.log("Doctor detected on root, redirecting to dashboard");
+          setIsRedirecting(true);
+          setRedirectCount(prev => prev + 1);
+          navigate(doctorMainRoute, { replace: true });
         }
         
         return;
@@ -165,7 +182,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
     if (isRedirecting) {
       const timer = setTimeout(() => {
         setIsRedirecting(false);
-      }, 500);
+      }, 800);
       return () => clearTimeout(timer);
     }
   }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, isRedirecting, redirectCount]);

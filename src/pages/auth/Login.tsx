@@ -41,26 +41,27 @@ const Login = () => {
         description: `Sie werden als ${userRole} weitergeleitet...`
       });
       
-      // Use a timeout to ensure the state updates before redirect
+      // Increase timeout to ensure the state updates before redirect
       setTimeout(() => {
+        console.log(`REDIRECT ATTEMPT: Redirecting user with role ${userRole} to appropriate page`);
         redirectUserBasedOnRole(userRole);
-      }, 200);
+      }, 800); // Increased from 200ms to 800ms
     } 
     // Handle case when user is loaded but no role detected yet
     else if (!authIsLoading && user && !userRole && loginDetectionCount < 10) {
       setLoginDetectionCount(prev => prev + 1);
       console.log(`Benutzer authentifiziert, aber keine Rolle erkannt, Versuch ${loginDetectionCount}...`);
       
-      // After a few attempts, show a toast with info
-      if (loginDetectionCount === 2) {
+      // Show a toast earlier in the process
+      if (loginDetectionCount === 1) {
         toast({
           title: "Rolle wird erkannt",
           description: "Ihre Benutzerrolle wird ermittelt..."
         });
       }
       
-      // Try to get role from email on later attempts
-      if (loginDetectionCount === 4 && user.email) {
+      // Try to get role from email on earlier attempts
+      if (loginDetectionCount === 2 && user.email) {
         console.log("Versuche Rolle aus E-Mail zu bestimmen...");
         const email = user.email.toLowerCase();
         let detectedRole: UserRole | null = null;
@@ -80,10 +81,11 @@ const Login = () => {
             description: `Sie werden als ${detectedRole} weitergeleitet...`
           });
           
-          // Use a timeout to ensure the state updates before redirect
+          // Increased timeout to ensure the state updates before redirect
           setTimeout(() => {
+            console.log(`REDIRECT ATTEMPT from email detection: Redirecting as ${detectedRole}`);
             redirectUserBasedOnRole(detectedRole as UserRole);
-          }, 200);
+          }, 800); // Increased from 200ms to 800ms
         }
       }
     }
@@ -104,7 +106,10 @@ const Login = () => {
         <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500 mb-4" />
         <p>Sie sind bereits angemeldet. Weiterleitung...</p>
         <Button 
-          onClick={() => redirectUserBasedOnRole(userRole)} 
+          onClick={() => {
+            console.log(`Manual redirect attempt for role: ${userRole}`);
+            redirectUserBasedOnRole(userRole);
+          }} 
           className="mt-4"
         >
           Zur Übersicht

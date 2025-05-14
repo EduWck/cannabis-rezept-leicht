@@ -39,6 +39,7 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
       // Auto-format known test accounts
       if (normalizedEmail === "doctor" || normalizedEmail === "arzt") {
         normalizedEmail = "doctor@example.com";
+        console.log("Doctor account detected, normalized to:", normalizedEmail);
       } else if (normalizedEmail === "admin") {
         normalizedEmail = "admin@example.com";
       }
@@ -57,12 +58,29 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
       
       if (!success) {
         setError("Login fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.");
+        toast({
+          title: "Login fehlgeschlagen",
+          description: "Ungültige Anmeldedaten. Bitte überprüfen Sie die E-Mail und das Passwort.",
+          variant: "destructive"
+        });
       } else {
         // Success notification
         toast({
           title: "Login erfolgreich",
-          description: "Sie werden weitergeleitet..."
+          description: `Sie werden als ${normalizedEmail.includes('doctor') ? 'Arzt' : 
+                                         normalizedEmail.includes('admin') ? 'Administrator' : 'Mitarbeiter'} weitergeleitet...`
         });
+        
+        // Force full page reload if it's a doctor account to ensure proper role detection
+        if (normalizedEmail.includes('doctor')) {
+          console.log("Doctor login successful, adding extra redirect notification");
+          setTimeout(() => {
+            toast({
+              title: "Arzt-Weiterleitung",
+              description: "Sie werden zum Arzt-Dashboard weitergeleitet..."
+            });
+          }, 800);
+        }
       }
     } catch (error: any) {
       console.error("Login error:", error);

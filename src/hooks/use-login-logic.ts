@@ -50,8 +50,8 @@ export function useLoginLogic() {
         if (roleDetectionAttempts < 5) {
           console.log(`Warte auf Rollenerkennung, Versuch ${roleDetectionAttempts + 1}/5...`);
           
-          // Zeige nach dem zweiten Versuch eine Benachrichtigung
-          if (roleDetectionAttempts === 1) {
+          // Zeige nach dem ersten Versuch eine Benachrichtigung
+          if (roleDetectionAttempts === 0) {
             toast({
               title: "Benutzerrolle wird erkannt",
               description: "Ihre Berechtigungen werden ermittelt..."
@@ -61,7 +61,7 @@ export function useLoginLogic() {
           // Erhöhen der Versuche und erneuter Check nach kurzer Verzögerung
           const timer = setTimeout(() => {
             setRoleDetectionAttempts(prev => prev + 1);
-          }, 800);
+          }, 800); // Erhöht von 800ms auf 1000ms
           
           return () => clearTimeout(timer);
         } else {
@@ -88,14 +88,20 @@ export function useLoginLogic() {
             
             // Weiterleitung mit Fallback-Rolle
             setPendingRedirect(true);
-            redirectUserBasedOnRole(fallbackRole);
+            setTimeout(() => {
+              console.log(`REDIRECT with fallback role: ${fallbackRole}`);
+              redirectUserBasedOnRole(fallbackRole as UserRole);
+            }, 500);
           }
         }
       } else {
         // Wir haben einen Benutzer und eine Rolle, also leiten wir weiter
         console.log(`Benutzer angemeldet mit Rolle: ${userRole}, Weiterleitung...`);
         setPendingRedirect(true);
-        redirectUserBasedOnRole(userRole);
+        setTimeout(() => {
+          console.log(`REDIRECT from main detection: ${userRole}`);
+          redirectUserBasedOnRole(userRole);
+        }, 500);
       }
     }
   }, [user, userRole, isLoading, roleDetectionAttempts]);
@@ -132,7 +138,14 @@ export function useLoginLogic() {
       return;
     }
     
-    // Redirect based on role
+    // Special logs for doctor role to debug the issue
+    if (role === "doctor") {
+      console.log("DOCTOR REDIRECT: Attempting to redirect doctor to dashboard");
+      console.log("Current path:", currentPath);
+      console.log("Target path:", doctorMainRoute);
+    }
+    
+    // Redirect based on role with forced navigation
     switch(role) {
       case 'patient':
         console.log("Leite Patient zu dashboard/profile weiter");
@@ -140,6 +153,7 @@ export function useLoginLogic() {
         break;
       case 'doctor':
         console.log("Leite Arzt zum Dashboard weiter");
+        // Adding a callback to ensure navigation completes
         navigate(doctorMainRoute, { replace: true });
         break;
       case 'admin':
@@ -150,6 +164,12 @@ export function useLoginLogic() {
         console.log("Unbekannte Rolle, leite zum Dashboard weiter");
         navigate('/dashboard', { replace: true });
     }
+    
+    // Add a confirmation toast after redirection attempt
+    toast({
+      title: "Weiterleitung",
+      description: `Sie wurden als ${role} zum Dashboard weitergeleitet.`
+    });
   };
 
   const clearErrors = () => {

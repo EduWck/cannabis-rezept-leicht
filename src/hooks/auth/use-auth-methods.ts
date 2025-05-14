@@ -71,9 +71,17 @@ export function useAuthMethods() {
         throw error;
       }
       console.log("Logout successful");
-      // Note: We don't show toast here as the component calling this should handle it
+      toast({
+        title: "Abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet."
+      });
     } catch (error: any) {
       console.error("Unexpected logout error:", error.message);
+      toast({
+        title: "Fehler beim Abmelden",
+        description: error.message || "Ein unerwarteter Fehler ist aufgetreten.",
+        variant: "destructive"
+      });
       throw error;
     } finally {
       setIsProcessing(false);
@@ -148,7 +156,6 @@ export function useAuthMethods() {
   
   /**
    * Verify login code for passwordless login
-   * This function now handles the complete login process after verification
    */
   const verifyLoginCode = async (email: string, code: string): Promise<boolean> => {
     try {
@@ -183,55 +190,55 @@ export function useAuthMethods() {
       // Log the full response for debugging
       console.log("Verification response:", response.data);
       
-      // Step 2: If verification was successful and we received a magic link, use it
-      if (response.data?.success && response.data?.magicLink) {
-        console.log("Code verification successful. Using magic link for: ", response.data.email);
-        
-        // Show success message to the user
+      if (!response.data?.success) {
+        console.error("Verification failed without specific error:", response.data);
         toast({
-          title: "Code bestätigt", 
-          description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
+          title: "Verifizierung fehlgeschlagen", 
+          description: "Der Code konnte nicht verifiziert werden.", 
+          variant: "destructive"
         });
-        
-        try {
-          // Try to sign in directly with email OTP
-          console.log("Attempting direct signin with email OTP");
-          const { error: otpError } = await supabase.auth.signInWithOtp({
-            email: email.trim(),
-            options: {
-              shouldCreateUser: true,
-              data: {
-                role: response.data.role || 'patient'
-              }
-            }
-          });
-          
-          if (otpError) {
-            console.error("Error with direct OTP signin:", otpError);
-            // Fall back to using the magic link
-            window.location.href = response.data.magicLink;
-            return true; // We're redirecting the user, so return true
-          }
-          
-          console.log("OTP signin initiated successfully");
-          return true;
-        } catch (signInError) {
-          console.error("Error during direct signin attempt:", signInError);
-          // Fall back to using the magic link
-          window.location.href = response.data.magicLink;
-          return true; // We're redirecting the user, so return true
-        }
+        return false;
       }
       
-      // If we reach here, something unexpected happened with the response format
-      console.error("Unexpected response format:", response.data);
+      // Show success message to the user
       toast({
-        title: "Unerwartete Antwort", 
-        description: "Die Bestätigung war erfolgreich, aber die Anmeldung konnte nicht abgeschlossen werden.", 
-        variant: "destructive"
+        title: "Code bestätigt", 
+        description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
       });
-      return false;
       
+      // Step 2: If verification was successful and we received a magic link, use it
+      if (response.data?.magicLink) {
+        console.log("Received magic link, redirecting to:", response.data.magicLink);
+        window.location.href = response.data.magicLink;
+        return true;
+      }
+      
+      // Try to sign in directly with email OTP as a backup method
+      try {
+        console.log("Attempting direct signin with email OTP");
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+          email: email.trim(),
+          options: {
+            shouldCreateUser: true,
+            data: {
+              role: response.data?.role || 'patient'
+            }
+          }
+        });
+        
+        if (otpError) {
+          console.error("Error with direct OTP signin:", otpError);
+          // Don't show error to user as we're already redirected to magic link
+          return true;
+        }
+        
+        console.log("OTP signin initiated successfully");
+        return true;
+      } catch (signInError) {
+        console.error("Error during direct signin attempt:", signInError);
+        // Don't consider this a failure since we'll try other methods
+        return true;
+      }
     } catch (error: any) {
       console.error("Error verifying code:", error);
       toast({

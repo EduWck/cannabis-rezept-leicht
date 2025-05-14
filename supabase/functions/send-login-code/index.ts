@@ -33,9 +33,6 @@ serve(async (req) => {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Code valid for 15 minutes
     
-    // Store the code - removed validation against profiles as it's not necessary
-    // and can cause issues with new users
-    
     // Delete any existing codes for this email
     await supabase
       .from("auth_codes")
@@ -43,13 +40,21 @@ serve(async (req) => {
       .eq("email", email);
     
     // Insert the new code
-    await supabase
+    const { error: insertError } = await supabase
       .from("auth_codes")
       .insert({
         email,
         code,
         expires_at: expiresAt.toISOString(),
       });
+
+    if (insertError) {
+      console.error("Error inserting auth code:", insertError);
+      return new Response(
+        JSON.stringify({ error: "Failed to create login code" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
     
     // In a real app, you would send an actual email here
     // For now, we'll just log the code
@@ -69,7 +74,7 @@ serve(async (req) => {
     console.error("Error sending login code:", error);
     
     return new Response(
-      JSON.stringify({ error: "Failed to send login code" }),
+      JSON.stringify({ error: typeof error === 'object' && error.message ? error.message : "Failed to send login code" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

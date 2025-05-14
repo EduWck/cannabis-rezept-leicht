@@ -1,31 +1,30 @@
 
 import * as React from "react";
-import { toast as sonnerToast, type ToastT } from "sonner";
+import { toast as sonnerToast, type Toast } from "sonner";
 
 export type ToastActionElement = React.ReactElement<unknown>;
 
-export type ToastProps = {
-  id?: string;
+export interface ToastProps {
   title?: React.ReactNode;
   description?: React.ReactNode;
   action?: ToastActionElement;
   variant?: "default" | "destructive";
-};
+  duration?: number;
+}
 
 export function useToast() {
   return {
-    toast: (props: ToastProps) => toast(props),
+    toast,
     dismiss: sonnerToast.dismiss,
   };
 }
 
 export const toast = ({ title, description, variant, action, ...props }: ToastProps) => {
-  // Sonner expects options differently structured than our ToastProps
-  // We need to pass title as first arg, and other properties as second arg (options)
+  // Correctly use sonner toast API
   return sonnerToast(title as string, {
     description,
     action,
+    duration: props.duration,
     className: variant === "destructive" ? "bg-destructive text-destructive-foreground" : undefined,
-    ...props,
   });
 };

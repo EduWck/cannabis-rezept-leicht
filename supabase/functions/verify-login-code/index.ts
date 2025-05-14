@@ -68,7 +68,6 @@ serve(async (req) => {
     console.log(`Determined role for ${email}: ${userRole}`);
     
     // Check if user exists
-    let userData;
     const { data: existingUser, error: userError } = await supabase.auth
       .admin.listUsers({ filter: `email eq "${email}"` });
       
@@ -76,6 +75,8 @@ serve(async (req) => {
       console.error("Error checking for existing user:", userError);
       throw new Error(`Failed to check for existing user: ${userError.message}`);
     }
+    
+    let userData;
     
     if (!existingUser || existingUser.users.length === 0) {
       // User doesn't exist, create a new user
@@ -167,7 +168,10 @@ serve(async (req) => {
       type: "magiclink",
       email: email,
       options: {
-        redirectTo: `${new URL(req.url).origin}/login` // Add callback parameter
+        redirectTo: `${new URL(req.url).origin}/login`, // Add callback parameter
+        data: {
+          role: userRole
+        }
       }
     });
     

@@ -65,7 +65,7 @@ export function useRoleDetection() {
           console.log("No profile found in database, will create minimal profile");
         }
       } catch (profileError) {
-        console.error("Profile fetch failed, falling back to other methods:", profileError);
+        console.error("Profile fetch failed, falling back to serverless function:", profileError);
         
         // If Supabase profiles table access fails, try the serverless function
         try {

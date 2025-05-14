@@ -37,14 +37,18 @@ export function useLoginLogic() {
     handleHashParams();
   }, []);
 
-  // Redirect if already logged in
+  // Redirect if already logged in (with debounce to prevent loops)
   useEffect(() => {
+    // Avoid redirect check if we're already processing a redirect
     if (pendingRedirect) {
-      return; // Don't check redirects if we already have one pending
+      return;
     }
     
+    // Only redirect if auth state is fully loaded and we have a user with a role
     if (!isLoading && user && userRole) {
       console.log("User is logged in, redirecting based on role:", userRole);
+      
+      // Set flag to prevent multiple redirects
       setPendingRedirect(true);
       
       // Use timeout to ensure state updates complete first
@@ -54,40 +58,58 @@ export function useLoginLogic() {
     }
   }, [user, userRole, isLoading, pendingRedirect]);
 
+  // Helper function to redirect users based on their role
   const redirectUserBasedOnRole = (role: UserRole) => {
     console.log("Redirecting based on role:", role);
     
-    // Prevent dashboard redirect loop for admin users
-    if (location.pathname === "/dashboard" && role === "admin") {
-      console.log("Admin already on dashboard, not redirecting");
+    // Check if already on the correct page to prevent redirect loops
+    const currentPath = location.pathname;
+    
+    // Define main routes for each role
+    const patientMainRoute = "/dashboard/profile";
+    const doctorMainRoute = "/dashboard";
+    const adminMainRoute = "/dashboard";
+    
+    // Check if already on the correct route for role
+    if (
+      (role === "patient" && currentPath === patientMainRoute) ||
+      (role === "doctor" && currentPath === doctorMainRoute) ||
+      (role === "admin" && currentPath === adminMainRoute)
+    ) {
+      console.log("Already on correct route for role, no redirect needed");
       setPendingRedirect(false);
       return;
     }
     
-    // Prevent dashboard/profile redirect loop for patient users
-    if (location.pathname === "/dashboard/profile" && role === "patient") {
-      console.log("Patient already on profile, not redirecting");
-      setPendingRedirect(false);
+    // If we're already on the dashboard base path but need to be on a specific path
+    if (currentPath === "/dashboard" && role === "patient") {
+      console.log("Patient on main dashboard, redirecting to profile");
+      navigate(patientMainRoute, { replace: true });
+      
+      // Reset pending redirect flag after short delay
+      setTimeout(() => {
+        setPendingRedirect(false);
+      }, 200);
       return;
     }
     
+    // Redirect based on role
     switch(role) {
       case 'patient':
         console.log("Redirecting patient to dashboard/profile");
-        navigate('/dashboard/profile', { replace: true });
+        navigate(patientMainRoute, { replace: true });
         break;
       case 'doctor':
         console.log("Redirecting doctor to dashboard");
-        navigate('/dashboard', { replace: true });
+        navigate(doctorMainRoute, { replace: true });
         break;
       case 'admin':
         console.log("Redirecting admin to dashboard");
-        navigate('/dashboard', { replace: true });
+        navigate(adminMainRoute, { replace: true });
         break;
       default:
         console.log("Unknown role, redirecting to dashboard");
         navigate('/dashboard', { replace: true });
-        break;
     }
     
     // Reset pending redirect flag after navigation

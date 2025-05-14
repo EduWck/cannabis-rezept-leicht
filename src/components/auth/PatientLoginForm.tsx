@@ -68,6 +68,7 @@ export const PatientLoginForm = ({
       if (result.success) {
         setCodeSent(true);
         setCooldown(COOLDOWN_TIME);
+        
         // For demo purposes, auto-fill the code if provided by the function
         if (result.code) {
           setCode(result.code);
@@ -201,6 +202,7 @@ export const PatientLoginForm = ({
                 type="button"
                 onClick={() => {
                   setCodeSent(false);
+                  setCode("");
                   setVerificationAttempted(false);
                 }}
                 className="px-0 text-sm"

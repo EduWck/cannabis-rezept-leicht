@@ -19,7 +19,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    // If we're already in a redirection process, don't check again
+    // Prevent checking auth if we're in the middle of a redirect
     if (isRedirecting) {
       return;
     }
@@ -55,68 +55,61 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         return;
       }
 
-      // Key routes for each role
+      // Define main routes for each role to avoid loops
       const patientMainRoute = "/dashboard/profile";
       const doctorMainRoute = "/dashboard";
       const adminMainRoute = "/dashboard";
 
-      // If already on the correct main route for role, don't redirect (prevents loops)
-      if (
-        (userRole === "patient" && location.pathname === patientMainRoute) ||
-        (userRole === "doctor" && location.pathname === doctorMainRoute) ||
-        (userRole === "admin" && location.pathname === adminMainRoute)
-      ) {
-        console.log(`User already on correct main route for role ${userRole}: ${location.pathname}`);
-        setIsAuthorized(true);
-        return;
-      }
+      // If no roles are specified or user's role is in the allowed roles, authorize access
+      const noRolesSpecified = !allowedRoles || allowedRoles.length === 0;
+      const userHasAllowedRole = allowedRoles?.includes(userRole);
       
-      // Patient redirection - If user is a patient and on main dashboard, redirect to profile
-      if (userRole === "patient" && location.pathname === "/dashboard") {
-        console.log("Patient detected on dashboard, redirecting to profile");
-        setIsRedirecting(true);
-        navigate(patientMainRoute, { replace: true });
-        return;
-      }
-      
-      // Check if user has permission for this route
-      if (!allowedRoles || allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
+      if (noRolesSpecified || userHasAllowedRole) {
         console.log(`User authorized with role: ${userRole}`);
         setIsAuthorized(true);
-      } else {
-        console.log(`User role ${userRole} not authorized for this route`);
         
-        // Redirect based on role, but avoid redirection loops
-        setIsRedirecting(true);
-        if (userRole === "patient") {
-          console.log("Patient redirected to profile");
+        // Special case: If patient is on main dashboard, redirect to profile
+        if (userRole === "patient" && location.pathname === "/dashboard") {
+          console.log("Patient detected on dashboard, redirecting to profile");
+          setIsRedirecting(true);
           navigate(patientMainRoute, { replace: true });
-        } else if (userRole === "doctor") {
-          console.log("Doctor redirected to dashboard");
-          navigate(doctorMainRoute, { replace: true });
-        } else if (userRole === "admin") {
-          console.log("Admin redirected to dashboard");
-          navigate(adminMainRoute, { replace: true });
-        } else {
-          // Fallback for unknown roles
-          console.log("Unknown role, redirecting to login");
-          toast({
-            title: "Zugriff verweigert", 
-            description: "Ihr Konto hat nicht die erforderlichen Berechtigungen.", 
-            variant: "destructive"
-          });
-          navigate("/login");
         }
+        
+        return;
+      }
+      
+      // User does not have permission for this route, redirect based on role
+      console.log(`User role ${userRole} not authorized for this route`);
+      setIsRedirecting(true);
+      
+      if (userRole === "patient") {
+        console.log("Patient redirected to profile");
+        navigate(patientMainRoute, { replace: true });
+      } else if (userRole === "doctor") {
+        console.log("Doctor redirected to dashboard");
+        navigate(doctorMainRoute, { replace: true });
+      } else if (userRole === "admin") {
+        console.log("Admin redirected to dashboard");
+        navigate(adminMainRoute, { replace: true });
+      } else {
+        // Fallback for unknown roles
+        console.log("Unknown role, redirecting to login");
+        toast({
+          title: "Zugriff verweigert", 
+          description: "Ihr Konto hat nicht die erforderlichen Berechtigungen.", 
+          variant: "destructive"
+        });
+        navigate("/login");
       }
     };
 
     checkAuthorization();
     
-    // Reset redirection flag after a short delay
+    // Reset redirection flag after a short delay if it was set
     if (isRedirecting) {
       const timer = setTimeout(() => {
         setIsRedirecting(false);
-      }, 500); // Wait 500ms before allowing new redirects
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, isRedirecting]);

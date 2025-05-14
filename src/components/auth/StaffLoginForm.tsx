@@ -38,6 +38,17 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
       
       if (!success) {
         setError("Login fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.");
+        toast({
+          title: "Login fehlgeschlagen",
+          description: "Bitte überprüfen Sie Ihre Anmeldedaten.",
+          variant: "destructive"
+        });
+      } else {
+        // Success notification
+        toast({
+          title: "Login erfolgreich",
+          description: "Sie werden weitergeleitet..."
+        });
       }
     } catch (error: any) {
       console.error("Login error:", error);

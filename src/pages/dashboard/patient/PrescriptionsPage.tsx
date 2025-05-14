@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,43 +8,33 @@ import { Prescription } from "@/types";
 import { Loader2, FileText, Download, AlertTriangle, CheckCircle, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
+import { useDbQuery } from "@/hooks/use-database";
 
 const PrescriptionsPage = () => {
   const { user } = useAuth();
-  const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, data: prescriptions, executeQuery } = useDbQuery<Prescription>();
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
       if (!user?.id) return;
       
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
+      await executeQuery(
+        () => supabase
           .from("prescriptions")
           .select("*")
-          .eq("patient_id", user.id);
-          
-        if (error) throw error;
-        
-        setPrescriptions(data || []);
-      } catch (error) {
-        console.error("Error fetching prescriptions:", error);
-        toast({
-          title: "Fehler",
-          description: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
+          .eq("patient_id", user.id),
+        {
+          errorTitle: "Fehler",
+          errorMessage: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+        }
+      );
     };
     
     if (user?.id) {
       fetchPrescriptions();
     }
-  }, [user]);
+  }, [user, executeQuery]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,21 +9,20 @@ import { Loader2, ShoppingCart, PackageOpen, Truck, Check, AlertCircle, FileText
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { TableHead, TableHeader } from "@/components/ui/table";
+import { useDbQuery } from "@/hooks/use-database";
 
 const OrdersPage = () => {
   const { user } = useAuth();
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { loading, data: orders, executeQuery } = useDbQuery<Order & { prescription?: { id: string; symptoms: string[] | null } }>();
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user?.id) return;
       
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
+      await executeQuery(
+        () => supabase
           .from("orders")
           .select(`
             *,
@@ -32,27 +32,18 @@ const OrdersPage = () => {
             )
           `)
           .eq("patient_id", user.id)
-          .order("created_at", { ascending: false });
-          
-        if (error) throw error;
-        
-        setOrders(data || []);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-        toast({
-          title: "Fehler",
-          description: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-          variant: "destructive"
-        });
-      } finally {
-        setLoading(false);
-      }
+          .order("created_at", { ascending: false }),
+        {
+          errorTitle: "Fehler",
+          errorMessage: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+        }
+      );
     };
     
     if (user?.id) {
       fetchOrders();
     }
-  }, [user]);
+  }, [user, executeQuery]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

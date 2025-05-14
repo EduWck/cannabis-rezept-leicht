@@ -1,24 +1,11 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { UserRole, Profile } from "@/types";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
-type AuthContextType = {
-  session: Session | null;
-  user: User | null;
-  profile: Profile | null;
-  userRole: UserRole | null;
-  isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  requestLoginCode: (email: string) => Promise<{ success: boolean; code?: string }>;
-  verifyLoginCode: (email: string, code: string) => Promise<boolean>;
-};
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function useAuthProvider() {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -68,8 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // Fix: Use proper type parameters for supabase.rpc
-      // The second parameter must be compatible with the RPC function's input parameters
+      // We'll try first with a direct select without using RLS
+      // This is a workaround for the infinite recursion in RLS policy
       const { data: adminData, error: adminError } = await supabase.rpc(
         'get_profile_by_id',
         { user_id: userId }
@@ -250,29 +237,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        session,
-        user,
-        profile,
-        userRole,
-        isLoading,
-        signIn,
-        signOut,
-        requestLoginCode,
-        verifyLoginCode,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  return {
+    session,
+    user,
+    profile,
+    userRole,
+    isLoading,
+    signIn,
+    signOut,
+    requestLoginCode,
+    verifyLoginCode,
+  };
 }
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};

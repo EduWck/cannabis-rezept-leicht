@@ -55,10 +55,11 @@ serve(async (req) => {
     
     // Determine user role based on email address
     let userRole = 'patient';
-    if (email.includes('doctor')) {
+    const normalizedEmail = email.toLowerCase();
+    if (normalizedEmail.includes('doctor')) {
       userRole = 'doctor';
       console.log(`Setting doctor role for: ${email}`);
-    } else if (email.includes('admin')) {
+    } else if (normalizedEmail.includes('admin')) {
       userRole = 'admin';
       console.log(`Setting admin role for: ${email}`);
     } else {
@@ -163,9 +164,9 @@ serve(async (req) => {
     
     console.log("Deleted auth code after successful verification");
     
-    // First, sign the user in directly with email/password (for doctor and admin)
+    // For doctor and admin users, set password to allow login with email/password
     if (userRole === 'doctor' || userRole === 'admin') {
-      // Generate a secure password for admin/doctor accounts
+      // Generate a secure temporary password for admin/doctor accounts
       const tempPassword = Math.random().toString(36).slice(-8);
       
       // Set the password for the user to enable password login
@@ -181,7 +182,7 @@ serve(async (req) => {
       }
     }
     
-    // Create a magic sign in link for all users
+    // Create a magic sign in link for the user
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: email,

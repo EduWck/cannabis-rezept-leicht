@@ -8,6 +8,7 @@ import { PatientLoginForm } from "@/components/auth/PatientLoginForm";
 import { StaffLoginForm } from "@/components/auth/StaffLoginForm";
 import { DemoAccountsInfo } from "@/components/auth/DemoAccountsInfo";
 import { useLoginLogic } from "@/hooks/use-login-logic";
+import { useEffect } from "react";
 
 const Login = () => {
   const { 
@@ -23,6 +24,14 @@ const Login = () => {
     verifyLoginCode,
     redirectUserBasedOnRole
   } = useLoginLogic();
+
+  // Effect to redirect user when authenticated
+  useEffect(() => {
+    if (!authIsLoading && user && userRole) {
+      console.log(`User authenticated with role: ${userRole}, redirecting...`);
+      redirectUserBasedOnRole(userRole);
+    }
+  }, [authIsLoading, user, userRole, redirectUserBasedOnRole]);
 
   // If already loaded and authenticated, don't show login form
   if (!authIsLoading && user && userRole) {

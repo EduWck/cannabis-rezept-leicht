@@ -12,27 +12,26 @@ export type ToastProps = {
 };
 
 export const useToast = () => {
-  const showToast = React.useCallback(
-    ({ title, description, action, variant = "default" }: ToastProps) => {
-      sonnerToast(title as string, {
-        description: description as string,
-        action: action,
-        className: variant === "destructive" ? "bg-destructive text-destructive-foreground" : ""
+  return {
+    toast: (props: ToastProps) => {
+      const { title, description, variant, action } = props;
+      
+      return sonnerToast(title as string, {
+        description,
+        action,
+        className: variant === "destructive" ? "destructive" : undefined,
       });
     },
-    []
-  );
-
-  return {
-    toast: showToast,
+    dismiss: sonnerToast.dismiss,
   };
 };
 
-// Re-export a wrapper around sonner's toast function to match our expected API
 export const toast = (props: ToastProps) => {
-  sonnerToast(props.title as string, {
-    description: props.description as string,
-    action: props.action,
-    className: props.variant === "destructive" ? "bg-destructive text-destructive-foreground" : ""
+  const { title, description, variant, action } = props;
+  
+  return sonnerToast(title as string, {
+    description,
+    action,
+    className: variant === "destructive" ? "destructive" : undefined,
   });
 };

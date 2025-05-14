@@ -218,7 +218,7 @@ export function useAuthMethods() {
         return true;
       }
       
-      // Try to sign in directly with email OTP as a backup method
+      // If no magic link was provided, try with email OTP as a backup
       try {
         console.log("Attempting direct signin with email OTP");
         const { error: otpError } = await supabase.auth.signInWithOtp({
@@ -233,7 +233,7 @@ export function useAuthMethods() {
         
         if (otpError) {
           console.error("Error with direct OTP signin:", otpError);
-          // Don't show error to user as we're already redirected to magic link
+          // Don't show error to user as we're already redirecting to magic link
           return true;
         }
         

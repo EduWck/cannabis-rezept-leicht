@@ -3,7 +3,6 @@ import { User } from "@supabase/supabase-js";
 import { useState } from "react";
 import { UserRole, Profile } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
 export function useRoleDetection() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);

@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { useToast as useToastPrimitive } from "@/components/ui/use-toast";
+import { toast as sonnerToast } from "sonner";
 
 export type ToastActionElement = React.ReactElement<unknown>;
 
@@ -13,16 +13,17 @@ export type ToastProps = {
 };
 
 export function useToast() {
-  return useToastPrimitive();
+  return {
+    toast: (props: ToastProps) => toast(props),
+    dismiss: sonnerToast.dismiss,
+  };
 }
 
 export const toast = ({ title, description, variant, action, ...props }: ToastProps) => {
-  const { toast } = useToastPrimitive();
-  
-  return toast({
+  return sonnerToast({
     title,
     description,
-    variant,
+    className: variant === "destructive" ? "bg-destructive text-destructive-foreground" : undefined,
     action,
     ...props,
   });

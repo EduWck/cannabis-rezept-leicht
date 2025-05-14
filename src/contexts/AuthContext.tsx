@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,7 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // We'll try first with a direct select without using RLS
       // This is a workaround for the infinite recursion in RLS policy
-      const { data: adminData, error: adminError } = await supabase.rpc(
+      const { data: adminData, error: adminError } = await supabase.rpc<Profile>(
         'get_profile_by_id',
         { user_id: userId }
       );
@@ -78,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!adminError && adminData) {
         console.log("Fetched user profile via RPC:", adminData);
         setProfile(adminData);
-        setUserRole(adminData?.role as UserRole || null);
+        setUserRole(adminData.role as UserRole || null);
         return;
       }
       

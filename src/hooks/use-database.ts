@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PostgrestResponse } from "@supabase/supabase-js";
 
 interface UseDbQueryOptions<T> {
   errorTitle?: string;
@@ -15,7 +15,7 @@ export function useDbQuery<T>() {
   const { toast } = useToast();
 
   const executeQuery = async (
-    queryFn: () => Promise<{ data: T[] | null; error: any }>,
+    queryFn: () => Promise<PostgrestResponse<T>>,
     options: UseDbQueryOptions<T> = {}
   ) => {
     const { 

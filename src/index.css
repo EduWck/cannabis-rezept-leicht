@@ -36,45 +36,52 @@
     --ring: 142 70% 45%;
 
     --radius: 1rem;
+
+    /* Gradient Colors */
+    --gradient-start: 142 70% 85%;
+    --gradient-end: 180 70% 85%;
+    
+    /* Background Accents */
+    --bg-accent-1: 210 100% 97%;
+    --bg-accent-2: 142 60% 97%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 222.2 24% 10%; /* Lightened dark mode background */
+    --foreground: 210 40% 98%; /* Improved contrast for text */
 
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 20% 12%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 24% 10%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 142 70% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217.2 18% 24%; /* Lightened secondary */
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217.2 20% 24%; /* Lightened muted background */
+    --muted-foreground: 215 20.2% 75%; /* More visible muted text */
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 217.2 18% 32%; /* More visible accent */
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 40.6%; /* More visible destructive */
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
+    --border: 217.2 20% 24%; /* More visible border */
+    --input: 217.2 20% 24%;
     --ring: 142 70% 45%;
 
-    --sidebar-background: 222.2 84% 4.9%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 142 70% 45%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 217.2 32.6% 17.5%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217.2 32.6% 22.5%;
-    --sidebar-ring: 142 70% 45%;
+    /* Gradient Colors for Dark Mode */
+    --gradient-start: 142 40% 30%;
+    --gradient-end: 200 40% 30%;
+    
+    /* Background Accents for Dark Mode */
+    --bg-accent-1: 222 30% 18%;
+    --bg-accent-2: 142 30% 20%;
   }
 }
 
@@ -89,6 +96,40 @@
 
   body {
     @apply bg-background text-foreground font-sans transition-colors duration-300;
+  }
+  
+  /* Dynamic background elements */
+  .bg-blob {
+    @apply absolute blur-3xl opacity-10 dark:opacity-[0.03] rounded-full;
+    animation: blob-bounce 25s infinite ease-in-out alternate;
+  }
+  
+  @keyframes blob-bounce {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(5%, 10%) scale(1.1); }
+    66% { transform: translate(-5%, 5%) scale(0.9); }
+    100% { transform: translate(0, 0) scale(1); }
+  }
+  
+  /* Floating animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+  }
+  
+  /* Pulse animation */
+  .pulse-slow {
+    animation: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .7; }
   }
   
   /* Scroll animations */
@@ -134,18 +175,23 @@
     @apply text-lg text-gray-600 dark:text-gray-300 mb-8;
   }
   
-  /* Glass morphism effects */
+  /* Glass morphism effects - improved for dark mode */
   .glass {
     @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg;
   }
   
   .dark .glass {
-    @apply bg-black/20 backdrop-blur-lg border border-white/10 rounded-2xl shadow-lg;
+    @apply bg-gray-900/30 backdrop-blur-lg border border-gray-800/30 rounded-2xl shadow-lg;
   }
   
-  /* Card styles */
+  /* Card styles with better dark mode */
   .modern-card {
-    @apply rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-dark-gray p-6 shadow-sm transition-all duration-300 hover:shadow-md;
+    @apply rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm transition-all duration-300 hover:shadow-md;
+  }
+  
+  /* Gradient backgrounds */
+  .bg-gradient-primary {
+    @apply bg-gradient-to-br from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))];
   }
   
   /* Animations */

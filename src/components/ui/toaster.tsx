@@ -14,8 +14,8 @@ export function Toaster() {
       className="toaster group"
       toastOptions={{
         classNames: {
-          toast: "group toast group-[.toaster]:bg-white dark:group-[.toaster]:bg-gray-800 group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
-          title: "group-[.toast]:text-gray-800 dark:group-[.toast]:text-white text-base font-semibold",
+          toast: "group toast group-[.toaster]:bg-white dark:group-[.toaster]:bg-gray-900 group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+          title: "group-[.toast]:text-gray-800 dark:group-[.toast]:text-gray-100 text-base font-semibold",
           description: "group-[.toast]:text-gray-600 dark:group-[.toast]:text-gray-300 text-sm",
           actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",

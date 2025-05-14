@@ -2,6 +2,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Button } from '@/components/ui/button';
 
 type Theme = 'light' | 'dark';
 
@@ -56,10 +57,14 @@ export const ThemeToggle = () => {
   const { theme, toggleTheme } = useTheme();
   
   return (
-    <div className="flex items-center gap-2">
-      <SunIcon size={18} className={`${theme === 'light' ? 'text-cannabis-green-500' : 'text-gray-400 dark:text-gray-500'}`} />
-      <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
-      <MoonIcon size={18} className={`${theme === 'dark' ? 'text-cannabis-green-500' : 'text-gray-400 dark:text-gray-500'}`} />
+    <div className="flex items-center gap-2 bg-secondary/50 dark:bg-gray-800/50 p-2 rounded-full backdrop-blur-sm transition-all duration-300">
+      <SunIcon size={18} className={`transition-colors duration-300 ${theme === 'light' ? 'text-cannabis-green-500' : 'text-gray-400 dark:text-gray-500'}`} />
+      <Switch 
+        checked={theme === 'dark'} 
+        onCheckedChange={toggleTheme} 
+        className="data-[state=checked]:bg-cannabis-green-500"
+      />
+      <MoonIcon size={18} className={`transition-colors duration-300 ${theme === 'dark' ? 'text-cannabis-green-500' : 'text-gray-400 dark:text-gray-500'}`} />
     </div>
   );
 };

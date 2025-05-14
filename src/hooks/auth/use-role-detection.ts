@@ -16,31 +16,31 @@ export function useRoleDetection() {
       let detectedRole: UserRole | null = null;
       let userProfile: Profile | null = null;
       
-      // PRIORITÄT 1: E-Mail - zuverlässigste Methode für Testkonten
+      // PRIORITY 1: Email - most reliable method for test accounts
       const email = currentUser.email?.toLowerCase() || '';
       
       if (email.includes('admin')) {
         detectedRole = 'admin';
-        console.log("⭐ HÖCHSTE PRIORITÄT: Rolle aus E-Mail erkannt: admin");
+        console.log("⭐ HIGHEST PRIORITY: Role detected from email: admin");
       } else if (email.includes('doctor') || email.includes('arzt')) {
         detectedRole = 'doctor';
-        console.log("⭐ HÖCHSTE PRIORITÄT: Rolle aus E-Mail erkannt: doctor");
+        console.log("⭐ HIGHEST PRIORITY: Role detected from email: doctor");
       } else if (email.includes('patient') || email.includes('patien')) {
         detectedRole = 'patient';
-        console.log("⭐ HÖCHSTE PRIORITÄT: Rolle aus E-Mail erkannt: patient");
+        console.log("⭐ HIGHEST PRIORITY: Role detected from email: patient");
       }
       
-      console.log("E-Mail-basierte Rollenerkennung: ", detectedRole);
+      console.log("Email-based role detection: ", detectedRole);
       
-      // PRIORITÄT 2: Benutzer-Metadaten prüfen
+      // PRIORITY 2: Check user metadata
       if (!detectedRole && currentUser.user_metadata?.role) {
         detectedRole = currentUser.user_metadata.role as UserRole;
-        console.log("Rolle aus Benutzer-Metadaten:", detectedRole);
+        console.log("Role from user metadata:", detectedRole);
       }
       
-      // PRIORITÄT 3: Profil in Datenbank prüfen
+      // PRIORITY 3: Check profile in database
       try {
-        console.log("Hole Profil aus der Datenbank");
+        console.log("Fetching profile from database");
         
         const { data, error } = await supabase
           .from("profiles")
@@ -49,27 +49,27 @@ export function useRoleDetection() {
           .maybeSingle();
 
         if (error) {
-          console.error("Fehler beim Abrufen des Profils aus der Datenbank:", error);
+          console.error("Error fetching profile from database:", error);
           throw error;
         }
 
         if (data) {
-          console.log("Profil aus Datenbank gefunden:", data);
+          console.log("Profile found in database:", data);
           userProfile = data as Profile;
           
-          // Wenn wir noch keine Rolle haben, verwende die aus dem Profil
+          // If we still don't have a role, use the one from the profile
           if (!detectedRole && userProfile.role) {
             detectedRole = userProfile.role;
-            console.log("Rolle aus Datenbank-Profil:", detectedRole);
+            console.log("Role from database profile:", detectedRole);
           }
         } else {
-          console.log("Kein Profil in der Datenbank gefunden, erstelle ein neues");
+          console.log("No profile found in database, will create a new one");
         }
       } catch (profileError) {
-        console.error("Profil-Abruf fehlgeschlagen, verwende Serverless-Funktion:", profileError);
+        console.error("Profile fetch failed, trying serverless function:", profileError);
         
         try {
-          console.log("Versuche, Profil über Serverless-Funktion abzurufen");
+          console.log("Attempting to fetch profile via serverless function");
           const response = await supabase.functions.invoke('get-profile', {
             body: { user_id: currentUser.id }
           });
@@ -79,20 +79,20 @@ export function useRoleDetection() {
           }
           
           if (response.data) {
-            console.log("Profil über Funktion abgerufen:", response.data);
+            console.log("Profile fetched via function:", response.data);
             userProfile = response.data as Profile;
             
             if (!detectedRole && userProfile.role) {
               detectedRole = userProfile.role;
-              console.log("Rolle aus Profil über Funktion:", detectedRole);
+              console.log("Role from profile via function:", detectedRole);
             }
           }
         } catch (functionError) {
-          console.error("Funktionsabruf für Profil fehlgeschlagen:", functionError);
+          console.error("Function call for profile failed:", functionError);
         }
       }
       
-      // Wenn wir immer noch keine Rolle haben, verwende E-Mail als endgültigen Fallback
+      // If we still don't have a role, use email as final fallback
       if (!detectedRole) {
         if (email.includes('admin')) {
           detectedRole = 'admin';
@@ -101,22 +101,22 @@ export function useRoleDetection() {
         } else if (email.includes('patient') || email.includes('patien')) {
           detectedRole = 'patient';
         } else {
-          detectedRole = 'patient'; // Default-Fallback
+          detectedRole = 'patient'; // Default fallback
         }
         
-        console.log("Verwende E-Mail-basierten Fallback für Rolle:", detectedRole);
+        console.log("Using email-based fallback for role:", detectedRole);
         
         toast({
-          title: "Rolle basierend auf E-Mail festgelegt",
-          description: `Sie wurden als ${detectedRole} eingestuft.`
+          title: "Role set based on email",
+          description: `You have been classified as ${detectedRole}.`
         });
       }
       
-      // Profil in der Datenbank erstellen/aktualisieren mit korrekter Rolle
-      // KRITISCH: Wenn die erkannte Rolle und die Profilrolle nicht übereinstimmen,
-      // IMMER die erkannte Rolle verwenden, die höhere Priorität hat (basierend auf E-Mail)
+      // Create/update profile in database with correct role
+      // CRITICAL: If detected role and profile role don't match,
+      // ALWAYS use the detected role which has higher priority (based on email)
       if (!userProfile || userProfile.role !== detectedRole) {
-        console.log("Erstelle/aktualisiere Profil mit erkannter Rolle:", detectedRole);
+        console.log("Creating/updating profile with detected role:", detectedRole);
         
         const profileData = {
           id: currentUser.id,
@@ -135,7 +135,7 @@ export function useRoleDetection() {
         };
         
         try {
-          // Zuerst prüfen, ob Profil existiert
+          // First check if profile exists
           const { data: existingProfile } = await supabase
             .from("profiles")
             .select("id, role")
@@ -143,72 +143,72 @@ export function useRoleDetection() {
             .maybeSingle();
             
           if (existingProfile) {
-            console.log("Aktualisiere bestehendes Profil mit Rolle:", detectedRole);
+            console.log("Updating existing profile with role:", detectedRole);
             
-            // Wenn die Rolle unterschiedlich ist, Benachrichtigung anzeigen
+            // If role is different, show notification
             if (existingProfile.role !== detectedRole) {
-              console.log(`⚠️ Rollenkonflikt: Ändere von ${existingProfile.role} zu ${detectedRole} (höhere Priorität)`);
+              console.log(`⚠️ Role conflict: Changing from ${existingProfile.role} to ${detectedRole} (higher priority)`);
               toast({
-                title: "Rollenkorrektur",
-                description: `Ihre Rolle wurde von ${existingProfile.role} zu ${detectedRole} korrigiert.`
+                title: "Role correction",
+                description: `Your role has been corrected from ${existingProfile.role} to ${detectedRole}.`
               });
             }
             
-            // Bestehendes Profil aktualisieren
+            // Update existing profile
             const { error: updateError } = await supabase
               .from("profiles")
               .update({
-                role: detectedRole, // WICHTIG: Immer die erkannte Rolle mit höherer Priorität verwenden
+                role: detectedRole, // IMPORTANT: Always use detected role with higher priority
                 email: currentUser.email || "",
                 updated_at: new Date().toISOString()
               })
               .eq("id", currentUser.id);
               
             if (updateError) {
-              console.error("Fehler beim Aktualisieren des Profils:", updateError);
+              console.error("Error updating profile:", updateError);
               throw updateError;
             } else {
-              console.log("Profil erfolgreich mit Rolle aktualisiert:", detectedRole);
+              console.log("Profile successfully updated with role:", detectedRole);
             }
           } else {
-            // Neues Profil erstellen
-            console.log("Erstelle neues Profil mit Rolle:", detectedRole);
+            // Create new profile
+            console.log("Creating new profile with role:", detectedRole);
             const { error: insertError } = await supabase
               .from("profiles")
               .insert(profileData);
               
             if (insertError) {
-              console.error("Fehler beim Erstellen des Profils:", insertError);
+              console.error("Error creating profile:", insertError);
               throw insertError;
             } else {
-              console.log("Profil erfolgreich mit Rolle erstellt:", detectedRole);
+              console.log("Profile successfully created with role:", detectedRole);
               toast({
-                title: "Profil erstellt",
-                description: "Ihr Profil wurde erfolgreich erstellt."
+                title: "Profile created",
+                description: "Your profile has been successfully created."
               });
             }
           }
           
-          // UserProfile mit unseren neuen Daten setzen, um Konsistenz zu gewährleisten
+          // Set userProfile with our new data to ensure consistency
           userProfile = profileData;
         } catch (profileWriteError) {
-          console.error("Fehler beim Schreiben des Profils in die Datenbank:", profileWriteError);
+          console.error("Error writing profile to database:", profileWriteError);
           toast({
-            title: "Fehler beim Aktualisieren",
-            description: "Ihr Profil konnte nicht aktualisiert werden.",
+            title: "Error updating",
+            description: "Your profile could not be updated.",
             variant: "destructive"
           });
         }
       }
       
-      // Zustand mit unseren Erkenntnissen aktualisieren
+      // Update state with our findings
       setUserRole(detectedRole);
       setProfile(userProfile);
       
-      console.log("Endgültige erkannte Rolle:", detectedRole);
-      console.log("Endgültiges Profil:", userProfile);
+      console.log("Final detected role:", detectedRole);
+      console.log("Final profile:", userProfile);
       
-      // Auch Benutzer-Metadaten aktualisieren, wenn nötig, um Konsistenz zu gewährleisten
+      // Also update user metadata if needed to ensure consistency
       if (detectedRole && (!currentUser.user_metadata?.role || currentUser.user_metadata.role !== detectedRole)) {
         try {
           const { data, error } = await supabase.auth.updateUser({
@@ -216,16 +216,16 @@ export function useRoleDetection() {
           });
           
           if (error) {
-            console.error("Fehler beim Aktualisieren der Benutzer-Metadaten:", error);
+            console.error("Error updating user metadata:", error);
           } else {
-            console.log("Benutzer-Metadaten mit Rolle aktualisiert:", detectedRole);
+            console.log("User metadata updated with role:", detectedRole);
           }
         } catch (metadataError) {
-          console.error("Fehler beim Aktualisieren der Benutzer-Metadaten:", metadataError);
+          console.error("Error updating user metadata:", metadataError);
         }
       }
     } catch (error) {
-      console.error("Fehler bei der Rollenerkennung:", error);
+      console.error("Error in role detection:", error);
     } finally {
       setIsLoading(false);
     }

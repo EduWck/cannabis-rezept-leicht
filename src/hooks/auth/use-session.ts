@@ -13,35 +13,37 @@ export function useSession() {
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        console.log("Auth state changed:", event, newSession?.user?.id);
-        
-        if (!mounted) return;
-        
-        if (event === 'SIGNED_OUT') {
-          console.log("User signed out, clearing session data");
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setIsLoading(false);
-          return;
+    // Set up auth state listener first
+    const setupAuthListener = () => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        (event, newSession) => {
+          console.log("Auth state changed:", event, newSession?.user?.id);
+          
+          if (!mounted) return;
+          
+          if (event === 'SIGNED_OUT') {
+            console.log("User signed out, clearing session data");
+            setSession(null);
+            setUser(null);
+            setProfile(null);
+            setIsLoading(false);
+            return;
+          }
+          
+          if (newSession) {
+            setSession(newSession);
+            setUser(newSession.user ?? null);
+          }
         }
-        
-        setSession(newSession);
-        setUser(newSession?.user ?? null);
-        
-        if (!newSession?.user) {
-          setProfile(null);
-          setIsLoading(false);
-        }
-      }
-    );
+      );
+      
+      return subscription;
+    };
 
     // Check for existing session
     const checkSession = async () => {
       try {
+        console.log("Checking for existing session");
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         console.log("Existing session check:", currentSession ? `Found session for user ${currentSession.user.id}` : "No session");
         
@@ -50,6 +52,7 @@ export function useSession() {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
+        // If no session, we're done loading
         if (!currentSession?.user) {
           setIsLoading(false);
         }
@@ -61,11 +64,15 @@ export function useSession() {
       }
     };
 
+    // First setup auth listener, then check session
+    const authStateSubscription = setupAuthListener();
     checkSession();
 
     return () => {
       mounted = false;
-      subscription.unsubscribe();
+      if (authStateSubscription) {
+        authStateSubscription.unsubscribe();
+      }
     };
   }, []);
 

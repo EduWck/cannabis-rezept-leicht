@@ -56,24 +56,24 @@ serve(async (req) => {
       );
     }
     
-    // KRITISCH: Bestimme die Benutzerrolle basierend auf der E-Mail-Adresse - HÖCHSTE PRIORITÄT
-    // Diese Logik muss mit der Rollenerkennung auf der Client-Seite übereinstimmen
+    // CRITICAL: Determine user role based on email address - HIGHEST PRIORITY
+    // This logic must match the role detection on the client side
     let userRole = 'patient'; // Default role
     
     if (normalizedEmail.includes('admin')) {
       userRole = 'admin';
-      console.log(`E-Mail enthält 'admin', setze Admin-Rolle für: ${normalizedEmail}`);
+      console.log(`Email contains 'admin', setting admin role for: ${normalizedEmail}`);
     } else if (normalizedEmail.includes('doctor') || normalizedEmail.includes('arzt')) {
       userRole = 'doctor';
-      console.log(`E-Mail enthält 'doctor/arzt', setze Arzt-Rolle für: ${normalizedEmail}`);
+      console.log(`Email contains 'doctor/arzt', setting doctor role for: ${normalizedEmail}`);
     } else if (normalizedEmail.includes('patient') || normalizedEmail.includes('patien')) {
       userRole = 'patient';
-      console.log(`E-Mail enthält 'patient', setze Patient-Rolle für: ${normalizedEmail}`);
+      console.log(`Email contains 'patient', setting patient role for: ${normalizedEmail}`);
     } else {
-      console.log(`Kein Rollenindikator in E-Mail, setze Standard-Patientenrolle für: ${normalizedEmail}`);
+      console.log(`No role indicator in email, setting default patient role for: ${normalizedEmail}`);
     }
     
-    console.log(`Bestimmte Rolle für ${normalizedEmail}: ${userRole}`);
+    console.log(`Determined role for ${normalizedEmail}: ${userRole}`);
     
     // Check if user exists
     const { data: existingUser, error: userError } = await supabase.auth
@@ -89,7 +89,7 @@ serve(async (req) => {
     
     if (!existingUser || existingUser.users.length === 0) {
       // User doesn't exist, create a new user
-      console.log("Benutzer existiert nicht, erstelle neuen Benutzer mit E-Mail:", normalizedEmail);
+      console.log("User doesn't exist, creating new user with email:", normalizedEmail);
       
       // For doctor and admin, create with password for email/password login
       let createOptions = {
@@ -116,28 +116,28 @@ serve(async (req) => {
       userData = newUser;
       userId = newUser.user.id;
       
-      console.log(`Neuer Benutzer erstellt mit ID: ${userId}, Rolle: ${userRole}`);
+      console.log(`New user created with ID: ${userId}, role: ${userRole}`);
     } else {
       userData = existingUser.users[0];
       userId = userData.id;
-      console.log(`Bestehenden Benutzer gefunden mit ID: ${userId}`);
+      console.log(`Found existing user with ID: ${userId}`);
       
-      // WICHTIG: Immer die Benutzerrolle aktualisieren, basierend auf der E-Mail als höchste Priorität
-      // Dies stellt sicher, dass die Rolle konsistent ist und die E-Mail Vorrang hat
+      // IMPORTANT: Always update user role based on email as highest priority
+      // This ensures role consistency and gives email precedence
       try {
-        console.log(`Aktualisiere Benutzermetadaten für ${userId}, setze Rolle auf: ${userRole}`);
+        console.log(`Updating user metadata for ${userId}, setting role to: ${userRole}`);
         const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userId, {
           user_metadata: { ...userData.user_metadata, role: userRole }
         });
         
         if (updateError) {
-          console.error(`Fehler beim Aktualisieren der Benutzermetadaten: ${updateError.message}`);
+          console.error(`Error updating user metadata: ${updateError.message}`);
         } else {
           userData = updatedUser;
-          console.log(`Benutzer ${userId} mit Rolle aktualisiert: ${userRole}`);
+          console.log(`User ${userId} updated with role: ${userRole}`);
         }
       } catch (updateError) {
-        console.error("Fehler beim Aktualisieren der Benutzermetadaten:", updateError);
+        console.error("Error updating user metadata:", updateError);
       }
       
       // For doctor and admin users, make sure they have a password set
@@ -148,12 +148,12 @@ serve(async (req) => {
           });
           
           if (passwordError) {
-            console.error("Fehler beim Setzen des Passworts:", passwordError);
+            console.error("Error setting password:", passwordError);
           } else {
-            console.log("Passwort für Benutzer gesetzt");
+            console.log("Password set for user");
           }
         } catch (passwordError) {
-          console.error("Fehler beim Setzen des Passworts:", passwordError);
+          console.error("Error setting password:", passwordError);
         }
       }
     }
@@ -172,7 +172,7 @@ serve(async (req) => {
         }
           
         if (!profileData) {
-          console.log("Profil existiert nicht, erstelle neues Profil für Benutzer:", userId);
+          console.log("Profile doesn't exist, creating new profile for user:", userId);
           
           const { error: insertError } = await supabase
             .from("profiles")
@@ -187,15 +187,15 @@ serve(async (req) => {
           if (insertError) {
             console.error("Error creating profile:", insertError);
           } else {
-            console.log("Profil erfolgreich mit Rolle erstellt:", userRole);
+            console.log("Profile successfully created with role:", userRole);
           }
         } else {
-          // KRITISCH: Bestehendes Profil IMMER aktualisieren, um sicherzustellen, dass die Rolle korrekt ist
-          // IMMER die Rolle auf Basis der E-Mail aktualisieren
+          // CRITICAL: Always update existing profile to ensure role is correct
+          // ALWAYS force role based on email
           const { error: updateProfileError } = await supabase
             .from("profiles")
             .update({
-              role: userRole, // Erzwinge die Rolle basierend auf der E-Mail
+              role: userRole, // Force role based on email
               updated_at: new Date().toISOString(),
             })
             .eq("id", userId);
@@ -203,12 +203,12 @@ serve(async (req) => {
           if (updateProfileError) {
             console.error("Error updating profile:", updateProfileError);
           } else {
-            console.log("Profil erfolgreich mit Rolle aktualisiert:", userRole);
+            console.log("Profile successfully updated with role:", userRole);
           }
           
-          // Protokolliere, wenn es einen Rollenkonflikt gab, den wir behoben haben
+          // Log if there was a role conflict that we resolved
           if (profileData.role !== userRole) {
-            console.log(`Rollenkonflikt behoben! Von ${profileData.role} zu ${userRole} basierend auf E-Mail geändert.`);
+            console.log(`Role conflict resolved! Changed from ${profileData.role} to ${userRole} based on email.`);
           }
         }
       } catch (profileError) {
@@ -222,7 +222,7 @@ serve(async (req) => {
       .delete()
       .eq("email", normalizedEmail);
     
-    console.log("Auth-Code nach erfolgreicher Verifizierung gelöscht");
+    console.log("Auth code deleted after successful verification");
     
     // Create a magic sign in link for the user
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
@@ -244,7 +244,7 @@ serve(async (req) => {
       );
     }
     
-    console.log("Magic-Link generiert für E-Mail:", normalizedEmail);
+    console.log("Magic link generated for email:", normalizedEmail);
     
     // Return success with user data and magic link
     return new Response(

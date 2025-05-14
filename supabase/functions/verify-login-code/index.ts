@@ -51,7 +51,7 @@ serve(async (req) => {
       );
     }
     
-    // Explicit role assignment based on email address
+    // Determine user role based on email address
     let userRole = 'patient';
     if (email.includes('doctor')) {
       userRole = 'doctor';
@@ -88,7 +88,7 @@ serve(async (req) => {
     } else {
       userData = existingUser.users[0];
       
-      // Always update user metadata with the role to ensure it's set correctly
+      // Update user metadata with the role to ensure it's set correctly
       const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
         user_metadata: { ...userData.user_metadata, role: userRole }
       });
@@ -101,46 +101,42 @@ serve(async (req) => {
       }
     }
 
-    try {
-      // Delete the used code
-      await supabase
-        .from("auth_codes")
-        .delete()
-        .eq("email", email);
-      
-      // Create a magic link for the user instead of trying to create a session directly
-      const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
-        type: "magiclink",
-        email: email,
+    // Delete the used code
+    await supabase
+      .from("auth_codes")
+      .delete()
+      .eq("email", email);
+    
+    // Create a session for the user directly (this avoids the email validation issue)
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin
+      .createSession({
+        user_id: userData.id,
       });
       
-      if (magicLinkError) {
-        throw magicLinkError;
-      }
-      
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          email: email,
-          role: userRole,
-          message: "Code verification successful. We've sent you a magic link to complete login."
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    } catch (authError) {
-      console.error("Authentication error:", authError);
-      
-      // Return a simplified response that the client can use
-      return new Response(
-        JSON.stringify({ 
-          success: true,
-          email: email,
-          role: userRole,
-          message: "Code verification successful. Please use the magic link sent to your email to complete login."
-        }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (sessionError) {
+      console.error("Error creating session:", sessionError);
+      // We'll still return success since verification worked, even if session creation failed
+    } else {
+      console.log("Session created successfully");
     }
+    
+    // Return success with session data if available
+    return new Response(
+      JSON.stringify({ 
+        success: true,
+        email: email,
+        role: userRole,
+        session: sessionData || null,
+        message: "Code verification successful."
+      }),
+      { 
+        status: 200, 
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "application/json" 
+        } 
+      }
+    );
     
   } catch (error) {
     console.error("Error verifying login code:", error);

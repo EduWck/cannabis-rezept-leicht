@@ -102,46 +102,38 @@ serve(async (req) => {
     }
 
     try {
-      // Use signIn to create a session instead of createSession which may not be available
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-        type: "magiclink",
-        email: email,
-      });
-
-      if (sessionError) {
-        throw new Error(`Failed to create session: ${sessionError.message}`);
-      }
-
       // Delete the used code
       await supabase
         .from("auth_codes")
         .delete()
         .eq("email", email);
       
+      // Create a session using admin.signInWithEmail
+      const { data: signInData, error: signInError } = await supabase.auth.admin.signInWithEmail({
+        email,
+      });
+      
+      if (signInError) {
+        throw signInError;
+      }
+      
       return new Response(
         JSON.stringify({ 
-          session: {
-            access_token: sessionData.properties.access_token,
-            refresh_token: sessionData.properties.refresh_token,
-            expires_in: 3600, // 1 hour
-            user: userData
-          }
+          session: signInData.session,
+          user: userData
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
-    } catch (sessionError) {
-      console.error("Session creation error:", sessionError);
-      // Return a simpler object that doesn't have complex types
+    } catch (authError) {
+      console.error("Authentication error:", authError);
+      
+      // Return a simplified response that the client can use
       return new Response(
         JSON.stringify({ 
-          session: {
-            access_token: "temp_access_token",
-            user: {
-              id: userData.id,
-              email: email,
-              user_metadata: { role: userRole }
-            }
-          }
+          success: true,
+          email: email,
+          role: userRole,
+          message: "Code verification successful. Please use the magic link sent to your email to complete login."
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );

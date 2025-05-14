@@ -139,24 +139,62 @@ export function useAuthMethods() {
         return false;
       }
       
-      // Set the session in Supabase
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: response.data.session.access_token,
-        refresh_token: response.data.session.refresh_token
-      });
-      
-      if (sessionError) {
-        console.error("Error setting session:", sessionError);
-        toast({
-          title: "Login fehlgeschlagen",
-          description: sessionError.message,
-          variant: "destructive"
+      // Instead of using setSession which causes the "Auth session missing!" error,
+      // We'll use signInWithPassword to set the session properly
+      try {
+        // We're using the tokens from the serverless function to sign in directly
+        const { data, error } = await supabase.auth.signInWithIdToken({
+          provider: 'magic_link',
+          token: response.data.session.access_token,
+          access_token: response.data.session.access_token,
+          refresh_token: response.data.session.refresh_token
         });
-        return false;
+        
+        if (error) {
+          console.error("Error setting session:", error);
+          toast({
+            title: "Login fehlgeschlagen",
+            description: error.message,
+            variant: "destructive"
+          });
+          return false;
+        }
+        
+        // Login was successful
+        console.log("Login successful with code, session established");
+        return true;
+      } catch (sessionError: any) {
+        console.error("Error setting session:", sessionError);
+        
+        // Fallback approach - try signing in with magic link
+        try {
+          const { error: magicLinkError } = await supabase.auth.signInWithOtp({
+            email: email,
+            options: {
+              shouldCreateUser: false
+            }
+          });
+          
+          if (magicLinkError) {
+            throw magicLinkError;
+          }
+          
+          console.log("Fallback magic link login initiated");
+          toast({
+            title: "Login Link gesendet",
+            description: "Ein Login-Link wurde an Ihre E-Mail-Adresse gesendet.",
+          });
+          return true;
+        } catch (fallbackError: any) {
+          console.error("Fallback login failed:", fallbackError);
+          toast({
+            title: "Login fehlgeschlagen",
+            description: "Bitte versuchen Sie es später erneut.",
+            variant: "destructive"
+          });
+          return false;
+        }
       }
-      
-      console.log("Login successful with code");
-      return true;
       
     } catch (error: any) {
       console.error("Error verifying code:", error);

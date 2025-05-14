@@ -101,14 +101,13 @@ serve(async (req) => {
       }
     }
 
-    // Create a sign-in link and get the session
-    const { data: signInData, error: signInError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: email,
+    // Create a session directly
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+      userId: userData.id,
     });
 
-    if (signInError) {
-      throw new Error(`Failed to generate session: ${signInError.message}`);
+    if (sessionError) {
+      throw new Error(`Failed to create session: ${sessionError.message}`);
     }
 
     // Delete the used code
@@ -120,14 +119,14 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         session: {
-          access_token: signInData.properties.access_token,
-          refresh_token: signInData.properties.refresh_token,
-          expires_in: 3600,
+          access_token: sessionData.session.access_token,
+          refresh_token: sessionData.session.refresh_token,
+          expires_in: 3600, // 1 hour
           user: {
             ...userData,
             user_metadata: { 
               ...userData.user_metadata,
-              role: userRole // Ensure role is explicitly set in the response
+              role: userRole
             }
           }
         }

@@ -15,7 +15,7 @@ export function useDbQuery<T>() {
   const { toast } = useToast();
 
   const executeQuery = async (
-    queryFn: () => Promise<PostgrestResponse<T>> | any,
+    queryFn: () => Promise<PostgrestResponse<T>>,
     options: UseDbQueryOptions<T> = {}
   ) => {
     const { 

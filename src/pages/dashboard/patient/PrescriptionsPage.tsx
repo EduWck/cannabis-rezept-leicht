@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,34 +8,43 @@ import { Prescription } from "@/types";
 import { Loader2, FileText, Download, AlertTriangle, CheckCircle, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { useDbQuery } from "@/hooks/use-database";
+import { useToast } from "@/hooks/use-toast";
 
 const PrescriptionsPage = () => {
   const { user } = useAuth();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const { loading, executeQuery } = useDbQuery<Prescription>();
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
       if (!user) return;
       
-      const data = await executeQuery(
-        () => supabase
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
           .from("prescriptions")
           .select("*")
           .eq("patient_id", user.id)
-          .order("created_at", { ascending: false }),
-        {
-          errorTitle: "Fehler",
-          errorMessage: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-        }
-      );
-      
-      setPrescriptions(data);
+          .order("created_at", { ascending: false });
+          
+        if (error) throw error;
+        
+        setPrescriptions(data || []);
+      } catch (error) {
+        console.error("Error fetching prescriptions:", error);
+        toast({
+          title: "Fehler",
+          description: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
     };
     
     fetchPrescriptions();
-  }, [user, executeQuery]);
+  }, [user, toast]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

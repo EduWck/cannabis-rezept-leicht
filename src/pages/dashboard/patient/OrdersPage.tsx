@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { Loader2, ShoppingCart, PackageOpen, Truck, Check, AlertCircle, FileText
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { useDbQuery } from "@/hooks/use-database";
+import { useToast } from "@/hooks/use-toast";
 import { 
   TableHead, 
   TableHeader, 
@@ -17,14 +18,16 @@ import {
 const OrdersPage = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
-  const { loading, executeQuery } = useDbQuery<Order>();
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user) return;
       
-      const data = await executeQuery(
-        () => supabase
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
           .from("orders")
           .select(`
             *,
@@ -34,18 +37,25 @@ const OrdersPage = () => {
             )
           `)
           .eq("patient_id", user.id)
-          .order("created_at", { ascending: false }),
-        {
-          errorTitle: "Fehler",
-          errorMessage: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
-        }
-      );
-      
-      setOrders(data);
+          .order("created_at", { ascending: false });
+          
+        if (error) throw error;
+        
+        setOrders(data || []);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+        toast({
+          title: "Fehler",
+          description: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
     };
     
     fetchOrders();
-  }, [user, executeQuery]);
+  }, [user, toast]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

@@ -8,7 +8,7 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, X, LogOut } from "lucide-react";
+import { Menu, X, LogOut, User } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeProvider";
 
 const Navbar = () => {
@@ -67,7 +67,6 @@ const Navbar = () => {
             </Link>
           ))}
           
-          {/* Only show these two buttons */}
           <Link to="/fragebogen">
             <Button variant="default" className="ml-4">
               Rezept anfordern
@@ -75,9 +74,16 @@ const Navbar = () => {
           </Link>
           
           {user ? (
-            <Button variant="outline" className="ml-2" onClick={() => signOut()}>
-              <LogOut className="mr-2 h-4 w-4" /> Logout
-            </Button>
+            <>
+              <Link to="/dashboard/profile">
+                <Button variant="outline" className="ml-2">
+                  <User className="mr-2 h-4 w-4" /> Mein Profil
+                </Button>
+              </Link>
+              <Button variant="outline" className="ml-2" onClick={() => signOut()}>
+                <LogOut className="mr-2 h-4 w-4" /> Logout
+              </Button>
+            </>
           ) : (
             <Link to="/login">
               <Button variant="outline" className="ml-2">
@@ -120,7 +126,6 @@ const Navbar = () => {
                   </Link>
                 ))}
                 
-                {/* Only show these two buttons in mobile menu too */}
                 <Link to="/fragebogen" onClick={() => setIsOpen(false)}>
                   <Button variant="default" className="w-full">
                     Rezept anfordern
@@ -128,12 +133,19 @@ const Navbar = () => {
                 </Link>
                 
                 {user ? (
-                  <Button variant="outline" className="w-full" onClick={() => {
-                    signOut();
-                    setIsOpen(false);
-                  }}>
-                    <LogOut className="mr-2 h-4 w-4" /> Logout
-                  </Button>
+                  <>
+                    <Link to="/dashboard/profile" onClick={() => setIsOpen(false)}>
+                      <Button variant="outline" className="w-full">
+                        <User className="mr-2 h-4 w-4" /> Mein Profil
+                      </Button>
+                    </Link>
+                    <Button variant="outline" className="w-full" onClick={() => {
+                      signOut();
+                      setIsOpen(false);
+                    }}>
+                      <LogOut className="mr-2 h-4 w-4" /> Logout
+                    </Button>
+                  </>
                 ) : (
                   <Link to="/login" onClick={() => setIsOpen(false)}>
                     <Button variant="outline" className="w-full">

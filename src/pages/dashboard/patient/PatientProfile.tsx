@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,33 +10,40 @@ import { Separator } from "@/components/ui/separator";
 import { Profile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save } from "lucide-react";
-import { useDbQuery } from "@/hooks/use-database";
 
 const PatientProfile = () => {
   const { user, profile: authProfile } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { loading, executeQuery } = useDbQuery<Profile>();
 
   useEffect(() => {
     const fetchFullProfile = async () => {
       if (!user) return;
       
-      const data = await executeQuery(
-        () => supabase
+      setLoading(true);
+      try {
+        const { data, error } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
-          .single(),
-        {
-          errorTitle: "Fehler",
-          errorMessage: "Profildaten konnten nicht geladen werden."
+          .single();
+          
+        if (error) throw error;
+        
+        if (data) {
+          setProfile(data);
         }
-      );
-      
-      if (data && data.length > 0) {
-        setProfile(data[0]);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        toast({
+          title: "Fehler",
+          description: "Profildaten konnten nicht geladen werden.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -45,7 +53,7 @@ const PatientProfile = () => {
     }
     
     fetchFullProfile();
-  }, [user, authProfile, executeQuery]);
+  }, [user, authProfile, toast]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

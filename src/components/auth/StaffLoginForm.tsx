@@ -1,0 +1,90 @@
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+
+interface StaffLoginFormProps {
+  signIn: (email: string, password: string) => Promise<boolean>;
+  loading: boolean;
+  setLoading: (loading: boolean) => void;
+}
+
+export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormProps) => {
+  const [staffEmail, setStaffEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleStaffLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!staffEmail || !password) {
+      toast({
+        title: "Fehlende Angaben",
+        description: "Bitte geben Sie E-Mail und Passwort ein."
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    try {
+      console.log("Attempting staff login with:", staffEmail);
+      await signIn(staffEmail, password);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login fehlgeschlagen",
+        description: error.message || "Ungültige Anmeldedaten",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mitarbeiter-Login</CardTitle>
+        <CardDescription>
+          Für Ärzte und Administrator-Accounts.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleStaffLogin}>
+          <div className="grid gap-4">
+            <div className="grid gap-2">
+              <Input
+                type="email"
+                placeholder="E-Mail-Adresse"
+                value={staffEmail}
+                onChange={(e) => setStaffEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="grid gap-2">
+              <Input
+                type="password"
+                placeholder="Passwort"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Anmelden
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+      <CardFooter className="flex justify-center">
+        <p className="text-sm text-muted-foreground">
+          Nur für autorisierte Mitarbeiter.
+        </p>
+      </CardFooter>
+    </Card>
+  );
+};

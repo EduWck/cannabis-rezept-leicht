@@ -23,12 +23,15 @@ export function useAuthMethods() {
       }
 
       console.log("Login successful:", data.user);
+      console.log("User metadata:", data.user.user_metadata);
       
       // Show success toast on successful login
       toast({
         title: "Login erfolgreich",
         description: "Willkommen zurück!",
       });
+      
+      return true;
     } catch (error: any) {
       console.error("Login error:", error);
       toast({

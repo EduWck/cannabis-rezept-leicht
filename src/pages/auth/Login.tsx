@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -102,8 +103,12 @@ const Login = () => {
           description: "Willkommen zurück!"
         });
         
-        // Let the auth context effect handle redirection
-        // The effect will detect the role and redirect accordingly
+        // Wait a moment for the role detection to complete before redirecting
+        setTimeout(() => {
+          if (user && userRole) {
+            redirectUserBasedOnRole(userRole);
+          }
+        }, 500);
       } else {
         setErrorMessage("Ungültiger Verifizierungscode");
       }
@@ -124,8 +129,12 @@ const Login = () => {
       console.log("Attempting staff login with:", staffEmail);
       await signIn(staffEmail, password);
       
-      // Let the auth context effect handle redirection
-      // It will detect the role from the session and redirect
+      // Wait a moment for the role detection to complete before redirecting
+      setTimeout(() => {
+        if (user && userRole) {
+          redirectUserBasedOnRole(userRole);
+        }
+      }, 500);
     } catch (error: any) {
       console.error("Login error:", error);
       setErrorMessage(error.message || "Ungültige Anmeldedaten");

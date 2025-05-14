@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +17,8 @@ const Dashboard = () => {
         navigate("/dashboard/profile", { replace: true });
       } else if (!userRole) {
         console.log("No user role detected in Dashboard");
+      } else {
+        console.log(`User is ${userRole}, staying on dashboard`);
       }
     }
   }, [user, userRole, isLoading, navigate]);

@@ -51,12 +51,16 @@ serve(async (req) => {
       );
     }
     
-    // Explicit role assignment based on email address
+    // Explicit role assignment based on email address - make sure this works for all roles
     let userRole = 'patient';
     if (email.includes('doctor')) {
       userRole = 'doctor';
+      console.log(`Setting doctor role for: ${email}`);
     } else if (email.includes('admin')) {
       userRole = 'admin';
+      console.log(`Setting admin role for: ${email}`);
+    } else {
+      console.log(`Setting default patient role for: ${email}`);
     }
     
     console.log(`Determined role for ${email}: ${userRole}`);
@@ -125,7 +129,7 @@ serve(async (req) => {
             ...userData,
             user_metadata: { 
               ...userData.user_metadata,
-              role: userRole // Ensure role is set correctly in the response
+              role: userRole // Ensure role is explicitly set in the response
             }
           }
         }

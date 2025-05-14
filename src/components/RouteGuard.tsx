@@ -19,7 +19,10 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   useEffect(() => {
     const checkAuthorization = async () => {
       // If still loading authentication state, wait
-      if (isLoading) return;
+      if (isLoading) {
+        console.log("RouteGuard: Still loading auth state...");
+        return;
+      }
 
       console.log("RouteGuard check - User:", user?.id, "Role:", userRole, "Path:", location.pathname);
       
@@ -61,8 +64,13 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         
         // Redirect based on role
         if (userRole === "patient") {
+          console.log("Patient redirected to profile");
           navigate("/dashboard/profile", { replace: true });
-        } else if (userRole === "doctor" || userRole === "admin") {
+        } else if (userRole === "doctor") {
+          console.log("Doctor redirected to dashboard");
+          navigate("/dashboard", { replace: true });
+        } else if (userRole === "admin") {
+          console.log("Admin redirected to dashboard");
           navigate("/dashboard", { replace: true });
         } else {
           // Fallback for unknown roles

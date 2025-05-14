@@ -1,1 +1,14 @@
+
 project_id = "fuxikzjnptutswjrfmog"
+
+[functions.send-login-code]
+verify_jwt = false
+
+[functions.verify-login-code]
+verify_jwt = false
+
+[functions.create-staff-user]
+verify_jwt = true
+
+[functions.create-test-users]
+verify_jwt = false

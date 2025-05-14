@@ -1,76 +1,126 @@
-
-import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { ThemeToggle } from './ThemeProvider';
+import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
-  const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 10) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      setIsScrolled(window.scrollY > 10);
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const navLinks = [
+    { name: "Fragebogen", href: "/fragebogen" },
+    { name: "Video-Call", href: "/video-call" },
+    { name: "Vor Ort", href: "/vor-ort" },
+    { name: "Über uns", href: "/uber-uns" },
+    { name: "Kontakt", href: "/kontakt" },
+  ];
+
+  const isActive = (path: string) => location.pathname === path;
+
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-white dark:bg-dark-gray shadow-md py-2' : 'bg-transparent py-4'}`}>
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center">
-            <Link to="/" className="font-bold text-2xl text-dark-gray dark:text-white flex items-center">
-              <div className="w-10 h-10 rounded-md bg-cannabis-green-500 mr-2 flex items-center justify-center">
-                <span className="text-white">MC</span>
-              </div>
-              <span>MediCannabis</span>
+    <header
+      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
+        isScrolled
+          ? "bg-white/90 shadow-md backdrop-blur-sm dark:bg-gray-900/90"
+          : "bg-transparent"
+      }`}
+    >
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        <Link to="/" className="flex items-center">
+          <span className="text-xl font-bold text-cannabis-green-600 dark:text-cannabis-green-400">
+            MediCannabis
+          </span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav className="hidden items-center space-x-1 md:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.name}
+              to={link.href}
+              className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                isActive(link.href)
+                  ? "bg-cannabis-green-100 text-cannabis-green-700 dark:bg-cannabis-green-900/30 dark:text-cannabis-green-400"
+                  : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+              }`}
+            >
+              {link.name}
             </Link>
-          </div>
+          ))}
+          {user ? (
+            <Link to="/dashboard">
+              <Button variant="default" className="ml-4">
+                Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/login">
+              <Button variant="default" className="ml-4">
+                Login
+              </Button>
+            </Link>
+          )}
+        </nav>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8 items-center">
-            <Link to="/fragebogen" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors">Fragebogen</Link>
-            <Link to="/video-call" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors">Video-Call</Link>
-            <Link to="/vor-ort" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors">Vor-Ort-Termin</Link>
-            <Link to="/uber-uns" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors">Über uns</Link>
-            <Link to="/kontakt" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors">Kontakt</Link>
-            <ThemeToggle />
-            <Link to="/fragebogen" className="btn-primary dark:bg-cannabis-green-600 dark:hover:bg-cannabis-green-700">Jetzt Rezept starten</Link>
-          </div>
-
-          {/* Mobile Navigation Toggle */}
-          <div className="md:hidden flex items-center gap-4">
-            <ThemeToggle />
-            <button onClick={() => setIsOpen(!isOpen)} className="text-dark-gray dark:text-white p-2">
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Navigation Menu */}
-        {isOpen && (
-          <div className="md:hidden mt-4 pb-4 animate-scale-in">
-            <div className="flex flex-col space-y-4">
-              <Link to="/fragebogen" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors py-2">Fragebogen</Link>
-              <Link to="/video-call" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors py-2">Video-Call</Link>
-              <Link to="/vor-ort" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors py-2">Vor-Ort-Termin</Link>
-              <Link to="/uber-uns" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors py-2">Über uns</Link>
-              <Link to="/kontakt" className="text-dark-gray dark:text-gray-200 hover:text-cannabis-green-600 dark:hover:text-cannabis-green-400 transition-colors py-2">Kontakt</Link>
-              <Link to="/fragebogen" className="btn-primary dark:bg-cannabis-green-600 dark:hover:bg-cannabis-green-700 w-full">Jetzt Rezept starten</Link>
-            </div>
-          </div>
-        )}
+        {/* Mobile Navigation */}
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
+          <SheetTrigger asChild className="md:hidden">
+            <Button variant="ghost" size="icon">
+              <Menu className="h-6 w-6" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-[250px] sm:w-[300px]">
+            <nav className="flex flex-col space-y-4 pt-10">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.name}
+                  to={link.href}
+                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive(link.href)
+                      ? "bg-cannabis-green-100 text-cannabis-green-700 dark:bg-cannabis-green-900/30 dark:text-cannabis-green-400"
+                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              ))}
+              {user ? (
+                <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                  <Button variant="default" className="w-full">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Link to="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="default" className="w-full">
+                    Login
+                  </Button>
+                </Link>
+              )}
+            </nav>
+          </SheetContent>
+        </Sheet>
       </div>
-    </nav>
+    </header>
   );
 };
 

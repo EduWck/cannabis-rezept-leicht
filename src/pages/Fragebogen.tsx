@@ -1,309 +1,350 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Steps } from 'lucide-react';
+import { toast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CompletionStep } from "@/components/fragebogen/CompletionStep";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Progress } from "@/components/ui/progress"
+import * as z from "zod"
+import { supabase } from "@/integrations/supabase/client";
 
-import { useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
-import StepIndicator from '../components/StepIndicator';
+const treatmentTypeOptions = [
+  { value: "fragebogen", label: "Digital per Fragebogen" },
+  { value: "video", label: "Per Video-Call" },
+  { value: "vorort", label: "Vor Ort" },
+];
 
-// Questionnaire Steps
-import TreatmentTypeStep from '../components/fragebogen/TreatmentTypeStep';
-import DeliveryOptionsStep from '../components/fragebogen/DeliveryOptionsStep';
-import PreviousPrescriptionStep from '../components/fragebogen/PreviousPrescriptionStep';
-import ConsentStep from '../components/fragebogen/ConsentStep';
-import SymptomsStep from '../components/fragebogen/SymptomsStep';
-import PreviousTreatmentsStep from '../components/fragebogen/PreviousTreatmentsStep';
-import ExclusionCriteriaStep from '../components/fragebogen/ExclusionCriteriaStep';
-import CannabisExperienceStep from '../components/fragebogen/CannabisExperienceStep';
-import ProductSelectionStep from '../components/fragebogen/ProductSelectionStep';
-import CheckoutStep from '../components/fragebogen/CheckoutStep';
-import CompletionStep from '../components/fragebogen/CompletionStep';
+const step1Schema = z.object({
+  treatmentType: z.enum(["fragebogen", "video", "vorort"], {
+    required_error: "Bitte wähle eine Behandlungsart aus.",
+  }),
+});
+
+const step2Schema = z.object({
+  symptoms: z.string().min(3, {
+    message: "Bitte beschreibe deine Symptome genauer.",
+  }),
+  painLevel: z.enum(["mild", "moderate", "severe"], {
+    required_error: "Bitte wähle dein Schmerzniveau aus.",
+  }),
+  previousTreatments: z.string().min(3, {
+    message: "Bitte beschreibe deine bisherigen Behandlungen genauer.",
+  }),
+  medicalConditions: z.string().optional(),
+  medicationList: z.string().optional(),
+  consent: z.literal(true, {
+    error: "Du musst den Bedingungen zustimmen, um fortzufahren.",
+  }),
+});
 
 const Fragebogen = () => {
-  useEffect(() => {
-    document.title = 'Fragebogen - MediCannabis';
-    window.scrollTo(0, 0);
-  }, []);
-  
-  // Current step state
-  const [currentStep, setCurrentStep] = useState(0);
-  
-  // Step 1: Treatment Type
-  const [selectedTreatmentType, setSelectedTreatmentType] = useState('');
-  
-  // Step 2: Delivery Options
-  const [selectedDeliveryOption, setSelectedDeliveryOption] = useState('');
-  
-  // Step 3: Previous Prescription
-  const [hasPreviousPrescription, setHasPreviousPrescription] = useState<boolean | null>(null);
-  
-  // Step 4: Consent
-  const [consents, setConsents] = useState({
-    accuracy: false,
-    privateMedical: false,
-    emailConsent: false,
-    therapeuticProducts: false,
-    dataUsage: false,
-    termsAndPrivacy: false,
-    newsletter: false,
+  const [step, setStep] = useState(1);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [treatmentType, setTreatmentType] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const step1Form = useForm<z.infer<typeof step1Schema>>({
+    resolver: zodResolver(step1Schema),
+    mode: "onChange",
   });
-  
-  // Step 5: Symptoms
-  const [symptoms, setSymptoms] = useState({
-    chronicPain: false,
-    sleepDisorder: false,
-    adhd: false,
-    migraine: false,
+
+  const step2Form = useForm<z.infer<typeof step2Schema>>({
+    resolver: zodResolver(step2Schema),
+    mode: "onChange",
   });
-  const [symptomDescription, setSymptomDescription] = useState('');
-  const [symptomIntensity, setSymptomIntensity] = useState(5);
-  const [symptomDuration, setSymptomDuration] = useState('');
-  
-  // Step 6: Previous Treatments
-  const [visitedDoctor, setVisitedDoctor] = useState<boolean | null>(null);
-  const [doctorTypes, setDoctorTypes] = useState({
-    generalPractitioner: false,
-    specialist: false,
-    hospital: false,
-    psychologist: false,
-    naturopath: false,
-    selfTherapy: false,
-  });
-  const [tookMedication, setTookMedication] = useState<boolean | null>(null);
-  const [medicationDetails, setMedicationDetails] = useState('');
-  const [nonMedicalTherapies, setNonMedicalTherapies] = useState({
-    physiotherapy: false,
-    spa: false,
-    massage: false,
-    meditation: false,
-    other: false,
-    none: false,
-  });
-  
-  // Step 7: Exclusion Criteria
-  const [isOver21, setIsOver21] = useState<boolean | null>(null);
-  const [isPregnantOrNursing, setIsPregnantOrNursing] = useState<boolean | null>(null);
-  const [highTHCConsumption, setHighTHCConsumption] = useState<boolean | null>(null);
-  const [preExistingConditions, setPreExistingConditions] = useState({
-    schizophrenia: false,
-    personalityDisorder: false,
-    addiction: false,
-    cardiovascular: false,
-    liverKidney: false,
-    anxietyDisorder: false,
-    thcAllergy: false,
-    none: false,
-  });
-  
-  // Step 8: Cannabis Experience
-  const [hasCannabisExperience, setHasCannabisExperience] = useState<boolean | null>(null);
-  const [hadSideEffects, setHadSideEffects] = useState<boolean | null>(null);
-  const [treatmentGoals, setTreatmentGoals] = useState({
-    improveQuality: false,
-    relieveSymptoms: false,
-    improveMovement: false,
-    betterDaily: false,
-    workCapacity: false,
-    socialParticipation: false,
-    reduceMedication: false,
-    reduceSideEffects: false,
-  });
-  
-  // Step 9: Product Selection
-  const [selectedProducts, setSelectedProducts] = useState<Record<string, { quantity: number }>>({});
-  
-  // Handler functions
-  const handleConsentChange = (key: keyof typeof consents, value: boolean) => {
-    setConsents(prev => ({ ...prev, [key]: value }));
+
+  const nextStep = () => {
+    if (step === 1) {
+      step1Form.handleSubmit((data) => {
+        setTreatmentType(data.treatmentType);
+        setStep(2);
+        setProgress(50);
+      })();
+    } else if (step === 2) {
+      step2Form.handleSubmit(async (data) => {
+        setIsDialogOpen(true);
+
+        // Simulate form submission
+        setTimeout(() => {
+          setIsDialogOpen(false);
+          setStep(3);
+          setProgress(100);
+          // TODO: Submit data to Supabase and create user
+          console.log("Submitting data:", data);
+          toast({
+            title: "Erfolgreich!",
+            description: "Dein Fragebogen wurde erfolgreich übermittelt.",
+          });
+        }, 2000);
+      })();
+    }
   };
-  
-  const handleSymptomChange = (symptom: keyof typeof symptoms, value: boolean) => {
-    setSymptoms(prev => ({ ...prev, [symptom]: value }));
+
+  const prevStep = () => {
+    setStep(1);
+    setProgress(0);
   };
-  
-  const handleDoctorTypeChange = (type: keyof typeof doctorTypes, value: boolean) => {
-    setDoctorTypes(prev => ({ ...prev, [type]: value }));
-  };
-  
-  const handleNonMedicalTherapyChange = (therapy: keyof typeof nonMedicalTherapies, value: boolean) => {
-    setNonMedicalTherapies(prev => ({ ...prev, [therapy]: value }));
-  };
-  
-  const handlePreExistingConditionChange = (condition: keyof typeof preExistingConditions, value: boolean) => {
-    setPreExistingConditions(prev => ({ ...prev, [condition]: value }));
-  };
-  
-  const handleTreatmentGoalChange = (goal: keyof typeof treatmentGoals, value: boolean) => {
-    setTreatmentGoals(prev => ({ ...prev, [goal]: value }));
-  };
-  
-  const handleProductSelectChange = (productId: string, quantity: number) => {
-    setSelectedProducts(prev => ({
-      ...prev,
-      [productId]: { quantity }
-    }));
-  };
-  
-  const handleNextStep = () => {
-    window.scrollTo(0, 0);
-    setCurrentStep(prev => prev + 1);
-  };
-  
-  const handlePreviousStep = () => {
-    window.scrollTo(0, 0);
-    setCurrentStep(prev => prev - 1);
-  };
-  
-  // Calculate total amount for checkout
-  const calculateTotalAmount = () => {
-    // This is a simplified calculation - in a real app, you would use the actual product data
-    const productTotal = Object.values(selectedProducts).reduce((sum, item) => sum + item.quantity * 10, 0); // Assuming €10 per gram for simplicity
-    const rezeptGebühr = 14.99;
-    const versandkosten = productTotal < 100 ? 10 : 0;
-    
-    return productTotal + rezeptGebühr + versandkosten;
-  };
-  
-  // Total steps for the questionnaire
-  const totalSteps = 11;
-  
-  // Define the current step component
-  const renderCurrentStep = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <TreatmentTypeStep 
-            selectedType={selectedTreatmentType}
-            onSelect={setSelectedTreatmentType}
-            onNext={handleNextStep}
-          />
-        );
-      case 1:
-        return (
-          <DeliveryOptionsStep 
-            selectedOption={selectedDeliveryOption}
-            onSelect={setSelectedDeliveryOption}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 2:
-        return (
-          <PreviousPrescriptionStep 
-            hasPreviousPrescription={hasPreviousPrescription}
-            onSelect={setHasPreviousPrescription}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 3:
-        return (
-          <ConsentStep 
-            consents={consents}
-            onConsentChange={handleConsentChange}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 4:
-        return (
-          <SymptomsStep 
-            symptoms={symptoms}
-            onSymptomChange={handleSymptomChange}
-            description={symptomDescription}
-            onDescriptionChange={setSymptomDescription}
-            symptomIntensity={symptomIntensity}
-            onSymptomIntensityChange={setSymptomIntensity}
-            symptomDuration={symptomDuration}
-            onSymptomDurationChange={setSymptomDuration}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 5:
-        return (
-          <PreviousTreatmentsStep 
-            visitedDoctor={visitedDoctor}
-            onVisitedDoctorChange={setVisitedDoctor}
-            doctorTypes={doctorTypes}
-            onDoctorTypeChange={handleDoctorTypeChange}
-            tookMedication={tookMedication}
-            onTookMedicationChange={setTookMedication}
-            medicationDetails={medicationDetails}
-            onMedicationDetailsChange={setMedicationDetails}
-            nonMedicalTherapies={nonMedicalTherapies}
-            onNonMedicalTherapyChange={handleNonMedicalTherapyChange}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 6:
-        return (
-          <ExclusionCriteriaStep 
-            isOver21={isOver21}
-            onIsOver21Change={setIsOver21}
-            isPregnantOrNursing={isPregnantOrNursing}
-            onIsPregnantOrNursingChange={setIsPregnantOrNursing}
-            highTHCConsumption={highTHCConsumption}
-            onHighTHCConsumptionChange={setHighTHCConsumption}
-            preExistingConditions={preExistingConditions}
-            onPreExistingConditionChange={handlePreExistingConditionChange}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 7:
-        return (
-          <CannabisExperienceStep 
-            hasCannabisExperience={hasCannabisExperience}
-            onHasCannabisExperienceChange={setHasCannabisExperience}
-            hadSideEffects={hadSideEffects}
-            onHadSideEffectsChange={setHadSideEffects}
-            treatmentGoals={treatmentGoals}
-            onTreatmentGoalChange={handleTreatmentGoalChange}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 8:
-        return (
-          <ProductSelectionStep 
-            selectedProducts={selectedProducts}
-            onProductSelectChange={handleProductSelectChange}
-            onNext={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 9:
-        return (
-          <CheckoutStep 
-            totalAmount={calculateTotalAmount()}
-            onComplete={handleNextStep}
-            onBack={handlePreviousStep}
-          />
-        );
-      case 10:
-        return (
-          <CompletionStep treatmentType={selectedTreatmentType} />
-        );
-      default:
-        return null;
+
+  const submitForm = () => {
+    if (step === 2) {
+      step2Form.handleSubmit(async (data) => {
+        setIsDialogOpen(true);
+
+        // Simulate form submission
+        setTimeout(() => {
+          setIsDialogOpen(false);
+          setStep(3);
+          setProgress(100);
+          // TODO: Submit data to Supabase and create user
+          console.log("Submitting data:", data);
+          toast({
+            title: "Erfolgreich!",
+            description: "Dein Fragebogen wurde erfolgreich übermittelt.",
+          });
+        }, 2000);
+      })();
     }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      
-      <main className="page-container">
-        <div className="max-w-3xl mx-auto">
-          {currentStep < totalSteps - 1 && (
-            <StepIndicator currentStep={currentStep} totalSteps={totalSteps - 1} />
-          )}
-          
-          {renderCurrentStep()}
-        </div>
-      </main>
-      
-      <Footer />
+    <div className="container mx-auto py-12">
+      <div className="mb-8 flex items-center">
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mr-4">
+          Zurück
+        </Button>
+        <h1 className="text-3xl font-bold">Medizinisches Cannabis - Fragebogen</h1>
+      </div>
+
+      <Progress value={progress} className="mb-6" />
+
+      {step === 1 && (
+        <FormProvider {...step1Form}>
+          <Form>
+            <form onSubmit={step1Form.handleSubmit(nextStep)} className="space-y-8">
+              <FormField
+                control={step1Form.control}
+                name="treatmentType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Wie möchtest du behandelt werden?</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Wähle eine Option" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {treatmentTypeOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div>
+                <Button type="button" onClick={nextStep}>
+                  Weiter
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </FormProvider>
+      )}
+
+      {step === 2 && (
+        <FormProvider {...step2Form}>
+          <Form>
+            <form onSubmit={step2Form.handleSubmit(submitForm)} className="space-y-8">
+              <FormField
+                control={step2Form.control}
+                name="symptoms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Bitte beschreibe deine Symptome</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Ich leide unter..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Eine detaillierte Beschreibung hilft uns, dich besser zu verstehen.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={step2Form.control}
+                name="painLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Wie stark sind deine Schmerzen?</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Schmerzniveau wählen" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="mild">Leicht</SelectItem>
+                        <SelectItem value="moderate">Mittel</SelectItem>
+                        <SelectItem value="severe">Stark</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={step2Form.control}
+                name="previousTreatments"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Welche Behandlungen hast du bereits ausprobiert?</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Ich habe bereits..." {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Bitte gib alle Behandlungen an, die du bereits versucht hast.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={step2Form.control}
+                name="medicalConditions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hast du Vorerkrankungen?</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Wenn ja, welche?" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Bitte gib alle relevanten Vorerkrankungen an.
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={step2Form.control}
+                name="medicationList"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nimmst du aktuell Medikamente ein?</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Wenn ja, welche?" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Bitte gib alle Medikamente an, die du aktuell einnimmst.
+                    </FormDescription>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={step2Form.control}
+                name="consent"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Ich stimme den{" "}
+                        <a
+                          href="/datenschutz"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2"
+                        >
+                          Datenschutzbestimmungen
+                        </a>{" "}
+                        und{" "}
+                        <a
+                          href="/agb"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline underline-offset-2"
+                        >
+                          AGB
+                        </a>{" "}
+                        zu.
+                      </FormLabel>
+                      <FormDescription>
+                        Du musst zustimmen, um fortzufahren.
+                      </FormDescription>
+                      <FormMessage />
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevStep}>
+                  Zurück
+                </Button>
+                <Button type="button" onClick={submitForm}>
+                  Absenden
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </FormProvider>
+      )}
+
+      {step === 3 && (
+        <CompletionStep treatmentType={treatmentType || "fragebogen"} />
+      )}
+
+      <AlertDialog open={isDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Bitte warten</AlertDialogTitle>
+            <AlertDialogDescription>
+              Dein Fragebogen wird jetzt übermittelt. Bitte schließe dieses Fenster nicht.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

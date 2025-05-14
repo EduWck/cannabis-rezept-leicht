@@ -2,6 +2,9 @@
 // If this file already exists, we need to add these types to it
 import { Json } from '@/integrations/supabase/types';
 
+// Add the UserRole type for authentication
+export type UserRole = 'patient' | 'doctor' | 'admin';
+
 export interface Prescription {
   id: string;
   patient_id: string;

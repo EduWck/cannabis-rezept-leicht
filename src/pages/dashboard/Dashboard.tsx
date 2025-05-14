@@ -451,7 +451,21 @@ const PendingRequests = () => {
             .limit(5);
 
           if (error) throw error;
-          setRequests(data || []);
+          
+          // Ensure data conforms to the Prescription type before setting it
+          const validRequests = (data || []).map(req => {
+            // Ensure we have a valid patient object
+            const validPatient = req.patient && !('error' in req.patient) 
+              ? req.patient 
+              : { first_name: null, last_name: null };
+            
+            return {
+              ...req,
+              patient: validPatient
+            };
+          });
+          
+          setRequests(validRequests);
         }
       } catch (error) {
         console.error("Error fetching requests:", error);

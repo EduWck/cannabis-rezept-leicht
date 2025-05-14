@@ -39,14 +39,6 @@ const toastState = {
   toasts: [],
 }
 
-type Toast = {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-  variant?: "default" | "destructive" | "success"
-}
-
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
   UPDATE_TOAST: "UPDATE_TOAST",

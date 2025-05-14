@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,7 +38,7 @@ const OrdersPage = () => {
       
       setLoading(true);
       try {
-        // Direkter Zugriff auf die orders-Tabelle ohne JOIN mit profiles
+        // Verbesserte Fehlerbehandlung beim Datenabruf
         const { data, error } = await supabase
           .from("orders")
           .select(`
@@ -61,9 +60,10 @@ const OrdersPage = () => {
         setOrders(data || []);
       } catch (error: any) {
         console.error("Error fetching orders:", error);
+        // Vereinfachte Fehlermeldung für Benutzer
         toast({
           title: "Fehler",
-          description: "Bestellungen konnten nicht geladen werden: " + (error?.message || "Unbekannter Fehler"),
+          description: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
           variant: "destructive",
         });
       } finally {

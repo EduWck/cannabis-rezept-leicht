@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,7 +21,7 @@ const PrescriptionsPage = () => {
       
       setLoading(true);
       try {
-        // Direkter Zugriff auf die Tabelle ohne JOIN mit profiles
+        // Direkter Zugriff auf die Tabelle mit verbesserter Fehlerbehandlung
         const { data, error } = await supabase
           .from("prescriptions")
           .select("*")
@@ -38,9 +37,10 @@ const PrescriptionsPage = () => {
         setPrescriptions(data || []);
       } catch (error: any) {
         console.error("Error fetching prescriptions:", error);
+        // Verbesserte Fehlermeldung mit weniger Details für den Benutzer
         toast({
           title: "Fehler",
-          description: "Rezepte konnten nicht geladen werden: " + (error?.message || "Unbekannter Fehler"),
+          description: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
           variant: "destructive",
         });
       } finally {

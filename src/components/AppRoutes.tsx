@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -23,29 +24,20 @@ import PatientDashboard from "@/pages/dashboard/patient/PatientDashboard";
 import PatientProfile from "@/pages/dashboard/patient/PatientProfile";
 import PrescriptionsPage from "@/pages/dashboard/patient/PrescriptionsPage";
 import OrdersPage from "@/pages/dashboard/patient/OrdersPage";
-import UsersManagementPage from "@/pages/dashboard/admin/UsersManagementPage";
-
-// Create placeholder components for missing pages
-const DummyPage = ({ title }: { title: string }) => (
-  <div className="container mx-auto py-8">
-    <h1 className="text-2xl font-bold mb-6">{title}</h1>
-    <p>Diese Seite ist noch in Entwicklung.</p>
-  </div>
-);
+import AppointmentsPage from "@/pages/dashboard/patient/AppointmentsPage";
 
 // Admin pages
-const AllPrescriptionsPage = () => <DummyPage title="Alle Rezepte" />;
-const AllOrdersPage = () => <DummyPage title="Alle Bestellungen" />;
-const ProductsPage = () => <DummyPage title="Produkte verwalten" />;
-const SettingsPage = () => <DummyPage title="Einstellungen" />;
+import UsersManagementPage from "@/pages/dashboard/admin/UsersManagementPage";
+import AllPrescriptionsPage from "@/pages/dashboard/admin/AllPrescriptionsPage";
+import AllOrdersPage from "@/pages/dashboard/admin/AllOrdersPage";
+import AllAppointmentsPage from "@/pages/dashboard/admin/AllAppointmentsPage";
+import ProductsPage from "@/pages/dashboard/admin/ProductsPage";
+import SettingsPage from "@/pages/dashboard/admin/SettingsPage";
 
 // Doctor pages
-const PatientsPage = () => <DummyPage title="Patientenliste" />;
-const CalendarPage = () => <DummyPage title="Terminkalender" />;
-const RequestsPage = () => <DummyPage title="Behandlungsanfragen" />;
-
-// Patient pages
-const AppointmentsPage = () => <DummyPage title="Meine Termine" />;
+import PatientsPage from "@/pages/dashboard/doctor/PatientsPage";
+import CalendarPage from "@/pages/dashboard/doctor/CalendarPage";
+import RequestsPage from "@/pages/dashboard/doctor/RequestsPage";
 
 const AppRoutes = () => {
   return (
@@ -144,6 +136,7 @@ const AppRoutes = () => {
         <Route path="/dashboard/users" element={<UsersManagementPage />} />
         <Route path="/dashboard/all-prescriptions" element={<AllPrescriptionsPage />} />
         <Route path="/dashboard/all-orders" element={<AllOrdersPage />} />
+        <Route path="/dashboard/all-appointments" element={<AllAppointmentsPage />} />
         <Route path="/dashboard/products" element={<ProductsPage />} />
         <Route path="/dashboard/settings" element={<SettingsPage />} />
         

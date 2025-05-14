@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -14,49 +14,82 @@ import {
   LogOut,
   Menu,
   X,
+  Users,
+  ShoppingBag,
+  Stethoscope,
+  MessageSquare,
+  PackageOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-is-mobile";
+
+// Define the dashboard routes for each role
+const patientRoutes = [
+  { name: "Dashboard", href: "/dashboard/patient", icon: LayoutDashboard },
+  { name: "Meine Rezepte", href: "/dashboard/prescriptions", icon: FileText },
+  { name: "Bestellungen", href: "/dashboard/orders", icon: ShoppingCart },
+  { name: "Termine", href: "/dashboard/appointments", icon: Calendar },
+  { name: "Profil", href: "/dashboard/profile", icon: User },
+];
+
+const doctorRoutes = [
+  { name: "Dashboard", href: "/dashboard/doctor", icon: LayoutDashboard },
+  { name: "Behandlungsanfragen", href: "/dashboard/requests", icon: MessageSquare },
+  { name: "Patienten", href: "/dashboard/patients", icon: User },
+  { name: "Terminkalender", href: "/dashboard/calendar", icon: Calendar },
+];
+
+const adminRoutes = [
+  { name: "Dashboard", href: "/dashboard/admin", icon: LayoutDashboard },
+  { name: "Benutzer verwalten", href: "/dashboard/users", icon: Users },
+  { name: "Rezepte", href: "/dashboard/all-prescriptions", icon: FileText },
+  { name: "Bestellungen", href: "/dashboard/all-orders", icon: ShoppingCart },
+  { name: "Termine", href: "/dashboard/all-appointments", icon: Calendar },
+  { name: "Produkte", href: "/dashboard/products", icon: PackageOpen },
+  { name: "Einstellungen", href: "/dashboard/settings", icon: Settings },
+];
 
 const DashboardLayout = () => {
   const { signOut, userRole, profile, user } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
-  // Determine navigation items based on current path
-  let navigation = [
-    { name: "Dashboard Auswahl", href: "/dashboard", icon: LayoutDashboard },
-  ];
+  // Determine which role's navigation to show based on current path
+  const [currentRole, setCurrentRole] = useState<"admin" | "doctor" | "patient" | null>(null);
 
-  // Determine which navigation items to show based on current path
-  if (pathname.includes('/dashboard/patient')) {
-    navigation = [
-      ...navigation,
-      { name: "Meine Rezepte", href: "/dashboard/prescriptions", icon: FileText },
-      { name: "Bestellungen", href: "/dashboard/orders", icon: ShoppingCart },
-      { name: "Termine", href: "/dashboard/appointments", icon: Calendar },
-      { name: "Profil", href: "/dashboard/profile", icon: User },
-    ];
+  // Update current role based on path
+  useEffect(() => {
+    if (pathname.includes('/dashboard/admin')) {
+      setCurrentRole("admin");
+    } else if (pathname.includes('/dashboard/doctor')) {
+      setCurrentRole("doctor");
+    } else if (pathname.includes('/dashboard/patient') || 
+               pathname.includes('/dashboard/profile') || 
+               pathname.includes('/dashboard/prescriptions') || 
+               pathname.includes('/dashboard/orders') || 
+               pathname.includes('/dashboard/appointments')) {
+      setCurrentRole("patient");
+    }
+  }, [pathname]);
+
+  // Select navigation items based on current role
+  let navigation = [];
+  
+  if (currentRole === "admin") {
+    navigation = adminRoutes;
+  } else if (currentRole === "doctor") {
+    navigation = doctorRoutes;
+  } else if (currentRole === "patient") {
+    navigation = patientRoutes;
   }
 
-  if (pathname.includes('/dashboard/doctor')) {
+  // Always add Dashboard Selector to navigation
+  if (navigation.length > 0 && navigation[0].href !== "/dashboard") {
     navigation = [
-      ...navigation,
-      { name: "Behandlungsanfragen", href: "/dashboard/requests", icon: FileText },
-      { name: "Patienten", href: "/dashboard/patients", icon: User },
-      { name: "Terminkalender", href: "/dashboard/calendar", icon: Calendar },
-    ];
-  }
-
-  if (pathname.includes('/dashboard/admin')) {
-    navigation = [
-      ...navigation,
-      { name: "Benutzer verwalten", href: "/dashboard/users", icon: User },
-      { name: "Rezepte", href: "/dashboard/all-prescriptions", icon: FileText },
-      { name: "Bestellungen", href: "/dashboard/all-orders", icon: ShoppingCart },
-      { name: "Termine", href: "/dashboard/all-appointments", icon: Calendar },
-      { name: "Produkte", href: "/dashboard/products", icon: ShoppingCart },
-      { name: "Einstellungen", href: "/dashboard/settings", icon: Settings },
+      { name: "Dashboard Auswahl", href: "/dashboard", icon: LayoutDashboard },
+      ...navigation
     ];
   }
 
@@ -113,6 +146,39 @@ const DashboardLayout = () => {
               })}
             </nav>
             
+            {/* Role switcher in mobile menu */}
+            {currentRole && (
+              <div className="my-4 border-t pt-4 dark:border-gray-700">
+                <h3 className="mb-2 text-sm font-medium text-muted-foreground">Wechseln zu</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button 
+                    variant={currentRole === "patient" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => navigate("/dashboard/patient")}
+                    className="justify-start"
+                  >
+                    <User className="mr-1 h-4 w-4" /> Patient
+                  </Button>
+                  <Button 
+                    variant={currentRole === "doctor" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => navigate("/dashboard/doctor")}
+                    className="justify-start"
+                  >
+                    <Stethoscope className="mr-1 h-4 w-4" /> Arzt
+                  </Button>
+                  <Button 
+                    variant={currentRole === "admin" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => navigate("/dashboard/admin")}
+                    className="justify-start"
+                  >
+                    <Users className="mr-1 h-4 w-4" /> Admin
+                  </Button>
+                </div>
+              </div>
+            )}
+            
             <div className="mt-auto border-t pt-4 dark:border-gray-700">
               <div className="mb-2 flex items-center">
                 <div className="h-8 w-8 rounded-full bg-cannabis-green-200 p-1 text-center font-semibold text-cannabis-green-800">
@@ -121,9 +187,7 @@ const DashboardLayout = () => {
                 <div className="ml-2">
                   <p className="text-sm font-medium">Testmodus</p>
                   <p className="text-xs text-gray-500 capitalize">
-                    {pathname.includes('/admin') ? 'Administrator' : 
-                     pathname.includes('/doctor') ? 'Arzt' : 
-                     pathname.includes('/patient') ? 'Patient' : 'Benutzer'}
+                    {currentRole || "Benutzer"}
                   </p>
                 </div>
               </div>
@@ -170,6 +234,41 @@ const DashboardLayout = () => {
             </nav>
           </div>
           
+          {/* Role switcher in desktop sidebar */}
+          {currentRole && (
+            <div className="mx-2 my-4 border-t pt-4 dark:border-gray-700">
+              <h3 className="mb-2 px-2 text-sm font-medium text-muted-foreground">Wechseln zu</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <Button 
+                  variant={currentRole === "patient" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => navigate("/dashboard/patient")}
+                >
+                  <User className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={currentRole === "doctor" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => navigate("/dashboard/doctor")}
+                >
+                  <Stethoscope className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant={currentRole === "admin" ? "default" : "outline"} 
+                  size="sm"
+                  onClick={() => navigate("/dashboard/admin")}
+                >
+                  <Users className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="mt-1 grid grid-cols-3 gap-2 text-center text-xs">
+                <div>Patient</div>
+                <div>Arzt</div>
+                <div>Admin</div>
+              </div>
+            </div>
+          )}
+          
           <div className="border-t p-4 dark:border-gray-700">
             <div className="mb-4 flex items-center">
               <div className="h-10 w-10 rounded-full bg-cannabis-green-200 p-1 text-center font-semibold leading-8 text-cannabis-green-800">
@@ -178,9 +277,7 @@ const DashboardLayout = () => {
               <div className="ml-2">
                 <p className="font-medium">Testmodus</p>
                 <p className="text-sm text-gray-500 capitalize">
-                  {pathname.includes('/admin') ? 'Administrator' : 
-                   pathname.includes('/doctor') ? 'Arzt' : 
-                   pathname.includes('/patient') ? 'Patient' : 'Benutzer'}
+                  {currentRole || "Benutzer"}
                 </p>
               </div>
             </div>

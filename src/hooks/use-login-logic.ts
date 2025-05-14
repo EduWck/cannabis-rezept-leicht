@@ -25,6 +25,7 @@ export function useLoginLogic() {
       // Check for hash parameters that might indicate a magic link or token
       const hash = window.location.hash;
       if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
+        console.log("Hash params detected, possible auth callback:", hash);
         toast({
           title: "Automatische Anmeldung",
           description: "Sie werden angemeldet..."
@@ -39,12 +40,19 @@ export function useLoginLogic() {
   useEffect(() => {
     if (!isLoading && user && userRole) {
       console.log("User is logged in, redirecting based on role:", userRole);
-      redirectUserBasedOnRole(userRole);
+      
+      // Use timeout to ensure state updates complete first
+      setTimeout(() => {
+        redirectUserBasedOnRole(userRole);
+      }, 0);
     }
-  }, [user, userRole, isLoading, navigate]);
+  }, [user, userRole, isLoading]);
 
   const redirectUserBasedOnRole = (role: UserRole) => {
     console.log("Redirecting based on role:", role);
+    
+    const from = location.state?.from || "/dashboard";
+    
     switch(role) {
       case 'patient':
         navigate('/dashboard/profile', { replace: true });
@@ -64,7 +72,7 @@ export function useLoginLogic() {
   return {
     user,
     userRole,
-    isLoading: isLoading,
+    isLoading,
     loading,
     setLoading,
     errorMessage,

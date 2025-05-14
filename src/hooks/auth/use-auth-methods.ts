@@ -12,6 +12,7 @@ export function useAuthMethods() {
   const signIn = async (email: string, password: string): Promise<boolean> => {
     try {
       setIsProcessing(true);
+      console.log("Attempting to sign in with email and password:", email);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -28,6 +29,10 @@ export function useAuthMethods() {
       }
 
       console.log("Login successful:", data.user?.id);
+      toast({
+        title: "Login erfolgreich",
+        description: "Sie wurden erfolgreich angemeldet."
+      });
       return true;
     } catch (error: any) {
       console.error("Unexpected login error:", error.message);
@@ -47,17 +52,20 @@ export function useAuthMethods() {
    */
   const signOut = async (): Promise<void> => {
     try {
+      console.log("Attempting to sign out");
+      setIsProcessing(true);
       const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Logout error:", error.message);
-        toast({
-          title: "Logout fehlgeschlagen", 
-          description: error.message, 
-          variant: "destructive"
-        });
+        throw error;
       }
+      console.log("Logout successful");
+      // Note: We don't show toast here as the component calling this should handle it
     } catch (error: any) {
       console.error("Unexpected logout error:", error.message);
+      throw error;
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -67,6 +75,7 @@ export function useAuthMethods() {
   const requestLoginCode = async (email: string) => {
     try {
       setIsProcessing(true);
+      console.log("Requesting login code for:", email);
       
       // For development environment, use the serverless function
       const response = await supabase.functions.invoke('send-login-code', {

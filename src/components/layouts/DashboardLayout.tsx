@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import {
   LayoutDashboard,
   FileText,
@@ -23,8 +24,21 @@ const DashboardLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/login");
+    try {
+      await signOut();
+      toast({
+        title: "Erfolgreich abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet."
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Fehler beim Abmelden",
+        description: "Es gab ein Problem beim Abmelden.",
+        variant: "destructive"
+      });
+    }
   };
 
   let navigation = [

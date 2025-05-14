@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Leaf, Menu, LogOut } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -16,8 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 const navItems = [
   {
@@ -48,8 +49,27 @@ const userLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, userRole } = useAuth();
+  const { user, userRole, signOut } = useAuth();
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Erfolgreich abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet."
+      });
+      navigate("/login");
+    } catch (error) {
+      console.error("Error signing out:", error);
+      toast({
+        title: "Fehler beim Abmelden",
+        description: "Es gab ein Problem beim Abmelden.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <header className="fixed top-0 z-50 w-full border-b bg-background">
@@ -108,7 +128,7 @@ export default function Navbar() {
                 ))}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => useAuth().signOut()}
+                  onClick={handleSignOut}
                   className="cursor-pointer"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -161,7 +181,7 @@ export default function Navbar() {
                     ))}
                     <button
                       onClick={() => {
-                        useAuth().signOut();
+                        handleSignOut();
                         setIsOpen(false);
                       }}
                       className="flex items-center"

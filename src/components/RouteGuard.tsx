@@ -15,12 +15,9 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
-  const [redirectedOnce, setRedirectedOnce] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // Prevent repeated authorization checks if we already redirected once
-    if (redirectedOnce) return;
-
     const checkAuthorization = () => {
       // If still loading authentication state, wait
       if (isLoading) {
@@ -29,11 +26,11 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       }
 
       console.log("RouteGuard check - User:", user?.id, "Role:", userRole, "Path:", location.pathname);
+      setAuthChecked(true);
       
       // If no user is logged in, redirect to login
       if (!user) {
         console.log("No user detected, redirecting to login");
-        setRedirectedOnce(true);
         navigate("/login", { state: { from: location.pathname } });
         return;
       }
@@ -54,7 +51,6 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       // Patient redirection - If user is a patient, always redirect to profile page when on main dashboard
       if (userRole === "patient" && location.pathname === "/dashboard") {
         console.log("Patient detected on dashboard, redirecting to profile");
-        setRedirectedOnce(true);
         navigate("/dashboard/profile", { replace: true });
         return;
       }
@@ -65,7 +61,6 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         setIsAuthorized(true);
       } else {
         console.log(`User role ${userRole} not authorized for this route`);
-        setRedirectedOnce(true);
         
         // Redirect based on role
         if (userRole === "patient") {
@@ -91,23 +86,14 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
     };
 
     checkAuthorization();
-  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, redirectedOnce]);
+  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname]);
 
-  // Reset redirectedOnce when location changes significantly
-  useEffect(() => {
-    const pathname = location.pathname;
-    return () => {
-      // Only reset if navigating to a completely different section
-      if (!pathname.includes(location.pathname.split('/')[1])) {
-        setRedirectedOnce(false);
-      }
-    };
-  }, [location.pathname]);
-
-  if (isLoading) {
+  // Show loading state only when authorization check is in progress
+  if (isLoading || !authChecked) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500" />
+        <span className="ml-2">Überprüfe Zugangsberechtigung...</span>
       </div>
     );
   }

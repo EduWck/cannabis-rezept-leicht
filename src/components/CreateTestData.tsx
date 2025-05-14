@@ -12,10 +12,12 @@ export const CreateTestData = () => {
   const [creatingData, setCreatingData] = useState(false);
   const [userCreated, setUserCreated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const handleCreateTestUsers = async () => {
     setCreatingUsers(true);
     setError(null);
+    setSuccess(null);
     
     try {
       const data = await createTestUsers();
@@ -26,6 +28,8 @@ export const CreateTestData = () => {
       });
       
       setUserCreated(true);
+      setSuccess("Test-Benutzer wurden erfolgreich erstellt.");
+      return data;
     } catch (error: any) {
       console.error("Error creating test users:", error);
       
@@ -36,6 +40,8 @@ export const CreateTestData = () => {
         description: `Test-Benutzer konnten nicht erstellt werden: ${error.message}`,
         variant: "destructive",
       });
+      
+      throw error;
     } finally {
       setCreatingUsers(false);
     }
@@ -44,11 +50,18 @@ export const CreateTestData = () => {
   const handleCreateTestData = async () => {
     setCreatingData(true);
     setError(null);
+    setSuccess(null);
     
     try {
       // First ensure test users exist
       if (!userCreated) {
-        await handleCreateTestUsers();
+        try {
+          await handleCreateTestUsers();
+        } catch (error) {
+          // Error already handled in handleCreateTestUsers
+          setCreatingData(false);
+          return;
+        }
       }
       
       const result = await createTestData();
@@ -57,6 +70,8 @@ export const CreateTestData = () => {
         title: "Test-Daten erstellt",
         description: "Rezepte und Bestellungen wurden erfolgreich erstellt.",
       });
+      
+      setSuccess("Rezepte und Bestellungen wurden erfolgreich erstellt.");
     } catch (error: any) {
       console.error("Error creating test data:", error);
       
@@ -79,6 +94,14 @@ export const CreateTestData = () => {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Fehler</AlertTitle>
           <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {success && (
+        <Alert variant="default" className="bg-green-50 text-green-800 border-green-200">
+          <AlertCircle className="h-4 w-4 text-green-600" />
+          <AlertTitle>Erfolg</AlertTitle>
+          <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
       

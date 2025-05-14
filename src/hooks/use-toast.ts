@@ -1,7 +1,5 @@
 
-import { Toast, toast as sonnerToast, ToastActionElement } from "sonner";
-
-type ToastProps = React.ComponentProps<typeof Toast>;
+import { toast as sonnerToast } from "sonner";
 
 type ToastActionProps = {
   altText: string;
@@ -13,7 +11,7 @@ export type ToastOptions = {
   title?: string;
   description?: React.ReactNode;
   variant?: "default" | "destructive";
-  action?: ToastActionElement;
+  action?: React.ReactNode;
   duration?: number;
 };
 

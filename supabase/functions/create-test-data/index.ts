@@ -20,69 +20,165 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Find the test patient by email
-    const { data: patients, error: patientError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", "patient@example.com")
-      .eq("role", "patient")
-      .limit(1);
-      
-    if (patientError) {
-      console.error("Error finding test patient:", patientError);
-      throw patientError;
-    }
+    // Create test users first to ensure they exist
+    console.log("Creating test users first");
     
-    // If patient doesn't exist, create the test users first
-    let patientId;
+    // Directly create test users without invoking edge function to avoid circular dependencies
+    const testUsers = [
+      {
+        email: "patient@example.com",
+        password: "password",
+        role: "patient",
+        first_name: "Test",
+        last_name: "Patient"
+      },
+      {
+        email: "doctor@example.com",
+        password: "password",
+        role: "doctor",
+        first_name: "Test",
+        last_name: "Doctor"
+      },
+      {
+        email: "admin@example.com",
+        password: "password",
+        role: "admin",
+        first_name: "Test",
+        last_name: "Admin"
+      },
+    ];
     
-    if (!patients || patients.length === 0) {
-      // Call the create-test-users function to ensure we have users
-      console.log("Test patient not found, creating test users first");
-      
-      // Invoke the create-test-users function
-      const { data: usersData, error: usersError } = await supabase.functions.invoke('create-test-users');
-      
-      if (usersError) {
-        console.error("Error creating test users:", usersError);
-        throw new Error(`Failed to create test users: ${usersError.message}`);
-      }
-      
-      // Query again for the patient
-      const { data: newPatients, error: newPatientError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", "patient@example.com")
-        .eq("role", "patient")
-        .limit(1);
+    // Array to store results
+    const userResults = [];
+    
+    // Process each user
+    for (const user of testUsers) {
+      try {
+        console.log(`Processing user: ${user.email} with role ${user.role}`);
         
-      if (newPatientError || !newPatients || newPatients.length === 0) {
-        throw new Error("Failed to create and retrieve test patient");
+        // Check if user already exists
+        const { data: existingUsers, error: searchError } = await supabase.auth
+          .admin.listUsers({ filter: `email eq "${user.email}"` });
+          
+        if (searchError) {
+          console.error(`Error searching for user ${user.email}:`, searchError);
+          userResults.push({ 
+            email: user.email, 
+            status: "error", 
+            message: `Error searching: ${searchError.message}` 
+          });
+          continue;
+        }
+          
+        let userId;
+        
+        if (existingUsers && existingUsers.users.length > 0) {
+          console.log(`User ${user.email} already exists, updating...`);
+          
+          // Use existing user ID
+          userId = existingUsers.users[0].id;
+          
+          // Update the profile
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update({ 
+              role: user.role,
+              first_name: user.first_name,
+              last_name: user.last_name
+            })
+            .eq("id", userId);
+            
+          if (profileError) {
+            console.error(`Error updating profile for ${user.email}:`, profileError);
+            userResults.push({
+              email: user.email,
+              status: "warning",
+              message: `User exists but profile update failed: ${profileError.message}`
+            });
+            continue;
+          }
+          
+          userResults.push({ 
+            email: user.email, 
+            role: user.role, 
+            status: "updated",
+            id: userId
+          });
+        } else {
+          console.log(`Creating new user: ${user.email}`);
+          // Create new user
+          const { data, error } = await supabase.auth.admin.createUser({
+            email: user.email,
+            password: user.password,
+            email_confirm: true,
+            user_metadata: { role: user.role }
+          });
+          
+          if (error) {
+            console.error(`Error creating user ${user.email}:`, error);
+            userResults.push({ 
+              email: user.email, 
+              status: "error", 
+              message: `Creation failed: ${error.message}` 
+            });
+            continue;
+          }
+          
+          userId = data.user.id;
+          
+          // Update profile too
+          const { error: profileError } = await supabase
+            .from("profiles")
+            .update({ 
+              role: user.role,
+              first_name: user.first_name,
+              last_name: user.last_name
+            })
+            .eq("id", userId);
+            
+          if (profileError) {
+            console.error(`Error updating profile for ${user.email}:`, profileError);
+            userResults.push({
+              email: user.email,
+              status: "warning",
+              message: `User created but profile failed: ${profileError.message}`
+            });
+            continue;
+          }
+          
+          userResults.push({ 
+            email: user.email, 
+            role: user.role, 
+            status: "created",
+            id: userId
+          });
+        }
+      } catch (error) {
+        console.error(`Error processing user ${user.email}:`, error);
+        userResults.push({ 
+          email: user.email, 
+          status: "error", 
+          message: error.message 
+        });
       }
-      
-      patientId = newPatients[0].id;
-    } else {
-      patientId = patients[0].id;
     }
     
-    // Find the test doctor
-    const { data: doctors, error: doctorError } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", "doctor@example.com")
-      .eq("role", "doctor")
-      .limit(1);
+    console.log("User results:", userResults);
     
-    if (doctorError) {
-      console.error("Error finding test doctor:", doctorError);
-      throw doctorError;
+    // Find the test patient by email from our results
+    const patientResult = userResults.find(user => user.email === "patient@example.com" && (user.status === "created" || user.status === "updated"));
+    const doctorResult = userResults.find(user => user.email === "doctor@example.com" && (user.status === "created" || user.status === "updated"));
+    
+    if (!patientResult || !patientResult.id) {
+      throw new Error("Failed to create or find test patient");
     }
     
-    if (!doctors || doctors.length === 0) {
-      throw new Error("Test doctor not found. Please make sure test users were created successfully.");
+    if (!doctorResult || !doctorResult.id) {
+      throw new Error("Failed to create or find test doctor");
     }
     
-    const doctorId = doctors[0].id;
+    const patientId = patientResult.id;
+    const doctorId = doctorResult.id;
     
     console.log(`Creating test data for patient ID: ${patientId} and doctor ID: ${doctorId}`);
     

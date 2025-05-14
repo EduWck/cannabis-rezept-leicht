@@ -54,20 +54,8 @@ export function useAuthProvider() {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // Fix: Use the rpc function without specifying type parameters
-      // Let TypeScript infer the types instead
-      const { data: adminData, error: adminError } = await supabase.rpc('get_profile_by_id', {
-        user_id: userId
-      });
-      
-      if (!adminError && adminData) {
-        console.log("Fetched user profile via RPC:", adminData);
-        setProfile(adminData as Profile);
-        setUserRole((adminData as Profile).role as UserRole || null);
-        return;
-      }
-      
-      // Fallback to standard query if RPC doesn't exist yet
+      // Skip the RPC function that's causing the error
+      // and directly query the profiles table
       const { data, error } = await supabase
         .from("profiles")
         .select("*")

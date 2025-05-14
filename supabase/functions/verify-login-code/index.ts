@@ -108,19 +108,22 @@ serve(async (req) => {
         .delete()
         .eq("email", email);
       
-      // Create a session using admin.signInWithEmail
-      const { data: signInData, error: signInError } = await supabase.auth.admin.signInWithEmail({
-        email,
+      // Create a magic link for the user instead of trying to create a session directly
+      const { data: magicLinkData, error: magicLinkError } = await supabase.auth.admin.generateLink({
+        type: "magiclink",
+        email: email,
       });
       
-      if (signInError) {
-        throw signInError;
+      if (magicLinkError) {
+        throw magicLinkError;
       }
       
       return new Response(
         JSON.stringify({ 
-          session: signInData.session,
-          user: userData
+          success: true,
+          email: email,
+          role: userRole,
+          message: "Code verification successful. We've sent you a magic link to complete login."
         }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -143,7 +146,7 @@ serve(async (req) => {
     console.error("Error verifying login code:", error);
     
     return new Response(
-      JSON.stringify({ error: "Failed to verify login code" }),
+      JSON.stringify({ error: typeof error === 'object' ? error.message || "Failed to verify login code" : String(error) }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

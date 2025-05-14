@@ -33,19 +33,8 @@ serve(async (req) => {
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 15); // Code valid for 15 minutes
     
-    // Store the code
-    const { data: existingUser, error: fetchError } = await supabase
-      .from("profiles")
-      .select("email")
-      .eq("email", email)
-      .single();
-    
-    if (fetchError && fetchError.code !== "PGRST116") {
-      throw new Error("Failed to check user existence");
-    }
-    
-    // If user doesn't exist, we'll still send a code but it won't be usable
-    // This prevents user enumeration attacks
+    // Store the code - removed validation against profiles as it's not necessary
+    // and can cause issues with new users
     
     // Delete any existing codes for this email
     await supabase

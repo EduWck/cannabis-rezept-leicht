@@ -129,7 +129,7 @@ export function useAuthMethods() {
         return false;
       }
       
-      // Handle the simplified successful response
+      // Handle the success response
       if (response.data?.success) {
         console.log("Code verification successful for:", response.data.email);
         
@@ -156,56 +156,6 @@ export function useAuthMethods() {
         return true;
       }
       
-      // Handle the direct session response
-      if (response.data?.session) {
-        console.log("Login successful with code, handling session");
-        
-        try {
-          // Use the manually created session
-          const { error } = await supabase.auth.setSession({
-            access_token: response.data.session.access_token,
-            refresh_token: response.data.session.refresh_token || "",
-          });
-          
-          if (error) {
-            console.error("Error setting session:", error);
-            throw error;
-          }
-          
-          console.log("Session set successfully");
-          return true;
-        } catch (sessionError: any) {
-          console.error("Session error:", sessionError);
-          
-          // Fallback to magic link
-          try {
-            console.log("Falling back to magic link");
-            const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-              email: email,
-            });
-            
-            if (magicLinkError) {
-              throw magicLinkError;
-            }
-            
-            toast({
-              title: "Login Link gesendet",
-              description: "Ein Login-Link wurde an Ihre E-Mail-Adresse gesendet."
-            });
-            
-            return true;
-          } catch (fallbackError: any) {
-            console.error("Fallback login failed:", fallbackError);
-            toast({
-              title: "Login fehlgeschlagen",
-              description: fallbackError.message || "Bitte versuchen Sie es später erneut.",
-              variant: "destructive"
-            });
-            return false;
-          }
-        }
-      }
-      
       // If we reach here, something unexpected happened
       toast({
         title: "Login fehlgeschlagen",
@@ -218,7 +168,7 @@ export function useAuthMethods() {
       console.error("Error verifying code:", error);
       toast({
         title: "Code konnte nicht verifiziert werden",
-        description: typeof error.message === 'string' ? error.message : "Ein unbekannter Fehler ist aufgetreten",
+        description: typeof error === 'object' && error.message ? error.message : "Ein unbekannter Fehler ist aufgetreten",
         variant: "destructive"
       });
       return false;

@@ -83,11 +83,22 @@ serve(async (req) => {
       // User doesn't exist, create a new user
       console.log("User doesn't exist, creating new user with email:", email);
       
-      const { data: newUser, error: signUpError } = await supabase.auth.admin.createUser({
+      // For doctor and admin, create with password for email/password login
+      let createOptions = {
         email,
         email_confirm: true,
         user_metadata: { role: userRole }
-      });
+      }; 
+      
+      // Add a password for admin/doctor accounts
+      if (userRole === 'doctor' || userRole === 'admin') {
+        createOptions = {
+          ...createOptions,
+          password: 'password' // Use a simple password for test accounts
+        };
+      }
+      
+      const { data: newUser, error: signUpError } = await supabase.auth.admin.createUser(createOptions);
       
       if (signUpError) {
         console.error("Failed to create new user:", signUpError);
@@ -111,6 +122,19 @@ serve(async (req) => {
       } else {
         userData = updatedUser;
         console.log(`Updated user ${userData.id} with role: ${userRole}`);
+      }
+      
+      // For doctor and admin users, make sure they have a password set
+      if (userRole === 'doctor' || userRole === 'admin') {
+        const { error: passwordError } = await supabase.auth.admin.updateUserById(userData.id, {
+          password: 'password' // Reset to a simple password for test accounts
+        });
+        
+        if (passwordError) {
+          console.error("Error setting password:", passwordError);
+        } else {
+          console.log("Password set for user");
+        }
       }
       
       // Check if profile exists, create if not
@@ -163,24 +187,6 @@ serve(async (req) => {
       .eq("email", email);
     
     console.log("Deleted auth code after successful verification");
-    
-    // For doctor and admin users, set password to allow login with email/password
-    if (userRole === 'doctor' || userRole === 'admin') {
-      // Generate a secure temporary password for admin/doctor accounts
-      const tempPassword = Math.random().toString(36).slice(-8);
-      
-      // Set the password for the user to enable password login
-      const { error: updatePwError } = await supabase.auth.admin.updateUserById(
-        userData.id,
-        { password: tempPassword }
-      );
-      
-      if (updatePwError) {
-        console.error("Error setting temporary password:", updatePwError);
-      } else {
-        console.log("Set temporary password for user");
-      }
-    }
     
     // Create a magic sign in link for the user
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({

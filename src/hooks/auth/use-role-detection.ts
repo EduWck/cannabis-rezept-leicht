@@ -167,7 +167,6 @@ export function useRoleDetection() {
       
     } catch (error) {
       console.error("Error detecting user role:", error);
-      // Don't show toast here as it might be annoying during automatic role detection
     } finally {
       setIsLoading(false);
     }

@@ -2,12 +2,10 @@
 import * as React from "react";
 import { toast as sonnerToast } from "sonner";
 
-export type ToastActionElement = React.ReactElement<unknown>;
-
 export type ToastProps = {
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: ToastActionElement;
+  action?: React.ReactNode;
   variant?: "default" | "destructive";
 };
 

@@ -5,8 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Prescription } from "@/types";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2, FileText, Download, AlertTriangle, CheckCircle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2, FileText, Download, AlertTriangle, CheckCircle, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 
@@ -29,6 +29,7 @@ const PrescriptionsPage = () => {
           .order("created_at", { ascending: false });
 
         if (error) throw error;
+        console.log("Fetched prescriptions:", data);
         setPrescriptions(data || []);
       } catch (error) {
         console.error("Error fetching prescriptions:", error);
@@ -144,7 +145,11 @@ const PrescriptionsPage = () => {
                       <Button variant="outline">
                         <Download className="mr-2 h-4 w-4" /> Rezept herunterladen
                       </Button>
-                      <Button>Bestellung aufgeben</Button>
+                      <Link to="/dashboard/orders">
+                        <Button>
+                          <ShoppingCart className="mr-2 h-4 w-4" /> Bestellung aufgeben
+                        </Button>
+                      </Link>
                     </div>
                   ) : prescription.status === "rejected" ? (
                     <div className="mt-4">

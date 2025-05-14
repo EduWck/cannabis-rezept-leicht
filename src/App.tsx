@@ -21,6 +21,7 @@ import DashboardLayout from "@/components/layouts/DashboardLayout";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import PatientProfile from "@/pages/dashboard/patient/PatientProfile";
 import PrescriptionsPage from "@/pages/dashboard/patient/PrescriptionsPage";
+import OrdersPage from "@/pages/dashboard/patient/OrdersPage";
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/dashboard/profile" element={<PatientProfile />} />
                 <Route path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
+                <Route path="/dashboard/orders" element={<OrdersPage />} />
               </Route>
             </Route>
 

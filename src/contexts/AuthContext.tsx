@@ -69,12 +69,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // Define the type for the RPC function result
+      // Define the types for the RPC function
       type ProfileResult = Profile | null;
+      type ProfileParams = { user_id: string };
       
       // We'll try first with a direct select without using RLS
       // This is a workaround for the infinite recursion in RLS policy
-      const { data: adminData, error: adminError } = await supabase.rpc<ProfileResult>(
+      const { data: adminData, error: adminError } = await supabase.rpc<ProfileResult, ProfileParams>(
         'get_profile_by_id',
         { user_id: userId }
       );

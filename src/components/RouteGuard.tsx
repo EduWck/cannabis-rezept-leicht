@@ -41,8 +41,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       // If user exists but no role is detected, show toast with error
       if (!userRole) {
         console.log("User exists but role is not detected");
-        toast({
-          title: "Benutzerrolle nicht erkannt",
+        toast("Benutzerrolle nicht erkannt", {
           description: "Es wurden keine Berechtigungen erkannt. Bitte melden Sie sich ab und wieder an.",
           variant: "destructive"
         });
@@ -80,8 +79,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         } else {
           // Fallback for unknown roles
           console.log("Unknown role, redirecting to login");
-          toast({
-            title: "Zugriff verweigert",
+          toast("Zugriff verweigert", {
             description: "Ihr Konto hat nicht die erforderlichen Berechtigungen.",
             variant: "destructive"
           });

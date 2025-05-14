@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserRole } from "@/types";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
@@ -44,8 +44,7 @@ const Login = () => {
       // Check for hash parameters that might indicate a magic link or token
       const hash = window.location.hash;
       if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
-        toast({
-          title: "Automatische Anmeldung",
+        toast("Automatische Anmeldung", {
           description: "Sie werden angemeldet..."
         });
       }
@@ -101,16 +100,14 @@ const Login = () => {
     clearErrors();
     
     if (cooldown > 0) {
-      toast({
-        title: "Bitte warten",
+      toast("Bitte warten", {
         description: `Sie können in ${cooldown} Sekunden einen neuen Code anfordern.`
       });
       return;
     }
     
     if (!email || !email.trim()) {
-      toast({
-        title: "E-Mail erforderlich",
+      toast("E-Mail erforderlich", {
         description: "Bitte geben Sie eine E-Mail-Adresse ein."
       });
       return;
@@ -126,8 +123,7 @@ const Login = () => {
         // For demo purposes, auto-fill the code if provided by the function
         if (result.code) {
           setCode(result.code);
-          toast({
-            title: "Demo Code",
+          toast("Demo Code", {
             description: `Ihr Login-Code ist: ${result.code}`
           });
         }
@@ -144,8 +140,7 @@ const Login = () => {
     clearErrors();
     
     if (!code || code.length < 6) {
-      toast({
-        title: "Code erforderlich",
+      toast("Code erforderlich", {
         description: "Bitte geben Sie einen gültigen 6-stelligen Code ein."
       });
       return;
@@ -158,8 +153,7 @@ const Login = () => {
       const success = await verifyLoginCode(email.trim(), code.trim());
       
       if (success) {
-        toast({
-          title: "Code bestätigt",
+        toast("Code bestätigt", {
           description: "Ihr Code wurde erfolgreich verifiziert."
         });
         
@@ -169,8 +163,7 @@ const Login = () => {
         setTimeout(() => {
           // If we're still on this page after 5 seconds, show a message
           setLoading(false);
-          toast({
-            title: "Fast geschafft",
+          toast("Fast geschafft", {
             description: "Die Anmeldung läuft. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link, falls Sie nicht automatisch weitergeleitet werden."
           });
         }, 5000);
@@ -190,8 +183,7 @@ const Login = () => {
     clearErrors();
     
     if (!staffEmail || !password) {
-      toast({
-        title: "Fehlende Angaben",
+      toast("Fehlende Angaben", {
         description: "Bitte geben Sie E-Mail und Passwort ein."
       });
       return;

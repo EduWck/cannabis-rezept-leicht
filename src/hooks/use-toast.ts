@@ -1,6 +1,6 @@
 
 import * as React from "react";
-import { toast as sonnerToast, type Toast } from "sonner";
+import { toast as sonnerToast } from "sonner";
 
 export type ToastActionElement = React.ReactElement<unknown>;
 

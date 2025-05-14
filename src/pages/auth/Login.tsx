@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,12 +8,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as any)?.from || "/dashboard";
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   
   // Patient login with OTP
   const [email, setEmail] = useState("");
@@ -25,8 +28,13 @@ const Login = () => {
   
   const { signIn, requestLoginCode, verifyLoginCode } = useAuth();
 
+  const clearErrors = () => {
+    setErrorMessage("");
+  };
+
   const handleRequestCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearErrors();
     setLoading(true);
     
     try {
@@ -42,6 +50,8 @@ const Login = () => {
           });
         }
       }
+    } catch (error: any) {
+      setErrorMessage(error.message || "Failed to send code");
     } finally {
       setLoading(false);
     }
@@ -49,13 +59,18 @@ const Login = () => {
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearErrors();
     setLoading(true);
     
     try {
       const success = await verifyLoginCode(email, code);
       if (success) {
         navigate(from);
+      } else {
+        setErrorMessage("Invalid verification code");
       }
+    } catch (error: any) {
+      setErrorMessage(error.message || "Verification failed");
     } finally {
       setLoading(false);
     }
@@ -63,13 +78,15 @@ const Login = () => {
 
   const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    clearErrors();
     setLoading(true);
     
     try {
       await signIn(staffEmail, password);
       navigate(from);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
+      setErrorMessage(error.message || "Invalid login credentials");
     } finally {
       setLoading(false);
     }
@@ -90,6 +107,14 @@ const Login = () => {
           </Button>
         </Link>
       </div>
+      
+      {errorMessage && (
+        <Alert variant="destructive" className="mb-4 w-full max-w-md">
+          <AlertDescription>
+            {errorMessage}
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Tabs defaultValue="patient" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2">

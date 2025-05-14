@@ -67,50 +67,68 @@ serve(async (req) => {
         if (existingUsers && existingUsers.users.length > 0) {
           console.log(`User ${user.email} already exists, updating...`);
           
-          // First update the user metadata and password
-          const { error } = await supabase.auth.admin.updateUserById(
-            existingUsers.users[0].id,
-            {
-              password: user.password,
-              email_confirm: true,
-              user_metadata: { role: user.role }
-            }
-          );
+          // Delete and recreate user for clean slate
+          const existingId = existingUsers.users[0].id;
+          console.log(`Deleting user ${user.email} with ID: ${existingId}`);
           
-          if (error) {
-            console.error(`Error updating user ${user.email}:`, error);
+          // First delete the user
+          const { error: deleteError } = await supabase.auth.admin.deleteUser(existingId);
+          
+          if (deleteError) {
+            console.error(`Error deleting user ${user.email}:`, deleteError);
             results.push({ 
               email: user.email, 
               status: "error", 
-              message: `Update failed: ${error.message}` 
+              message: `Delete failed: ${deleteError.message}` 
             });
             continue;
           }
           
-          // Update profile too
-          const { error: profileError } = await supabase
-            .from("profiles")
-            .update({ 
-              role: user.role,
-              first_name: user.first_name,
-              last_name: user.last_name
-            })
-            .eq("id", existingUsers.users[0].id);
-            
-          if (profileError) {
-            console.error(`Error updating profile for ${user.email}:`, profileError);
-            results.push({
-              email: user.email,
-              status: "warning",
-              message: `User updated but profile failed: ${profileError.message}`
+          // Then recreate the user with fresh credentials
+          console.log(`Recreating user ${user.email}`);
+          const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+            email: user.email,
+            password: user.password,
+            email_confirm: true,
+            user_metadata: { role: user.role }
+          });
+          
+          if (createError) {
+            console.error(`Error recreating user ${user.email}:`, createError);
+            results.push({ 
+              email: user.email, 
+              status: "error", 
+              message: `Recreation failed: ${createError.message}` 
             });
             continue;
+          }
+          
+          // Update profile
+          if (newUser.user) {
+            const { error: profileError } = await supabase
+              .from("profiles")
+              .update({ 
+                role: user.role,
+                first_name: user.first_name,
+                last_name: user.last_name
+              })
+              .eq("id", newUser.user.id);
+              
+            if (profileError) {
+              console.error(`Error updating profile for ${user.email}:`, profileError);
+              results.push({
+                email: user.email,
+                status: "warning",
+                message: `User recreated but profile failed: ${profileError.message}`
+              });
+              continue;
+            }
           }
           
           results.push({ 
             email: user.email, 
             role: user.role, 
-            status: "updated" 
+            status: "recreated" 
           });
         } else {
           console.log(`Creating new user: ${user.email}`);

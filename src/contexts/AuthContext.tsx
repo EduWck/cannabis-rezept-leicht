@@ -31,6 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
+        console.log("Auth state changed:", event);
         setSession(newSession);
         setUser(newSession?.user ?? null);
         
@@ -45,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Check for existing session
     supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      console.log("Existing session check:", currentSession ? "Found session" : "No session");
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       
@@ -62,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      console.log("Fetching user profile for:", userId);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -95,6 +98,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       console.log(`Attempting login for: ${email}`);
+      
+      // Clear any existing session first to prevent conflicts
+      await supabase.auth.signOut();
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -125,10 +132,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        throw error;
-      }
+      await supabase.auth.signOut();
+      
+      // Clear local state
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      setUserRole(null);
+      
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out",
+      });
     } catch (error: any) {
       toast({
         title: "Sign out failed",

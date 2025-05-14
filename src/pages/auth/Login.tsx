@@ -107,6 +107,17 @@ const Login = () => {
         setTimeout(() => {
           if (user && userRole) {
             redirectUserBasedOnRole(userRole);
+          } else {
+            console.log("User or role not detected yet, waiting...");
+            // Try one more time after a longer delay
+            setTimeout(() => {
+              if (user && userRole) {
+                redirectUserBasedOnRole(userRole);
+              } else {
+                console.log("Still no user or role detected, refreshing page");
+                window.location.reload(); // Force reload if still not working
+              }
+            }, 1000);
           }
         }, 500);
       } else {
@@ -133,6 +144,17 @@ const Login = () => {
       setTimeout(() => {
         if (user && userRole) {
           redirectUserBasedOnRole(userRole);
+        } else {
+          console.log("User or role not detected yet, waiting...");
+          // Try one more time after a longer delay
+          setTimeout(() => {
+            if (user && userRole) {
+              redirectUserBasedOnRole(userRole);
+            } else {
+              console.log("Still no user or role detected, refreshing page");
+              window.location.reload(); // Force reload if still not working
+            }
+          }, 1000);
         }
       }, 500);
     } catch (error: any) {

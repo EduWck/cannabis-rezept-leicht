@@ -51,7 +51,7 @@ serve(async (req) => {
       );
     }
     
-    // Explicit role assignment based on email address - make sure this works for all roles
+    // Explicit role assignment based on email address
     let userRole = 'patient';
     if (email.includes('doctor')) {
       userRole = 'doctor';
@@ -88,18 +88,16 @@ serve(async (req) => {
     } else {
       userData = existingUser.users[0];
       
-      // Ensure user metadata has the role
-      if (!userData.user_metadata?.role) {
-        const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
-          user_metadata: { ...userData.user_metadata, role: userRole }
-        });
-        
-        if (updateError) {
-          console.error(`Failed to update user metadata: ${updateError.message}`);
-        } else {
-          userData = updatedUser;
-          console.log(`Updated user ${userData.id} with role: ${userRole}`);
-        }
+      // Always update user metadata with the role to ensure it's set correctly
+      const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
+        user_metadata: { ...userData.user_metadata, role: userRole }
+      });
+      
+      if (updateError) {
+        console.error(`Failed to update user metadata: ${updateError.message}`);
+      } else {
+        userData = updatedUser;
+        console.log(`Updated user ${userData.id} with role: ${userRole}`);
       }
     }
 

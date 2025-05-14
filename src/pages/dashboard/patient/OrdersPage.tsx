@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,7 @@ const OrdersPage = () => {
       
       setLoading(true);
       try {
+        // Direkter Zugriff auf die orders-Tabelle ohne JOIN mit profiles
         const { data, error } = await supabase
           .from("orders")
           .select(`
@@ -50,14 +52,18 @@ const OrdersPage = () => {
           .eq("patient_id", user.id)
           .order("created_at", { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching orders:", error);
+          throw error;
+        }
+        
         console.log("Fetched orders:", data);
         setOrders(data || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching orders:", error);
         toast({
           title: "Fehler",
-          description: "Bestellungen konnten nicht geladen werden.",
+          description: "Bestellungen konnten nicht geladen werden: " + (error?.message || "Unbekannter Fehler"),
           variant: "destructive",
         });
       } finally {

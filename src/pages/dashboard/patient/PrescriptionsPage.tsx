@@ -22,20 +22,25 @@ const PrescriptionsPage = () => {
       
       setLoading(true);
       try {
+        // Direkter Zugriff auf die Tabelle ohne JOIN mit profiles
         const { data, error } = await supabase
           .from("prescriptions")
           .select("*")
           .eq("patient_id", user.id)
           .order("created_at", { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Error fetching prescriptions:", error);
+          throw error;
+        }
+        
         console.log("Fetched prescriptions:", data);
         setPrescriptions(data || []);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching prescriptions:", error);
         toast({
           title: "Fehler",
-          description: "Rezepte konnten nicht geladen werden.",
+          description: "Rezepte konnten nicht geladen werden: " + (error?.message || "Unbekannter Fehler"),
           variant: "destructive",
         });
       } finally {

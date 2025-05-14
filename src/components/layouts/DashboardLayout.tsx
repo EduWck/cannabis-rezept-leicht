@@ -15,7 +15,6 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/ThemeProvider";
 
 const DashboardLayout = () => {
   const { signOut, userRole, profile } = useAuth();
@@ -116,10 +115,6 @@ const DashboardLayout = () => {
               })}
             </nav>
             
-            <div className="pt-4">
-              <ThemeToggle />
-            </div>
-            
             <div className="mt-auto border-t pt-4 dark:border-gray-700">
               <div className="mb-2 flex items-center">
                 <div className="h-8 w-8 rounded-full bg-cannabis-green-200 p-1 text-center font-semibold text-cannabis-green-800">
@@ -174,10 +169,6 @@ const DashboardLayout = () => {
                 );
               })}
             </nav>
-          </div>
-          
-          <div className="px-4 pb-2 pt-4">
-            <ThemeToggle />
           </div>
           
           <div className="border-t p-4 dark:border-gray-700">

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeProvider";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -77,48 +79,56 @@ const Navbar = () => {
               </Button>
             </Link>
           )}
+          <div className="ml-2">
+            <ThemeToggle />
+          </div>
         </nav>
 
         {/* Mobile Navigation */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-[250px] sm:w-[300px]">
-            <nav className="flex flex-col space-y-4 pt-10">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.name}
-                  to={link.href}
-                  className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                    isActive(link.href)
-                      ? "bg-cannabis-green-100 text-cannabis-green-700 dark:bg-cannabis-green-900/30 dark:text-cannabis-green-400"
-                      : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
-                  }`}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </Link>
-              ))}
-              {user ? (
-                <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                  <Button variant="default" className="w-full">
-                    Dashboard
-                  </Button>
-                </Link>
-              ) : (
-                <Link to="/login" onClick={() => setIsOpen(false)}>
-                  <Button variant="default" className="w-full">
-                    Login
-                  </Button>
-                </Link>
-              )}
-            </nav>
-          </SheetContent>
-        </Sheet>
+        <div className="flex items-center md:hidden">
+          <div className="mr-2">
+            <ThemeToggle />
+          </div>
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[250px] sm:w-[300px]">
+              <nav className="flex flex-col space-y-4 pt-10">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.href}
+                    className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                      isActive(link.href)
+                        ? "bg-cannabis-green-100 text-cannabis-green-700 dark:bg-cannabis-green-900/30 dark:text-cannabis-green-400"
+                        : "text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-800"
+                    }`}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+                {user ? (
+                  <Link to="/dashboard" onClick={() => setIsOpen(false)}>
+                    <Button variant="default" className="w-full">
+                      Dashboard
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/login" onClick={() => setIsOpen(false)}>
+                    <Button variant="default" className="w-full">
+                      Login
+                    </Button>
+                  </Link>
+                )}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </header>
   );

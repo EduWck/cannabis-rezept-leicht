@@ -63,6 +63,7 @@ export function useAuthProvider() {
         .single();
 
       if (error) {
+        console.error("Error fetching user profile:", error);
         throw error;
       }
 
@@ -118,6 +119,15 @@ export function useAuthProvider() {
       }
 
       console.log("Login successful:", data.user);
+      
+      // Fetch profile explicitly after successful login
+      if (data.user) {
+        try {
+          await fetchUserProfile(data.user.id);
+        } catch (profileError) {
+          console.error("Error fetching profile after login:", profileError);
+        }
+      }
       
       // Show success toast on successful login
       toast({

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +9,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { UserRole } from "@/types";
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as any)?.from || "/dashboard";
+  const { user, userRole, profile } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   
@@ -27,6 +28,24 @@ const Login = () => {
   const [password, setPassword] = useState("");
   
   const { signIn, requestLoginCode, verifyLoginCode } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user && userRole) {
+      redirectUserBasedOnRole(userRole);
+    }
+  }, [user, userRole, navigate]);
+
+  const redirectUserBasedOnRole = (role: UserRole) => {
+    const redirectMapping: Record<UserRole, string> = {
+      'patient': '/dashboard/profile',
+      'doctor': '/dashboard',
+      'admin': '/dashboard'
+    };
+    
+    const redirectPath = redirectMapping[role] || '/dashboard';
+    navigate(redirectPath);
+  };
 
   const clearErrors = () => {
     setErrorMessage("");
@@ -65,7 +84,11 @@ const Login = () => {
     try {
       const success = await verifyLoginCode(email, code);
       if (success) {
-        navigate(from);
+        // The redirect will happen automatically via the useEffect
+        toast({
+          title: "Login successful",
+          description: "Redirecting to your dashboard..."
+        });
       } else {
         setErrorMessage("Invalid verification code");
       }
@@ -83,7 +106,11 @@ const Login = () => {
     
     try {
       await signIn(staffEmail, password);
-      navigate(from);
+      // The redirect will happen automatically via the useEffect
+      toast({
+        title: "Login successful",
+        description: "Redirecting to dashboard..."
+      });
     } catch (error: any) {
       console.error("Login error:", error);
       setErrorMessage(error.message || "Invalid login credentials");

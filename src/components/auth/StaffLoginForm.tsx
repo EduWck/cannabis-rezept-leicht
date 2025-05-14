@@ -74,12 +74,26 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
         // Force full page reload if it's a doctor account to ensure proper role detection
         if (normalizedEmail.includes('doctor')) {
           console.log("Doctor login successful, adding extra redirect notification");
+          
+          // Multiple notifications to ensure the user knows we're working on it
+          toast({
+            title: "Arzt-Login",
+            description: "Arzt-Rolle wird erkannt..."
+          });
+          
           setTimeout(() => {
             toast({
               title: "Arzt-Weiterleitung",
               description: "Sie werden zum Arzt-Dashboard weitergeleitet..."
             });
           }, 800);
+          
+          setTimeout(() => {
+            toast({
+              title: "Fast geschafft",
+              description: "Bitte warten Sie, während wir die Weiterleitung abschließen..."
+            });
+          }, 1600);
         }
       }
     } catch (error: any) {

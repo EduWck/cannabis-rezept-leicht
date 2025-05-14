@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -35,6 +34,15 @@ export function useAuthMethods() {
       
       // For test accounts, ensure we're using the correct password
       const finalPassword = isTestAccount && password !== "password" ? "password" : password;
+      
+      // Special handling for doctor accounts
+      if (normalizedEmail.includes('doctor')) {
+        console.log("DOCTOR LOGIN ATTEMPT - Special handling activated");
+        toast({
+          title: "Arzt-Login",
+          description: "Anmeldung als Arzt wird verarbeitet..."
+        });
+      }
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
@@ -73,8 +81,16 @@ export function useAuthMethods() {
       // Check if this is a test account and try to set the role based on email
       if (data.user && isTestAccount) {
         try {
-          const role = normalizedEmail.includes('admin') ? 'admin' : 
-                      normalizedEmail.includes('doctor') ? 'doctor' : 'patient';
+          // Define role explicitly based on email content
+          let role: 'admin' | 'doctor' | 'patient';
+          
+          if (normalizedEmail.includes('admin')) {
+            role = 'admin';
+          } else if (normalizedEmail.includes('doctor') || normalizedEmail.includes('arzt')) {
+            role = 'doctor';
+          } else {
+            role = 'patient';
+          }
                       
           console.log(`Setting role for test account to ${role} based on email`);
           
@@ -85,6 +101,8 @@ export function useAuthMethods() {
           
           if (metadataError) {
             console.error("Error updating user role in metadata:", metadataError);
+          } else {
+            console.log(`User metadata updated with role: ${role}`);
           }
           
           // Also update profile in database
@@ -95,6 +113,17 @@ export function useAuthMethods() {
             
           if (profileError) {
             console.error("Error updating role in profile:", profileError);
+          } else {
+            console.log(`Profile successfully updated with role: ${role}`);
+          }
+          
+          // For doctor accounts, add extra notification
+          if (role === 'doctor') {
+            console.log("Doctor role set successfully, adding notification");
+            toast({
+              title: "Arzt-Rolle festgelegt",
+              description: "Ihre Rolle als Arzt wurde erfolgreich bestätigt."
+            });
           }
         } catch (roleError) {
           console.error("Error setting role for test account:", roleError);

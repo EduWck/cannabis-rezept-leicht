@@ -1,17 +1,33 @@
-
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
   const { user, userRole, isLoading } = useAuth();
   const navigate = useNavigate();
   const [redirecting, setRedirecting] = useState(false);
+  const [pageLoaded, setPageLoaded] = useState(false);
+
+  // Track when the component is mounted
+  useEffect(() => {
+    console.log("Dashboard component mounted");
+    setPageLoaded(true);
+    
+    // On initial load, show a notification for doctors to confirm we're on the right path
+    if (user?.email?.includes('doctor')) {
+      console.log("Doctor detected on dashboard component load");
+      toast({
+        title: "Arzt-Dashboard",
+        description: "Willkommen im Arzt-Bereich."
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
-    if (!isLoading && !redirecting) {
+    if (pageLoaded && !isLoading && !redirecting) {
       // If user is a patient, redirect to profile immediately
       if (user && userRole === "patient") {
         console.log("User is patient in Dashboard component, redirecting to profile");
@@ -21,13 +37,25 @@ const Dashboard = () => {
         }, 100);
       } else if (!userRole && user) {
         console.log("No user role detected in Dashboard, but user exists");
+        
+        // Try to determine role from email
+        if (user.email) {
+          const email = user.email.toLowerCase();
+          if (email.includes('doctor')) {
+            console.log("Doctor email detected, staying on dashboard");
+            toast({
+              title: "Arzt erkannt",
+              description: "Willkommen im Arzt-Bereich."
+            });
+          }
+        }
       } else if (!user) {
         console.log("No user detected in Dashboard");
       } else {
         console.log(`User is ${userRole}, staying on dashboard`);
       }
     }
-  }, [user, userRole, isLoading, navigate, redirecting]);
+  }, [user, userRole, isLoading, navigate, redirecting, pageLoaded]);
 
   // If still loading, show a loading indicator
   if (isLoading) {

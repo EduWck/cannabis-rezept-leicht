@@ -9,6 +9,7 @@ import FAQSection from "@/components/FAQSection";
 import TrustSection from "@/components/TrustSection";
 import OptionsSection from "@/components/OptionsSection";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
+import { toast } from "@/hooks/use-toast";
 
 const Index = () => {
   const { user, userRole, isLoading } = useAuth();
@@ -22,12 +23,28 @@ const Index = () => {
       // Add redirect based on role
       if (userRole === "patient") {
         console.log("Index: redirecting patient to dashboard/profile");
+        toast({
+          title: "Weiterleitung",
+          description: "Sie werden zum Patienten-Dashboard weitergeleitet..."
+        });
         navigate("/dashboard/profile", { replace: true });
       } else if (userRole === "doctor") {
         console.log("Index: redirecting doctor to dashboard");
-        navigate("/dashboard", { replace: true });
+        toast({
+          title: "Arzt-Weiterleitung",
+          description: "Sie werden zum Arzt-Dashboard weitergeleitet..."
+        });
+        
+        // Direct navigation for doctors - consistent with other redirects
+        setTimeout(() => {
+          navigate("/dashboard", { replace: true });
+        }, 100);
       } else if (userRole === "admin") {
         console.log("Index: redirecting admin to dashboard");
+        toast({
+          title: "Admin-Weiterleitung",
+          description: "Sie werden zum Admin-Dashboard weitergeleitet..."
+        });
         navigate("/dashboard", { replace: true });
       }
     }

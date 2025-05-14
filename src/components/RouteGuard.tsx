@@ -56,12 +56,28 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         return;
       }
 
-      // Special logging for doctor accounts
+      // Special handling for doctor accounts
       if (user && user.email?.includes('doctor')) {
         console.log("DOCTOR ACCOUNT DETECTED in RouteGuard");
         console.log("Current role:", userRole);
         console.log("Current path:", location.pathname);
-        console.log("Allowed roles:", allowedRoles);
+
+        // If doctor is not on dashboard and path is not already /dashboard, redirect
+        if (location.pathname !== "/dashboard" && !isRedirecting) {
+          console.log("DOCTOR REDIRECT from RouteGuard: Sending to /dashboard");
+          setIsRedirecting(true);
+          setRedirectCount(prev => prev + 1);
+          
+          toast({
+            title: "Arzt-Weiterleitung",
+            description: "Sie werden als Arzt zum Dashboard weitergeleitet."
+          });
+          
+          setTimeout(() => {
+            navigate("/dashboard", { replace: true });
+          }, 100);
+          return;
+        }
       }
 
       // If user exists but no role is detected, wait a bit more and show toast with error if it persists
@@ -137,14 +153,6 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
           setIsRedirecting(true);
           setRedirectCount(prev => prev + 1);
           navigate(patientMainRoute, { replace: true });
-        }
-        
-        // Special case for doctor to ensure they go to dashboard
-        if (userRole === "doctor" && location.pathname === "/" && !isRedirecting) {
-          console.log("Doctor detected on root, redirecting to dashboard");
-          setIsRedirecting(true);
-          setRedirectCount(prev => prev + 1);
-          navigate(doctorMainRoute, { replace: true });
         }
         
         return;

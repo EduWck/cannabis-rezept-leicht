@@ -10,7 +10,7 @@ type AuthContextType = {
   profile: Profile | null;
   userRole: UserRole | null;
   isLoading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<boolean>;
   signOut: () => Promise<void>;
   requestLoginCode: (email: string) => Promise<{ success: boolean; code?: string }>;
   verifyLoginCode: (email: string, code: string) => Promise<boolean>;

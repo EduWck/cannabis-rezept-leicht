@@ -4,16 +4,19 @@ import { Loader2, User, FileText, ShoppingBag, Calendar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const PatientDashboard = () => {
   const { user, profile, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleBookAppointment = () => {
     toast({
       title: "Termin angefragt",
       description: "Ihre Terminanfrage wurde erfolgreich übermittelt."
     });
+    // In a real app, we would navigate to the appointments page
+    setTimeout(() => navigate("/dashboard/appointments"), 1500);
   };
 
   if (isLoading) {

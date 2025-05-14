@@ -1,3 +1,4 @@
+
 import { Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -23,6 +24,29 @@ import PatientDashboard from "@/pages/dashboard/patient/PatientDashboard";
 import PatientProfile from "@/pages/dashboard/patient/PatientProfile";
 import PrescriptionsPage from "@/pages/dashboard/patient/PrescriptionsPage";
 import OrdersPage from "@/pages/dashboard/patient/OrdersPage";
+
+// Create placeholder components for missing pages
+const DummyPage = ({ title }: { title: string }) => (
+  <div className="container mx-auto py-8">
+    <h1 className="text-2xl font-bold mb-6">{title}</h1>
+    <p>Diese Seite ist noch in Entwicklung.</p>
+  </div>
+);
+
+// Admin pages
+const UsersManagementPage = () => <DummyPage title="Benutzer verwalten" />;
+const AllPrescriptionsPage = () => <DummyPage title="Alle Rezepte" />;
+const AllOrdersPage = () => <DummyPage title="Alle Bestellungen" />;
+const ProductsPage = () => <DummyPage title="Produkte verwalten" />;
+const SettingsPage = () => <DummyPage title="Einstellungen" />;
+
+// Doctor pages
+const PatientsPage = () => <DummyPage title="Patientenliste" />;
+const CalendarPage = () => <DummyPage title="Terminkalender" />;
+const RequestsPage = () => <DummyPage title="Behandlungsanfragen" />;
+
+// Patient pages
+const AppointmentsPage = () => <DummyPage title="Meine Termine" />;
 
 const AppRoutes = () => {
   return (
@@ -111,10 +135,23 @@ const AppRoutes = () => {
         <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
         <Route path="/dashboard/patient" element={<PatientDashboard />} />
         
-        {/* Existing patient routes */}
+        {/* Patient routes */}
         <Route path="/dashboard/profile" element={<PatientProfile />} />
         <Route path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
         <Route path="/dashboard/orders" element={<OrdersPage />} />
+        <Route path="/dashboard/appointments" element={<AppointmentsPage />} />
+        
+        {/* Admin routes */}
+        <Route path="/dashboard/users" element={<UsersManagementPage />} />
+        <Route path="/dashboard/all-prescriptions" element={<AllPrescriptionsPage />} />
+        <Route path="/dashboard/all-orders" element={<AllOrdersPage />} />
+        <Route path="/dashboard/products" element={<ProductsPage />} />
+        <Route path="/dashboard/settings" element={<SettingsPage />} />
+        
+        {/* Doctor routes */}
+        <Route path="/dashboard/patients" element={<PatientsPage />} />
+        <Route path="/dashboard/calendar" element={<CalendarPage />} />
+        <Route path="/dashboard/requests" element={<RequestsPage />} />
       </Route>
 
       {/* Catch-all route */}

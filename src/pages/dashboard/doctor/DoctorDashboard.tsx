@@ -4,14 +4,22 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Loader2, Users, Calendar, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 const DoctorDashboard = () => {
   const { user, isLoading } = useAuth();
   
-  const handleAppointmentClick = () => {
+  const handleAppointmentClick = (patientName: string) => {
     toast({
       title: "Termin bestätigt",
-      description: "Der Termin wurde bestätigt und der Patient benachrichtigt."
+      description: `Der Termin mit ${patientName} wurde bestätigt und der Patient benachrichtigt.`
+    });
+  };
+  
+  const handleRescheduleClick = (patientName: string) => {
+    toast({
+      title: "Termin verschieben",
+      description: `Sie können jetzt einen neuen Termin für ${patientName} auswählen.`
     });
   };
 
@@ -40,6 +48,9 @@ const DoctorDashboard = () => {
           <CardContent className="pt-6">
             <div className="text-3xl font-bold">48</div>
             <p className="text-sm text-muted-foreground mt-2">Aktive Patienten</p>
+            <Link to="/dashboard/patients" className="mt-4 inline-block">
+              <Button variant="outline" size="sm">Patienten anzeigen</Button>
+            </Link>
           </CardContent>
         </Card>
         
@@ -53,6 +64,9 @@ const DoctorDashboard = () => {
           <CardContent className="pt-6">
             <div className="text-3xl font-bold">12</div>
             <p className="text-sm text-muted-foreground mt-2">Für diese Woche</p>
+            <Link to="/dashboard/calendar" className="mt-4 inline-block">
+              <Button variant="outline" size="sm">Kalender öffnen</Button>
+            </Link>
           </CardContent>
         </Card>
         
@@ -66,6 +80,9 @@ const DoctorDashboard = () => {
           <CardContent className="pt-6">
             <div className="text-3xl font-bold">7</div>
             <p className="text-sm text-muted-foreground mt-2">Unbearbeitete Anfragen</p>
+            <Link to="/dashboard/requests" className="mt-4 inline-block">
+              <Button variant="outline" size="sm">Anfragen bearbeiten</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -80,8 +97,8 @@ const DoctorDashboard = () => {
               <p className="text-sm text-muted-foreground">15:00 - 15:30</p>
             </div>
             <div className="space-x-2">
-              <Button size="sm" onClick={handleAppointmentClick}>Bestätigen</Button>
-              <Button variant="outline" size="sm">Verschieben</Button>
+              <Button size="sm" onClick={() => handleAppointmentClick("Max Mustermann")}>Bestätigen</Button>
+              <Button variant="outline" size="sm" onClick={() => handleRescheduleClick("Max Mustermann")}>Verschieben</Button>
             </div>
           </div>
         </div>
@@ -94,8 +111,8 @@ const DoctorDashboard = () => {
               <p className="text-sm text-muted-foreground">16:00 - 16:30</p>
             </div>
             <div className="space-x-2">
-              <Button size="sm" onClick={handleAppointmentClick}>Bestätigen</Button>
-              <Button variant="outline" size="sm">Verschieben</Button>
+              <Button size="sm" onClick={() => handleAppointmentClick("Anna Schmidt")}>Bestätigen</Button>
+              <Button variant="outline" size="sm" onClick={() => handleRescheduleClick("Anna Schmidt")}>Verschieben</Button>
             </div>
           </div>
         </div>
@@ -108,11 +125,17 @@ const DoctorDashboard = () => {
               <p className="text-sm text-muted-foreground">17:00 - 17:15</p>
             </div>
             <div className="space-x-2">
-              <Button size="sm" onClick={handleAppointmentClick}>Bestätigen</Button>
-              <Button variant="outline" size="sm">Verschieben</Button>
+              <Button size="sm" onClick={() => handleAppointmentClick("Thomas Weber")}>Bestätigen</Button>
+              <Button variant="outline" size="sm" onClick={() => handleRescheduleClick("Thomas Weber")}>Verschieben</Button>
             </div>
           </div>
         </div>
+      </div>
+      
+      <div className="mt-8 mb-4 flex justify-end">
+        <Link to="/dashboard/calendar">
+          <Button>Alle Termine anzeigen</Button>
+        </Link>
       </div>
     </div>
   );

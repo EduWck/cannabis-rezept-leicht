@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ const Login = () => {
           setCode(result.code);
           toast({
             title: "Demo Code",
-            description: `Your login code is: ${result.code}`,
+            description: `Your login code is: ${result.code}`
           });
         }
       }
@@ -226,3 +227,4 @@ const Login = () => {
 };
 
 export default Login;
+

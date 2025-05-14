@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 
 const CreateTestUsers = () => {
@@ -22,7 +22,7 @@ const CreateTestUsers = () => {
       
       toast({
         title: "Testbenutzer erstellt",
-        description: "Die Testkonten wurden erfolgreich angelegt.",
+        description: "Die Testkonten wurden erfolgreich angelegt."
       });
     } catch (error: any) {
       toast({
@@ -94,3 +94,4 @@ const CreateTestUsers = () => {
 };
 
 export default CreateTestUsers;
+

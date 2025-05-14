@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm, FormProvider } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
-// Remove Steps import as it doesn't exist in lucide-react
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-// Fix import for CompletionStep
 import CompletionStep from "@/components/fragebogen/CompletionStep";
 import {
   AlertDialog,
@@ -102,7 +100,7 @@ const Fragebogen = () => {
           console.log("Submitting data:", data);
           toast({
             title: "Erfolgreich!",
-            description: "Dein Fragebogen wurde erfolgreich übermittelt.",
+            description: "Dein Fragebogen wurde erfolgreich übermittelt."
           });
         }, 2000);
       })();
@@ -128,7 +126,7 @@ const Fragebogen = () => {
           console.log("Submitting data:", data);
           toast({
             title: "Erfolgreich!",
-            description: "Dein Fragebogen wurde erfolgreich übermittelt.",
+            description: "Dein Fragebogen wurde erfolgreich übermittelt."
           });
         }, 2000);
       })();

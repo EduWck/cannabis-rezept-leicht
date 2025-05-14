@@ -8,14 +8,14 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeProvider";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,15 +66,18 @@ const Navbar = () => {
               {link.name}
             </Link>
           ))}
+          <Link to="/fragebogen">
+            <Button variant="default" className="ml-4">
+              Rezept anfordern
+            </Button>
+          </Link>
           {user ? (
-            <Link to="/dashboard">
-              <Button variant="default" className="ml-4">
-                Dashboard
-              </Button>
-            </Link>
+            <Button variant="outline" className="ml-2" onClick={() => signOut()}>
+              <LogOut className="mr-2 h-4 w-4" /> Logout
+            </Button>
           ) : (
             <Link to="/login">
-              <Button variant="default" className="ml-4">
+              <Button variant="outline" className="ml-2">
                 Login
               </Button>
             </Link>
@@ -112,15 +115,21 @@ const Navbar = () => {
                     {link.name}
                   </Link>
                 ))}
+                <Link to="/fragebogen" onClick={() => setIsOpen(false)}>
+                  <Button variant="default" className="w-full">
+                    Rezept anfordern
+                  </Button>
+                </Link>
                 {user ? (
-                  <Link to="/dashboard" onClick={() => setIsOpen(false)}>
-                    <Button variant="default" className="w-full">
-                      Dashboard
-                    </Button>
-                  </Link>
+                  <Button variant="outline" className="w-full" onClick={() => {
+                    signOut();
+                    setIsOpen(false);
+                  }}>
+                    <LogOut className="mr-2 h-4 w-4" /> Logout
+                  </Button>
                 ) : (
                   <Link to="/login" onClick={() => setIsOpen(false)}>
-                    <Button variant="default" className="w-full">
+                    <Button variant="outline" className="w-full">
                       Login
                     </Button>
                   </Link>

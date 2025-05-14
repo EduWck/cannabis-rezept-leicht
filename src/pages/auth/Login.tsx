@@ -14,7 +14,7 @@ import { UserRole } from "@/types";
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userRole, profile, isLoading } = useAuth();
+  const { user, userRole, profile, isLoading, signIn, requestLoginCode, verifyLoginCode } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   
@@ -26,8 +26,6 @@ const Login = () => {
   // Staff login with password
   const [staffEmail, setStaffEmail] = useState("");
   const [password, setPassword] = useState("");
-  
-  const { signIn, requestLoginCode, verifyLoginCode } = useAuth();
 
   // Redirect if already logged in
   useEffect(() => {
@@ -87,11 +85,12 @@ const Login = () => {
     try {
       const success = await verifyLoginCode(email, code);
       if (success) {
-        // The redirect will happen automatically via the useEffect
         toast({
           title: "Login successful",
           description: "Redirecting to your dashboard..."
         });
+        // Force redirect to profile for patient
+        navigate('/dashboard/profile');
       } else {
         setErrorMessage("Invalid verification code");
       }
@@ -110,7 +109,12 @@ const Login = () => {
     try {
       console.log("Attempting staff login with:", staffEmail);
       await signIn(staffEmail, password);
-      // The redirect will happen automatically via the useEffect
+      // Force redirect based on role
+      if (staffEmail.includes('doctor')) {
+        navigate('/dashboard');
+      } else if (staffEmail.includes('admin')) {
+        navigate('/dashboard');
+      }
       toast({
         title: "Login successful",
         description: "Redirecting to dashboard..."

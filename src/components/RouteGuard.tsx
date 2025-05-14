@@ -37,14 +37,18 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
           navigate("/dashboard/profile");
         }
       } else {
-        // User doesn't have the required role - redirect to dashboard
-        console.log("User doesn't have required role, redirecting to dashboard");
-        navigate("/dashboard");
+        // User doesn't have the required role - redirect to appropriate page based on role
+        console.log("User doesn't have required role, redirecting based on role");
+        if (userRole === "patient") {
+          navigate("/dashboard/profile");
+        } else {
+          navigate("/dashboard");
+        }
       }
     };
 
     checkAuthorization();
-  }, [user, userRole, isLoading, allowedRoles, navigate, location]);
+  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname]);
 
   if (isLoading) {
     return (

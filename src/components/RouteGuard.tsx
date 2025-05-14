@@ -21,14 +21,24 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
 
       if (!user) {
         // Not logged in - redirect to login
+        console.log("User not logged in, redirecting to login from:", location.pathname);
         navigate("/login", { state: { from: location.pathname } });
         return;
       }
 
+      console.log("Checking authorization for user role:", userRole);
+      
       if (!allowedRoles || allowedRoles.length === 0 || (userRole && allowedRoles.includes(userRole))) {
         setIsAuthorized(true);
+        
+        // Special handling for patient redirection
+        if (userRole === "patient" && location.pathname === "/dashboard") {
+          console.log("Patient on dashboard, redirecting to profile");
+          navigate("/dashboard/profile");
+        }
       } else {
         // User doesn't have the required role - redirect to dashboard
+        console.log("User doesn't have required role, redirecting to dashboard");
         navigate("/dashboard");
       }
     };

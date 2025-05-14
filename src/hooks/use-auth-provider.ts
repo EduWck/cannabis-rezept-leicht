@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -55,7 +54,7 @@ export function useAuthProvider() {
     try {
       console.log("Fetching user profile for:", userId);
       
-      // Direkter Zugriff auf die profiles Tabelle
+      // Direct access to the profiles table
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
@@ -68,6 +67,11 @@ export function useAuthProvider() {
       }
 
       console.log("Fetched user profile:", data);
+      
+      if (!data) {
+        throw new Error("No profile found");
+      }
+      
       setProfile(data as Profile);
       setUserRole((data as Profile)?.role as UserRole || null);
     } catch (error) {
@@ -97,7 +101,17 @@ export function useAuthProvider() {
           };
           setProfile(minimalProfile);
         }
+      } else {
+        // Log the issue for debugging
+        console.error("Could not determine user role from profile or metadata");
+        toast({
+          title: "Error",
+          description: "Benutzerprofil konnte nicht vollständig geladen werden.",
+          variant: "destructive"
+        });
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 

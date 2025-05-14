@@ -3,17 +3,37 @@ import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
 const Dashboard = () => {
   const { user, userRole, profile, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If the user is authenticated but is a patient, redirect to profile
+    // If not loading and the user is authenticated but is a patient, redirect to profile
     if (!isLoading && user && userRole === "patient") {
       navigate("/dashboard/profile");
     }
   }, [user, userRole, isLoading, navigate]);
+
+  // If still loading, show a loading indicator
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500" />
+        <span className="ml-2">Lade Benutzerdaten...</span>
+      </div>
+    );
+  }
+
+  // If no user or no role, show appropriate message
+  if (!user || !userRole) {
+    return (
+      <div className="text-center py-20">
+        <p>Kein Benutzer angemeldet oder Rolle nicht erkannt.</p>
+      </div>
+    );
+  }
 
   // Display appropriate dashboard based on user role
   const renderDashboardContent = () => {
@@ -25,7 +45,7 @@ const Dashboard = () => {
       default:
         return (
           <div className="text-center py-20">
-            <p>Lade Benutzerdaten...</p>
+            <p>Unbekannte Benutzerrolle: {userRole}</p>
           </div>
         );
     }

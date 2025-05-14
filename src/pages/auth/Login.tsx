@@ -14,7 +14,7 @@ import { UserRole } from "@/types";
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, userRole, profile } = useAuth();
+  const { user, userRole, profile, isLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   
@@ -31,12 +31,14 @@ const Login = () => {
 
   // Redirect if already logged in
   useEffect(() => {
-    if (user && userRole) {
+    if (!isLoading && user && userRole) {
+      console.log("User is logged in, redirecting based on role:", userRole);
       redirectUserBasedOnRole(userRole);
     }
-  }, [user, userRole, navigate]);
+  }, [user, userRole, isLoading, navigate]);
 
   const redirectUserBasedOnRole = (role: UserRole) => {
+    console.log("Redirecting based on role:", role);
     const redirectMapping: Record<UserRole, string> = {
       'patient': '/dashboard/profile',
       'doctor': '/dashboard',
@@ -44,6 +46,7 @@ const Login = () => {
     };
     
     const redirectPath = redirectMapping[role] || '/dashboard';
+    console.log("Redirecting to:", redirectPath);
     navigate(redirectPath);
   };
 
@@ -105,6 +108,7 @@ const Login = () => {
     setLoading(true);
     
     try {
+      console.log("Attempting staff login with:", staffEmail);
       await signIn(staffEmail, password);
       // The redirect will happen automatically via the useEffect
       toast({

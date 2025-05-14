@@ -306,15 +306,23 @@ export function useAuthMethods() {
         return false;
       }
       
-      // Show success message to the user
+      // Show success message to the user with role-specific details
+      let successMessage = `Ihr Code wurde erfolgreich verifiziert. Sie werden als ${response.data?.role || 'Benutzer'} eingeloggt.`;
+      
+      // Add specific message for doctor accounts
+      if (response.data?.role === 'doctor') {
+        successMessage += " Sie werden direkt zum Arzt-Dashboard weitergeleitet.";
+      }
+      
       toast({
         title: "Code bestätigt", 
-        description: `Ihr Code wurde erfolgreich verifiziert. Sie werden als ${response.data?.role || 'Benutzer'} eingeloggt.`
+        description: successMessage
       });
       
       // Step 2: If verification was successful and we received a magic link, use it
       if (response.data?.magicLink) {
         console.log("Received magic link, redirecting to:", response.data.magicLink);
+        console.log("Target redirect URL after auth:", response.data.redirectUrl || "default path");
         
         // Add a small delay before redirecting
         setTimeout(() => {

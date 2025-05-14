@@ -225,11 +225,20 @@ serve(async (req) => {
     console.log("Auth code deleted after successful verification");
     
     // Create a magic sign in link for the user
+    // NEW: Customize redirect URL based on user role
+    let redirectTo = `${new URL(req.url).origin}/login`;
+    
+    // For doctor role, directly redirect to dashboard 
+    if (userRole === 'doctor') {
+      redirectTo = `${new URL(req.url).origin}/dashboard`;
+      console.log("DOCTOR ROLE DETECTED: Setting direct dashboard redirect");
+    }
+    
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: normalizedEmail,
       options: {
-        redirectTo: `${new URL(req.url).origin}/login`,
+        redirectTo: redirectTo,
         data: {
           role: userRole
         }
@@ -244,7 +253,7 @@ serve(async (req) => {
       );
     }
     
-    console.log("Magic link generated for email:", normalizedEmail);
+    console.log(`Magic link generated for email: ${normalizedEmail} with redirect to: ${redirectTo}`);
     
     // Return success with user data and magic link
     return new Response(
@@ -254,6 +263,7 @@ serve(async (req) => {
         role: userRole,
         user: userData,
         magicLink: linkData.properties.action_link,
+        redirectUrl: redirectTo,
         message: "Code verification successful."
       }),
       { 

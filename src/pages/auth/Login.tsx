@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -28,6 +27,29 @@ const Login = () => {
   } = useLoginLogic();
   const [redirectAttempted, setRedirectAttempted] = useState(false);
   const [loginDetectionCount, setLoginDetectionCount] = useState(0);
+  const [doctorLoginDetected, setDoctorLoginDetected] = useState(false);
+
+  // Effect to handle URL parameters that might indicate a specific role login attempt
+  useEffect(() => {
+    // Check URL for doctor login param (could be set by edge function)
+    const urlParams = new URLSearchParams(window.location.search);
+    const isDoctor = urlParams.get('doctor') === 'true';
+    
+    if (isDoctor && !doctorLoginDetected) {
+      setDoctorLoginDetected(true);
+      console.log("DOCTOR LOGIN PARAM DETECTED in URL");
+      
+      // Show a toast to inform the user
+      toast({
+        title: "Arzt-Login erkannt",
+        description: "Sie werden zum Arzt-Dashboard weitergeleitet sobald Sie angemeldet sind..."
+      });
+      
+      // Clear the URL parameter without reloading
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, [doctorLoginDetected]);
 
   // Effect to redirect user when authenticated
   useEffect(() => {
@@ -41,11 +63,26 @@ const Login = () => {
         description: `Sie werden als ${userRole} weitergeleitet...`
       });
       
-      // Increase timeout to ensure the state updates before redirect
+      // Special handling for doctor accounts - prioritize them with less delay
+      if (userRole === 'doctor' || doctorLoginDetected) {
+        console.log("DOCTOR ACCOUNT DETECTED: Using expedited redirect");
+        
+        // Immediate toast to indicate rapid redirection
+        toast({
+          title: "Arzt-Login",
+          description: "Sie werden direkt zum Arzt-Dashboard weitergeleitet..."
+        });
+        
+        // Direct to dashboard immediately
+        redirectUserBasedOnRole('doctor');
+        return;
+      }
+      
+      // For other roles, use the normal delay
       setTimeout(() => {
         console.log(`REDIRECT ATTEMPT: Redirecting user with role ${userRole} to appropriate page`);
         redirectUserBasedOnRole(userRole);
-      }, 800); // Increased from 200ms to 800ms
+      }, 800);
     } 
     // Handle case when user is loaded but no role detected yet
     else if (!authIsLoading && user && !userRole && loginDetectionCount < 10) {
@@ -85,11 +122,11 @@ const Login = () => {
           setTimeout(() => {
             console.log(`REDIRECT ATTEMPT from email detection: Redirecting as ${detectedRole}`);
             redirectUserBasedOnRole(detectedRole as UserRole);
-          }, 800); // Increased from 200ms to 800ms
+          }, 800);
         }
       }
     }
-  }, [authIsLoading, user, userRole, redirectUserBasedOnRole, redirectAttempted, loginDetectionCount]);
+  }, [authIsLoading, user, userRole, redirectUserBasedOnRole, redirectAttempted, loginDetectionCount, doctorLoginDetected]);
 
   // Reset redirect attempted when user or role changes
   useEffect(() => {

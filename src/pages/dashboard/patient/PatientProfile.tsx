@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,37 +9,33 @@ import { Separator } from "@/components/ui/separator";
 import { Profile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save } from "lucide-react";
+import { useDbQuery } from "@/hooks/use-database";
 
 const PatientProfile = () => {
   const { user, profile: authProfile } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { loading, executeQuery } = useDbQuery<Profile>();
 
   useEffect(() => {
     const fetchFullProfile = async () => {
       if (!user) return;
       
-      setLoading(true);
-      try {
-        const { data, error } = await supabase
+      const data = await executeQuery(
+        () => supabase
           .from("profiles")
           .select("*")
           .eq("id", user.id)
-          .single();
-
-        if (error) throw error;
-        setProfile(data);
-      } catch (error) {
-        console.error("Error fetching profile:", error);
-        toast({
-          title: "Fehler",
-          description: "Profildaten konnten nicht geladen werden.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+          .single(),
+        {
+          errorTitle: "Fehler",
+          errorMessage: "Profildaten konnten nicht geladen werden."
+        }
+      );
+      
+      if (data && data.length > 0) {
+        setProfile(data[0]);
       }
     };
 
@@ -50,7 +45,7 @@ const PatientProfile = () => {
     }
     
     fetchFullProfile();
-  }, [user, authProfile, toast]);
+  }, [user, authProfile, executeQuery]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

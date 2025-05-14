@@ -4,42 +4,27 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Order } from "@/types";
-import { useToast } from "@/components/ui/use-toast";
-import { 
-  Loader2, 
-  ShoppingCart, 
-  PackageOpen, 
-  Truck, 
-  Check, 
-  AlertCircle,
-  FileText,
-  Download
-} from "lucide-react";
+import { Loader2, ShoppingCart, PackageOpen, Truck, Check, AlertCircle, FileText, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { useDbQuery } from "@/hooks/use-database";
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
   TableHead, 
   TableHeader, 
-  TableRow 
 } from "@/components/ui/table";
 
 const OrdersPage = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { loading, executeQuery } = useDbQuery<Order>();
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user) return;
       
-      setLoading(true);
-      try {
-        // Verbesserte Fehlerbehandlung beim Datenabruf
-        const { data, error } = await supabase
+      const data = await executeQuery(
+        () => supabase
           .from("orders")
           .select(`
             *,
@@ -49,30 +34,18 @@ const OrdersPage = () => {
             )
           `)
           .eq("patient_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Error fetching orders:", error);
-          throw error;
+          .order("created_at", { ascending: false }),
+        {
+          errorTitle: "Fehler",
+          errorMessage: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
         }
-        
-        console.log("Fetched orders:", data);
-        setOrders(data || []);
-      } catch (error: any) {
-        console.error("Error fetching orders:", error);
-        // Vereinfachte Fehlermeldung für Benutzer
-        toast({
-          title: "Fehler",
-          description: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
+      );
+      
+      setOrders(data);
     };
     
     fetchOrders();
-  }, [user, toast]);
+  }, [user, executeQuery]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

@@ -4,52 +4,37 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Prescription } from "@/types";
-import { useToast } from "@/components/ui/use-toast";
 import { Loader2, FileText, Download, AlertTriangle, CheckCircle, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { useDbQuery } from "@/hooks/use-database";
 
 const PrescriptionsPage = () => {
   const { user } = useAuth();
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const { loading, executeQuery } = useDbQuery<Prescription>();
 
   useEffect(() => {
     const fetchPrescriptions = async () => {
       if (!user) return;
       
-      setLoading(true);
-      try {
-        // Direkter Zugriff auf die Tabelle mit verbesserter Fehlerbehandlung
-        const { data, error } = await supabase
+      const data = await executeQuery(
+        () => supabase
           .from("prescriptions")
           .select("*")
           .eq("patient_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) {
-          console.error("Error fetching prescriptions:", error);
-          throw error;
+          .order("created_at", { ascending: false }),
+        {
+          errorTitle: "Fehler",
+          errorMessage: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
         }
-        
-        console.log("Fetched prescriptions:", data);
-        setPrescriptions(data || []);
-      } catch (error: any) {
-        console.error("Error fetching prescriptions:", error);
-        // Verbesserte Fehlermeldung mit weniger Details für den Benutzer
-        toast({
-          title: "Fehler",
-          description: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
+      );
+      
+      setPrescriptions(data);
     };
     
     fetchPrescriptions();
-  }, [user, toast]);
+  }, [user, executeQuery]);
 
   const getStatusDetails = (status: string) => {
     switch (status) {

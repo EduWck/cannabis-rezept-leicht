@@ -11,6 +11,7 @@ export function useLoginLogic() {
   const { user, userRole, isLoading, signIn, requestLoginCode, verifyLoginCode } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [pendingRedirect, setPendingRedirect] = useState(false);
   
   // Set error message from location state if present
   useEffect(() => {
@@ -38,18 +39,37 @@ export function useLoginLogic() {
 
   // Redirect if already logged in
   useEffect(() => {
+    if (pendingRedirect) {
+      return; // Don't check redirects if we already have one pending
+    }
+    
     if (!isLoading && user && userRole) {
       console.log("User is logged in, redirecting based on role:", userRole);
+      setPendingRedirect(true);
       
       // Use timeout to ensure state updates complete first
       setTimeout(() => {
         redirectUserBasedOnRole(userRole);
-      }, 0);
+      }, 100);
     }
-  }, [user, userRole, isLoading]);
+  }, [user, userRole, isLoading, pendingRedirect]);
 
   const redirectUserBasedOnRole = (role: UserRole) => {
     console.log("Redirecting based on role:", role);
+    
+    // Prevent dashboard redirect loop for admin users
+    if (location.pathname === "/dashboard" && role === "admin") {
+      console.log("Admin already on dashboard, not redirecting");
+      setPendingRedirect(false);
+      return;
+    }
+    
+    // Prevent dashboard/profile redirect loop for patient users
+    if (location.pathname === "/dashboard/profile" && role === "patient") {
+      console.log("Patient already on profile, not redirecting");
+      setPendingRedirect(false);
+      return;
+    }
     
     switch(role) {
       case 'patient':
@@ -69,6 +89,11 @@ export function useLoginLogic() {
         navigate('/dashboard', { replace: true });
         break;
     }
+    
+    // Reset pending redirect flag after navigation
+    setTimeout(() => {
+      setPendingRedirect(false);
+    }, 200);
   };
 
   const clearErrors = () => {

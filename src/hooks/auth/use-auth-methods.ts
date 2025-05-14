@@ -193,56 +193,38 @@ export function useAuthMethods() {
           description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
         });
         
-        // Extract token from magic link
-        const url = new URL(response.data.magicLink);
-        const token = url.searchParams.get('token');
-        const type = url.searchParams.get('type');
-        
-        if (token && type) {
-          // Use the token to sign in directly
-          const { data, error: signInError } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'magiclink',
-          });
-          
-          if (signInError) {
-            console.error("Error using magic link token:", signInError);
-            
-            // Fallback to email OTP if token doesn't work
-            const { error: otpError } = await supabase.auth.signInWithOtp({
-              email: email.trim()
-            });
-            
-            if (otpError) {
-              console.error("Fallback OTP error:", otpError);
-              toast({
-                title: "Login fehlgeschlagen", 
-                description: "Der automatische Login konnte nicht durchgeführt werden. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link.", 
-                variant: "destructive"
-              });
-              // Despite errors, verification was successful - user will need to click email link
-              return true;
+        try {
+          // Try to sign in directly with email OTP
+          console.log("Attempting direct signin with email OTP");
+          const { error: otpError } = await supabase.auth.signInWithOtp({
+            email: email.trim(),
+            options: {
+              shouldCreateUser: true,
+              data: {
+                role: response.data.role || 'patient'
+              }
             }
-          } else {
-            console.log("Successfully verified OTP and signed in user:", data);
-          }
-        } else {
-          // Fallback if we can't extract token from URL
-          await supabase.auth.signInWithOtp({
-            email: email.trim()
           });
           
-          toast({
-            title: "Login-Link gesendet", 
-            description: "Bitte überprüfen Sie Ihre E-Mails für einen Login-Link."
-          });
+          if (otpError) {
+            console.error("Error with direct OTP signin:", otpError);
+            // Fall back to using the magic link
+            window.location.href = response.data.magicLink;
+            return true; // We're redirecting the user, so return true
+          }
+          
+          console.log("OTP signin initiated successfully");
+          return true;
+        } catch (signInError) {
+          console.error("Error during direct signin attempt:", signInError);
+          // Fall back to using the magic link
+          window.location.href = response.data.magicLink;
+          return true; // We're redirecting the user, so return true
         }
-        
-        // Let the UI know verification was successful
-        return true;
       }
       
       // If we reach here, something unexpected happened with the response format
+      console.error("Unexpected response format:", response.data);
       toast({
         title: "Unerwartete Antwort", 
         description: "Die Bestätigung war erfolgreich, aber die Anmeldung konnte nicht abgeschlossen werden.", 

@@ -50,42 +50,18 @@ serve(async (req) => {
       try {
         console.log(`Processing user: ${user.email} with role ${user.role}`);
         
-        // Check if user already exists
-        const { data: existingUsers, error: searchError } = await supabase.auth
+        // First delete any existing users with this email to ensure clean state
+        const { data: existingUsers } = await supabase.auth
           .admin.listUsers({ filter: `email eq "${user.email}"` });
-          
-        if (searchError) {
-          console.error(`Error searching for user ${user.email}:`, searchError);
-          results.push({ 
-            email: user.email, 
-            status: "error", 
-            message: `Error searching: ${searchError.message}` 
-          });
-          continue;
-        }
-          
+        
         if (existingUsers && existingUsers.users.length > 0) {
-          console.log(`User ${user.email} already exists, updating...`);
-          
-          // Delete existing user
-          const existingId = existingUsers.users[0].id;
-          console.log(`Deleting user ${user.email} with ID: ${existingId}`);
-          
-          // First delete the user
-          const { error: deleteError } = await supabase.auth.admin.deleteUser(existingId);
-          
-          if (deleteError) {
-            console.error(`Error deleting user ${user.email}:`, deleteError);
-            results.push({ 
-              email: user.email, 
-              status: "error", 
-              message: `Delete failed: ${deleteError.message}` 
-            });
-            continue;
+          for (const existingUser of existingUsers.users) {
+            console.log(`Deleting existing user ${user.email} with ID: ${existingUser.id}`);
+            await supabase.auth.admin.deleteUser(existingUser.id);
           }
         }
-          
-        // Create new user (if user was deleted or never existed)
+        
+        // Create the user
         console.log(`Creating user: ${user.email}`);
         const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
           email: user.email,
@@ -108,56 +84,39 @@ serve(async (req) => {
           continue;
         }
         
-        // Update profile if user creation was successful
+        // Create profile if user creation was successful
         if (newUser.user) {
+          // First check if profile already exists and delete it to ensure clean state
+          await supabase
+            .from("profiles")
+            .delete()
+            .eq("id", newUser.user.id);
+          
+          // Create new profile
           const profileData = {
             id: newUser.user.id,
             email: user.email,
             role: user.role,
             first_name: user.first_name,
             last_name: user.last_name,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            country: "Germany",
           };
           
-          // Check if profile already exists
-          const { data: existingProfile } = await supabase
+          const { error: profileInsertError } = await supabase
             .from("profiles")
-            .select("id")
-            .eq("id", newUser.user.id)
-            .maybeSingle();
+            .insert([profileData]);
             
-          if (existingProfile) {
-            // Update existing profile
-            const { error: profileUpdateError } = await supabase
-              .from("profiles")
-              .update(profileData)
-              .eq("id", newUser.user.id);
-              
-            if (profileUpdateError) {
-              console.error(`Error updating profile for ${user.email}:`, profileUpdateError);
-              results.push({
-                email: user.email,
-                status: "warning",
-                message: `User created but profile update failed: ${profileUpdateError.message}`,
-                id: newUser.user.id
-              });
-              continue;
-            }
-          } else {
-            // Create new profile
-            const { error: profileInsertError } = await supabase
-              .from("profiles")
-              .insert([profileData]);
-              
-            if (profileInsertError) {
-              console.error(`Error creating profile for ${user.email}:`, profileInsertError);
-              results.push({
-                email: user.email,
-                status: "warning",
-                message: `User created but profile creation failed: ${profileInsertError.message}`,
-                id: newUser.user.id
-              });
-              continue;
-            }
+          if (profileInsertError) {
+            console.error(`Error creating profile for ${user.email}:`, profileInsertError);
+            results.push({
+              email: user.email,
+              status: "warning",
+              message: `User created but profile creation failed: ${profileInsertError.message}`,
+              id: newUser.user.id
+            });
+            continue;
           }
           
           results.push({ 
@@ -166,6 +125,8 @@ serve(async (req) => {
             status: "created",
             id: newUser.user.id
           });
+          
+          console.log(`Successfully created user and profile for ${user.email}`);
         }
       } catch (error) {
         console.error(`Error processing user ${user.email}:`, error);

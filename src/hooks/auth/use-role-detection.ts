@@ -126,7 +126,26 @@ export function useRoleDetection() {
             .insert(userProfile);
             
           if (error) {
-            console.error("Error creating profile:", error);
+            // If insert fails due to duplicate, try update
+            if (error.code === "23505") { // duplicate key value violates unique constraint
+              console.log("Profile already exists, updating instead");
+              const { error: updateError } = await supabase
+                .from("profiles")
+                .update({
+                  role: detectedRole,
+                  email: currentUser.email || "",
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", currentUser.id);
+                
+              if (updateError) {
+                console.error("Error updating profile:", updateError);
+              } else {
+                console.log("Profile updated successfully");
+              }
+            } else {
+              console.error("Error creating profile:", error);
+            }
           } else {
             console.log("Profile created successfully");
           }

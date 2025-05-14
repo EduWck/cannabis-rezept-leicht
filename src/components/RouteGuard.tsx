@@ -16,8 +16,14 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   const navigate = useNavigate();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
+    // If we're already in a redirection process, don't check again
+    if (isRedirecting) {
+      return;
+    }
+
     const checkAuthorization = () => {
       // If still loading authentication state, wait
       if (isLoading) {
@@ -31,6 +37,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       // If no user is logged in, redirect to login
       if (!user) {
         console.log("No user detected, redirecting to login");
+        setIsRedirecting(true);
         navigate("/login", { state: { from: location.pathname } });
         return;
       }
@@ -48,10 +55,27 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         return;
       }
 
-      // Patient redirection - If user is a patient, always redirect to profile page when on main dashboard
+      // Key routes for each role
+      const patientMainRoute = "/dashboard/profile";
+      const doctorMainRoute = "/dashboard";
+      const adminMainRoute = "/dashboard";
+
+      // If already on the correct main route for role, don't redirect (prevents loops)
+      if (
+        (userRole === "patient" && location.pathname === patientMainRoute) ||
+        (userRole === "doctor" && location.pathname === doctorMainRoute) ||
+        (userRole === "admin" && location.pathname === adminMainRoute)
+      ) {
+        console.log(`User already on correct main route for role ${userRole}: ${location.pathname}`);
+        setIsAuthorized(true);
+        return;
+      }
+      
+      // Patient redirection - If user is a patient and on main dashboard, redirect to profile
       if (userRole === "patient" && location.pathname === "/dashboard") {
         console.log("Patient detected on dashboard, redirecting to profile");
-        navigate("/dashboard/profile", { replace: true });
+        setIsRedirecting(true);
+        navigate(patientMainRoute, { replace: true });
         return;
       }
       
@@ -62,16 +86,17 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
       } else {
         console.log(`User role ${userRole} not authorized for this route`);
         
-        // Redirect based on role
+        // Redirect based on role, but avoid redirection loops
+        setIsRedirecting(true);
         if (userRole === "patient") {
           console.log("Patient redirected to profile");
-          navigate("/dashboard/profile", { replace: true });
+          navigate(patientMainRoute, { replace: true });
         } else if (userRole === "doctor") {
           console.log("Doctor redirected to dashboard");
-          navigate("/dashboard", { replace: true });
+          navigate(doctorMainRoute, { replace: true });
         } else if (userRole === "admin") {
           console.log("Admin redirected to dashboard");
-          navigate("/dashboard", { replace: true });
+          navigate(adminMainRoute, { replace: true });
         } else {
           // Fallback for unknown roles
           console.log("Unknown role, redirecting to login");
@@ -86,7 +111,15 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
     };
 
     checkAuthorization();
-  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname]);
+    
+    // Reset redirection flag after a short delay
+    if (isRedirecting) {
+      const timer = setTimeout(() => {
+        setIsRedirecting(false);
+      }, 500); // Wait 500ms before allowing new redirects
+      return () => clearTimeout(timer);
+    }
+  }, [user, userRole, isLoading, allowedRoles, navigate, location.pathname, isRedirecting]);
 
   // Show loading state only when authorization check is in progress
   if (isLoading || !authChecked) {

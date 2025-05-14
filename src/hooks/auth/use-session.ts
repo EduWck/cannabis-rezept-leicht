@@ -16,9 +16,18 @@ export function useSession() {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, newSession) => {
-        console.log("Auth state changed:", event);
+        console.log("Auth state changed:", event, newSession?.user?.id);
         
         if (!mounted) return;
+        
+        if (event === 'SIGNED_OUT') {
+          console.log("User signed out, clearing session data");
+          setSession(null);
+          setUser(null);
+          setProfile(null);
+          setIsLoading(false);
+          return;
+        }
         
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -34,7 +43,7 @@ export function useSession() {
     const checkSession = async () => {
       try {
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Existing session check:", currentSession ? "Found session" : "No session");
+        console.log("Existing session check:", currentSession ? `Found session for user ${currentSession.user.id}` : "No session");
         
         if (!mounted) return;
         

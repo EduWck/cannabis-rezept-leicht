@@ -37,6 +37,7 @@ serve(async (req) => {
       .single();
     
     if (fetchError || !authCode) {
+      console.error("Invalid code or fetch error:", fetchError);
       return new Response(
         JSON.stringify({ error: "Invalid code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -45,6 +46,7 @@ serve(async (req) => {
     
     // Check if code is expired
     if (new Date(authCode.expires_at) < new Date()) {
+      console.error("Code has expired");
       return new Response(
         JSON.stringify({ error: "Code has expired" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -70,8 +72,15 @@ serve(async (req) => {
     const { data: existingUser, error: userError } = await supabase.auth
       .admin.listUsers({ filter: `email eq "${email}"` });
       
-    if (userError || !existingUser || existingUser.users.length === 0) {
+    if (userError) {
+      console.error("Error checking for existing user:", userError);
+      throw new Error(`Failed to check for existing user: ${userError.message}`);
+    }
+    
+    if (!existingUser || existingUser.users.length === 0) {
       // User doesn't exist, create a new user
+      console.log("User doesn't exist, creating new user with email:", email);
+      
       const { data: newUser, error: signUpError } = await supabase.auth.admin.createUser({
         email,
         email_confirm: true,
@@ -79,6 +88,7 @@ serve(async (req) => {
       });
       
       if (signUpError) {
+        console.error("Failed to create new user:", signUpError);
         throw new Error(`Failed to create new user: ${signUpError.message}`);
       }
       
@@ -87,6 +97,7 @@ serve(async (req) => {
       console.log(`Created new user with ID: ${newUser.user.id}, role: ${userRole}`);
     } else {
       userData = existingUser.users[0];
+      console.log(`Found existing user with ID: ${userData.id}`);
       
       // Update user metadata with the role to ensure it's set correctly
       const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
@@ -99,6 +110,48 @@ serve(async (req) => {
         userData = updatedUser;
         console.log(`Updated user ${userData.id} with role: ${userRole}`);
       }
+      
+      // Check if profile exists, create if not
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("id", userData.id)
+        .single();
+        
+      if (profileError || !profileData) {
+        console.log("Profile doesn't exist, creating new profile for user:", userData.id);
+        
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: userData.id,
+            email: email,
+            role: userRole,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          });
+          
+        if (insertError) {
+          console.error("Error creating profile:", insertError);
+        } else {
+          console.log("Profile created successfully");
+        }
+      } else {
+        // Update existing profile to ensure role is correct
+        const { error: updateProfileError } = await supabase
+          .from("profiles")
+          .update({
+            role: userRole,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userData.id);
+          
+        if (updateProfileError) {
+          console.error("Error updating profile:", updateProfileError);
+        } else {
+          console.log("Profile updated successfully");
+        }
+      }
     }
 
     // Delete the used code
@@ -107,12 +160,14 @@ serve(async (req) => {
       .delete()
       .eq("email", email);
     
-    // Create a magic sign in link instead of trying to create a session directly
+    console.log("Deleted auth code after successful verification");
+    
+    // Create a magic sign in link
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: email,
       options: {
-        redirectTo: new URL(req.url).origin // Use the current origin as redirect URL
+        redirectTo: `${new URL(req.url).origin}/login` // Add callback parameter
       }
     });
     
@@ -123,6 +178,8 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    console.log("Generated magic link for email:", email);
     
     // Return success with user data and magic link
     return new Response(

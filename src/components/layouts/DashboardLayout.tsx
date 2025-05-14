@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,19 +18,34 @@ import {
 import { cn } from "@/lib/utils";
 
 const DashboardLayout = () => {
-  const { signOut, userRole, profile } = useAuth();
+  const { signOut, userRole, profile, user } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Effect to verify authentication is still valid
+  useEffect(() => {
+    if (!user && !isLoggingOut) {
+      console.log("No user in DashboardLayout, redirecting to login");
+      navigate("/login", { replace: true });
+    }
+  }, [user, navigate, isLoggingOut]);
 
   const handleSignOut = async () => {
     try {
+      setIsLoggingOut(true);
       await signOut();
+      
       toast({
         title: "Erfolgreich abgemeldet",
         description: "Sie wurden erfolgreich abgemeldet."
       });
-      navigate("/login");
+      
+      // Use a small delay to ensure state updates before navigation
+      setTimeout(() => {
+        navigate("/login", { replace: true });
+      }, 100);
     } catch (error) {
       console.error("Error signing out:", error);
       toast({
@@ -38,6 +53,7 @@ const DashboardLayout = () => {
         description: "Es gab ein Problem beim Abmelden.",
         variant: "destructive"
       });
+      setIsLoggingOut(false);
     }
   };
 
@@ -74,6 +90,15 @@ const DashboardLayout = () => {
       { name: "Produkte", href: "/dashboard/products", icon: ShoppingCart },
       { name: "Einstellungen", href: "/dashboard/settings", icon: Settings },
     ];
+  }
+
+  // If no user or still logging out, show loading or empty state
+  if (!user || isLoggingOut) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <p>Überprüfe Anmeldung...</p>
+      </div>
+    );
   }
 
   return (
@@ -146,6 +171,7 @@ const DashboardLayout = () => {
                   handleSignOut();
                   setMobileMenuOpen(false);
                 }}
+                disabled={isLoggingOut}
               >
                 <LogOut className="mr-2 h-5 w-5" />
                 Abmelden
@@ -199,6 +225,7 @@ const DashboardLayout = () => {
               variant="outline"
               className="flex w-full items-center justify-center"
               onClick={handleSignOut}
+              disabled={isLoggingOut}
             >
               <LogOut className="mr-2 h-4 w-4" />
               Abmelden

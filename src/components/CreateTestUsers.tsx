@@ -30,7 +30,7 @@ const CreateTestUsers = () => {
       
       toast({
         title: "Test-Benutzer erstellt",
-        description: "Die Testbenutzer wurden erfolgreich erstellt."
+        description: "Die Testbenutzer wurden erfolgreich erstellt. Sie können sich nun mit diesen anmelden."
       });
       
       setIsComplete(true);
@@ -38,7 +38,7 @@ const CreateTestUsers = () => {
       // Reset completion state after a delay
       setTimeout(() => {
         setIsComplete(false);
-      }, 10000);
+      }, 20000);
     } catch (error: any) {
       console.error("Error creating test users:", error);
       setErrorMessage(error.message || "Ein unbekannter Fehler ist aufgetreten");
@@ -96,6 +96,10 @@ const CreateTestUsers = () => {
               <li><strong>Arzt:</strong> doctor@example.com / password</li>
               <li><strong>Admin:</strong> admin@example.com / password</li>
             </ul>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Hinweis: Alle Testbenutzer werden neu erstellt. 
+              Bestehende Daten dieser Benutzer werden zurückgesetzt.
+            </p>
           </div>
         </div>
       </CardContent>

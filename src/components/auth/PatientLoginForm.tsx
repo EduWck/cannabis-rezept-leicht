@@ -27,6 +27,7 @@ export const PatientLoginForm = ({
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [verificationAttempted, setVerificationAttempted] = useState(false);
 
   // Cooldown timer effect
   useEffect(() => {
@@ -89,6 +90,7 @@ export const PatientLoginForm = ({
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
+    setVerificationAttempted(true);
     
     if (!code || code.length < 6) {
       toast({
@@ -112,14 +114,15 @@ export const PatientLoginForm = ({
         
         // We don't need to redirect here - auth state change will trigger the redirect
         // But we can show a loading state
-        setLoading(true);
         setTimeout(() => {
           // If we're still on this page after 5 seconds, show a message
-          setLoading(false);
-          toast({
-            title: "Fast geschafft",
-            description: "Die Anmeldung läuft. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link, falls Sie nicht automatisch weitergeleitet werden."
-          });
+          if (verificationAttempted) {
+            setLoading(false);
+            toast({
+              title: "Fast geschafft",
+              description: "Die Anmeldung läuft. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link, falls Sie nicht automatisch weitergeleitet werden."
+            });
+          }
         }, 5000);
       } else {
         toast({
@@ -127,6 +130,7 @@ export const PatientLoginForm = ({
           description: "Der Code konnte nicht verifiziert werden.",
           variant: "destructive"
         });
+        setLoading(false);
       }
     } catch (error: any) {
       console.error("Verification error:", error);
@@ -135,7 +139,6 @@ export const PatientLoginForm = ({
         description: error.message || "Verifizierung fehlgeschlagen",
         variant: "destructive"
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -196,8 +199,12 @@ export const PatientLoginForm = ({
               <Button
                 variant="link"
                 type="button"
-                onClick={() => setCodeSent(false)}
+                onClick={() => {
+                  setCodeSent(false);
+                  setVerificationAttempted(false);
+                }}
                 className="px-0 text-sm"
+                disabled={loading}
               >
                 Zurück zur E-Mail-Eingabe
               </Button>

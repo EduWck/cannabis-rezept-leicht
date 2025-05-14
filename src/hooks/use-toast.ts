@@ -1,40 +1,41 @@
 
-import { toast as sonnerToast } from "sonner";
+import { Toast, toast as sonnerToast, ToastActionElement } from "sonner";
 
-type ToastVariant = "default" | "destructive" | "success";
+type ToastProps = React.ComponentProps<typeof Toast>;
 
-// Map our variant names to Sonner style properties
-const variantToSonnerProps = {
-  default: {},
-  destructive: { style: { backgroundColor: "rgb(239, 68, 68)", color: "white" } },
-  success: { style: { backgroundColor: "rgb(34, 197, 94)", color: "white" } }
+type ToastActionProps = {
+  altText: string;
+  onClick: () => void;
+  children: React.ReactNode;
 };
 
-// Define toast function types
-interface ToastProps {
+export type ToastOptions = {
   title?: string;
-  description?: string;
-  variant?: ToastVariant;
-}
+  description?: React.ReactNode;
+  variant?: "default" | "destructive";
+  action?: ToastActionElement;
+  duration?: number;
+};
 
-// Create a wrapper for the toast function
-const toast = ({ title, description, variant = "default" }: ToastProps) => {
-  const variantProps = variantToSonnerProps[variant];
-  
-  if (title) {
-    return sonnerToast(title, {
+export const toast = ({
+  title,
+  description,
+  variant = "default",
+  action,
+  ...props
+}: ToastOptions) => {
+  return sonnerToast[variant === "destructive" ? "error" : "success"](
+    title,
+    {
       description,
-      ...variantProps
-    });
-  } else {
-    return sonnerToast(description || "", variantProps);
-  }
+      action,
+      ...props,
+    }
+  );
 };
 
-// Create a hook to use the toast function
 export const useToast = () => {
-  return { toast };
+  return {
+    toast,
+  };
 };
-
-// Also export the toast function directly
-export { toast };

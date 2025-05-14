@@ -14,13 +14,13 @@ serve(async (req) => {
   }
   
   try {
-    // Initialisiere Supabase-Client mit Service-Role-Key
-    // Damit umgehen wir die RLS-Richtlinien
+    // Initialize Supabase client with Service Role Key
+    // This bypasses RLS policies
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    // Finde den Test-Patienten und den Test-Arzt
+    // Find the test patient by email
     const { data: patients, error: patientError } = await supabase
       .from("profiles")
       .select("id")
@@ -33,12 +33,39 @@ serve(async (req) => {
       throw patientError;
     }
     
+    // If patient doesn't exist, create the test users first
+    let patientId;
+    
     if (!patients || patients.length === 0) {
-      throw new Error("Test patient not found. Please create test users first.");
+      // Call the create-test-users function to ensure we have users
+      console.log("Test patient not found, creating test users first");
+      
+      // Invoke the create-test-users function
+      const { data: usersData, error: usersError } = await supabase.functions.invoke('create-test-users');
+      
+      if (usersError) {
+        console.error("Error creating test users:", usersError);
+        throw new Error(`Failed to create test users: ${usersError.message}`);
+      }
+      
+      // Query again for the patient
+      const { data: newPatients, error: newPatientError } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", "patient@example.com")
+        .eq("role", "patient")
+        .limit(1);
+        
+      if (newPatientError || !newPatients || newPatients.length === 0) {
+        throw new Error("Failed to create and retrieve test patient");
+      }
+      
+      patientId = newPatients[0].id;
+    } else {
+      patientId = patients[0].id;
     }
     
-    const patientId = patients[0].id;
-    
+    // Find the test doctor
     const { data: doctors, error: doctorError } = await supabase
       .from("profiles")
       .select("id")
@@ -51,7 +78,15 @@ serve(async (req) => {
       throw doctorError;
     }
     
-    // Erstellen von Testrezepten mit verschiedenen Status
+    if (!doctors || doctors.length === 0) {
+      throw new Error("Test doctor not found. Please make sure test users were created successfully.");
+    }
+    
+    const doctorId = doctors[0].id;
+    
+    console.log(`Creating test data for patient ID: ${patientId} and doctor ID: ${doctorId}`);
+    
+    // Create test prescriptions with various statuses
     const { data: prescriptionData, error: prescriptionError } = await supabase
       .from("prescriptions")
       .insert([
@@ -62,13 +97,13 @@ serve(async (req) => {
         },
         {
           patient_id: patientId,
-          doctor_id: doctors?.[0]?.id || null,
+          doctor_id: doctorId,
           status: "approved",
           symptoms: ["Angstzustände", "Übelkeit"]
         },
         {
           patient_id: patientId,
-          doctor_id: doctors?.[0]?.id || null,
+          doctor_id: doctorId,
           status: "rejected",
           rejection_reason: "Unzureichende medizinische Begründung",
           symptoms: ["Kopfschmerzen"]
@@ -81,14 +116,14 @@ serve(async (req) => {
       throw prescriptionError;
     }
     
-    // Finden des genehmigten Rezepts für Bestellungen
+    // Find the approved prescription for orders
     const approvedPrescription = prescriptionData.find(p => p.status === "approved");
     
     if (!approvedPrescription) {
       throw new Error("No approved prescription found.");
     }
     
-    // Erstellen von Testbestellungen
+    // Create test orders
     const { error: orderError } = await supabase
       .from("orders")
       .insert([

@@ -46,6 +46,11 @@ export const CreateTestData = () => {
     setError(null);
     
     try {
+      // First ensure test users exist
+      if (!userCreated) {
+        await handleCreateTestUsers();
+      }
+      
       const result = await createTestData();
       
       toast({
@@ -96,20 +101,15 @@ export const CreateTestData = () => {
         <h3 className="text-lg font-semibold mb-2">Test-Daten erstellen</h3>
         <Button 
           onClick={handleCreateTestData}
-          disabled={creatingData || (!userCreated && !creatingUsers)}
+          disabled={creatingData}
           className="w-full sm:w-auto"
         >
           {creatingData && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Test-Rezepte und Bestellungen erstellen
         </Button>
         <p className="text-sm text-muted-foreground mt-2">
-          Erstellt Testrezepte und Bestellungen für den Test-Patienten. Führen Sie diese Aktion erst aus, nachdem Sie Test-Benutzer erstellt haben.
+          Erstellt Testrezepte und Bestellungen für den Test-Patienten. Die Test-Benutzer werden automatisch erstellt, wenn sie noch nicht existieren.
         </p>
-        {!userCreated && !creatingUsers && (
-          <p className="text-sm text-amber-600 mt-1">
-            Bitte erstellen Sie zuerst Test-Benutzer, bevor Sie Test-Daten erstellen.
-          </p>
-        )}
       </div>
     </div>
   );

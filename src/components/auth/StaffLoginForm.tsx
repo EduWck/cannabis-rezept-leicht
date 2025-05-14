@@ -15,11 +15,14 @@ interface StaffLoginFormProps {
 export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormProps) => {
   const [staffEmail, setStaffEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleStaffLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     
     if (!staffEmail || !password) {
+      setError("Bitte geben Sie E-Mail und Passwort ein.");
       toast({
         title: "Fehlende Angaben",
         description: "Bitte geben Sie E-Mail und Passwort ein."
@@ -31,9 +34,14 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
     
     try {
       console.log("Attempting staff login with:", staffEmail);
-      await signIn(staffEmail, password);
+      const success = await signIn(staffEmail, password);
+      
+      if (!success) {
+        setError("Login fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.");
+      }
     } catch (error: any) {
       console.error("Login error:", error);
+      setError(error.message || "Ungültige Anmeldedaten");
       toast({
         title: "Login fehlgeschlagen",
         description: error.message || "Ungültige Anmeldedaten",
@@ -55,6 +63,11 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
       <CardContent>
         <form onSubmit={handleStaffLogin}>
           <div className="grid gap-4">
+            {error && (
+              <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">
+                {error}
+              </div>
+            )}
             <div className="grid gap-2">
               <Input
                 type="email"

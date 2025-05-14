@@ -51,15 +51,21 @@ export function useLoginLogic() {
   const redirectUserBasedOnRole = (role: UserRole) => {
     console.log("Redirecting based on role:", role);
     
-    const from = location.state?.from || "/dashboard";
-    
     switch(role) {
       case 'patient':
+        console.log("Redirecting patient to dashboard/profile");
         navigate('/dashboard/profile', { replace: true });
         break;
       case 'doctor':
+        console.log("Redirecting doctor to dashboard");
+        navigate('/dashboard', { replace: true });
+        break;
       case 'admin':
+        console.log("Redirecting admin to dashboard");
+        navigate('/dashboard', { replace: true });
+        break;
       default:
+        console.log("Unknown role, redirecting to dashboard");
         navigate('/dashboard', { replace: true });
         break;
     }

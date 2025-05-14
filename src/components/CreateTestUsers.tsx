@@ -16,6 +16,11 @@ const CreateTestUsers = () => {
     setErrorMessage(null);
     
     try {
+      toast({
+        title: "Test-Benutzer werden erstellt",
+        description: "Bitte warten Sie einen Moment..."
+      });
+      
       const response = await createTestUsers();
       console.log("Test users creation response:", response);
       
@@ -29,6 +34,11 @@ const CreateTestUsers = () => {
       });
       
       setIsComplete(true);
+      
+      // Reset completion state after a delay
+      setTimeout(() => {
+        setIsComplete(false);
+      }, 10000);
     } catch (error: any) {
       console.error("Error creating test users:", error);
       setErrorMessage(error.message || "Ein unbekannter Fehler ist aufgetreten");

@@ -45,7 +45,7 @@ export function useRoleDetection() {
           .from("profiles")
           .select("*")
           .eq("id", currentUser.id)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error("Error fetching profile from database:", error);
@@ -61,6 +61,8 @@ export function useRoleDetection() {
             detectedRole = userProfile.role;
             console.log("Role from profile:", detectedRole);
           }
+        } else {
+          console.log("No profile found in database, will create minimal profile");
         }
       } catch (profileError) {
         console.error("Profile fetch failed, falling back to other methods:", profileError);
@@ -115,6 +117,22 @@ export function useRoleDetection() {
           city: null,
           country: "Germany",
         };
+        
+        // Try to create the profile if it doesn't exist
+        try {
+          console.log("Attempting to create profile in database");
+          const { error } = await supabase
+            .from("profiles")
+            .insert(userProfile);
+            
+          if (error) {
+            console.error("Error creating profile:", error);
+          } else {
+            console.log("Profile created successfully");
+          }
+        } catch (createError) {
+          console.error("Error creating profile:", createError);
+        }
       }
       
       // Always ensure the profile has a role set

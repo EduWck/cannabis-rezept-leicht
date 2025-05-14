@@ -13,9 +13,20 @@ export function useAuthMethods() {
     try {
       setIsProcessing(true);
       console.log("Attempting to sign in with email and password:", email);
+      
+      if (!email || !password) {
+        console.error("Email or password missing");
+        toast({
+          title: "Login fehlgeschlagen",
+          description: "E-Mail und Passwort werden benötigt",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+        email: email.trim(),
+        password: password.trim(),
       });
 
       if (error) {
@@ -77,9 +88,18 @@ export function useAuthMethods() {
       setIsProcessing(true);
       console.log("Requesting login code for:", email);
       
+      if (!email || !email.trim()) {
+        toast({
+          title: "E-Mail erforderlich",
+          description: "Bitte geben Sie eine E-Mail-Adresse ein.",
+          variant: "destructive"
+        });
+        return { success: false };
+      }
+      
       // For development environment, use the serverless function
       const response = await supabase.functions.invoke('send-login-code', {
-        body: { email }
+        body: { email: email.trim() }
       });
       
       if (response.error) {
@@ -134,11 +154,20 @@ export function useAuthMethods() {
     try {
       setIsProcessing(true);
       
+      if (!email || !code) {
+        toast({
+          title: "Fehlende Daten",
+          description: "E-Mail und Code werden benötigt",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
       console.log(`Attempting to verify code for email: ${email} with code: ${code}`);
       
       // Step 1: Verify the code through our Edge Function
       const response = await supabase.functions.invoke('verify-login-code', {
-        body: { email, code }
+        body: { email: email.trim(), code: code.trim() }
       });
       
       if (response.error) {
@@ -158,6 +187,12 @@ export function useAuthMethods() {
       if (response.data?.success && response.data?.magicLink) {
         console.log("Code verification successful. Using magic link for: ", response.data.email);
         
+        // Show success message to the user
+        toast({
+          title: "Code bestätigt", 
+          description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
+        });
+        
         // Extract token from magic link
         const url = new URL(response.data.magicLink);
         const token = url.searchParams.get('token');
@@ -165,16 +200,17 @@ export function useAuthMethods() {
         
         if (token && type) {
           // Use the token to sign in directly
-          const { error: signInError } = await supabase.auth.verifyOtp({
+          const { data, error: signInError } = await supabase.auth.verifyOtp({
             token_hash: token,
             type: 'magiclink',
           });
           
           if (signInError) {
             console.error("Error using magic link token:", signInError);
+            
             // Fallback to email OTP if token doesn't work
             const { error: otpError } = await supabase.auth.signInWithOtp({
-              email: email
+              email: email.trim()
             });
             
             if (otpError) {
@@ -187,11 +223,13 @@ export function useAuthMethods() {
               // Despite errors, verification was successful - user will need to click email link
               return true;
             }
+          } else {
+            console.log("Successfully verified OTP and signed in user:", data);
           }
         } else {
           // Fallback if we can't extract token from URL
           await supabase.auth.signInWithOtp({
-            email: email
+            email: email.trim()
           });
           
           toast({
@@ -199,12 +237,6 @@ export function useAuthMethods() {
             description: "Bitte überprüfen Sie Ihre E-Mails für einen Login-Link."
           });
         }
-        
-        // Show success message to the user
-        toast({
-          title: "Code bestätigt", 
-          description: "Ihr Code wurde erfolgreich verifiziert. Sie werden in Kürze eingeloggt."
-        });
         
         // Let the UI know verification was successful
         return true;

@@ -67,7 +67,7 @@ serve(async (req) => {
         if (existingUsers && existingUsers.users.length > 0) {
           console.log(`User ${user.email} already exists, updating...`);
           
-          // Delete and recreate user for clean slate
+          // Delete existing user
           const existingId = existingUsers.users[0].id;
           console.log(`Deleting user ${user.email} with ID: ${existingId}`);
           
@@ -83,90 +83,78 @@ serve(async (req) => {
             });
             continue;
           }
+        }
           
-          // Then recreate the user with fresh credentials
-          console.log(`Recreating user ${user.email}`);
-          const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-            email: user.email,
-            password: user.password,
-            email_confirm: true,
-            user_metadata: { role: user.role }
-          });
-          
-          if (createError) {
-            console.error(`Error recreating user ${user.email}:`, createError);
-            results.push({ 
-              email: user.email, 
-              status: "error", 
-              message: `Recreation failed: ${createError.message}` 
-            });
-            continue;
+        // Create new user (if user was deleted or never existed)
+        console.log(`Creating user: ${user.email}`);
+        const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+          email: user.email,
+          password: user.password,
+          email_confirm: true,
+          user_metadata: { 
+            role: user.role,
+            first_name: user.first_name,
+            last_name: user.last_name
           }
+        });
+        
+        if (createError) {
+          console.error(`Error creating user ${user.email}:`, createError);
+          results.push({ 
+            email: user.email, 
+            status: "error", 
+            message: `Creation failed: ${createError.message}` 
+          });
+          continue;
+        }
+        
+        // Update profile if user creation was successful
+        if (newUser.user) {
+          const profileData = {
+            id: newUser.user.id,
+            email: user.email,
+            role: user.role,
+            first_name: user.first_name,
+            last_name: user.last_name,
+          };
           
-          // Update profile
-          if (newUser.user) {
-            const { error: profileError } = await supabase
+          // Check if profile already exists
+          const { data: existingProfile } = await supabase
+            .from("profiles")
+            .select("id")
+            .eq("id", newUser.user.id)
+            .maybeSingle();
+            
+          if (existingProfile) {
+            // Update existing profile
+            const { error: profileUpdateError } = await supabase
               .from("profiles")
-              .update({ 
-                role: user.role,
-                first_name: user.first_name,
-                last_name: user.last_name
-              })
+              .update(profileData)
               .eq("id", newUser.user.id);
               
-            if (profileError) {
-              console.error(`Error updating profile for ${user.email}:`, profileError);
+            if (profileUpdateError) {
+              console.error(`Error updating profile for ${user.email}:`, profileUpdateError);
               results.push({
                 email: user.email,
                 status: "warning",
-                message: `User recreated but profile failed: ${profileError.message}`
+                message: `User created but profile update failed: ${profileUpdateError.message}`,
+                id: newUser.user.id
               });
               continue;
             }
-          }
-          
-          results.push({ 
-            email: user.email, 
-            role: user.role, 
-            status: "recreated" 
-          });
-        } else {
-          console.log(`Creating new user: ${user.email}`);
-          // Create new user
-          const { data, error } = await supabase.auth.admin.createUser({
-            email: user.email,
-            password: user.password,
-            email_confirm: true,
-            user_metadata: { role: user.role }
-          });
-          
-          if (error) {
-            console.error(`Error creating user ${user.email}:`, error);
-            results.push({ 
-              email: user.email, 
-              status: "error", 
-              message: `Creation failed: ${error.message}` 
-            });
-            continue;
-          }
-          
-          // Update profile too
-          if (data.user) {
-            const { error: profileError } = await supabase
+          } else {
+            // Create new profile
+            const { error: profileInsertError } = await supabase
               .from("profiles")
-              .update({ 
-                role: user.role,
-                first_name: user.first_name,
-                last_name: user.last_name
-              })
-              .eq("id", data.user.id);
+              .insert([profileData]);
               
-            if (profileError) {
-              console.error(`Error updating profile for ${user.email}:`, profileError);
+            if (profileInsertError) {
+              console.error(`Error creating profile for ${user.email}:`, profileInsertError);
               results.push({
                 email: user.email,
                 status: "warning",
-                message: `User created but profile failed: ${profileError.message}`
+                message: `User created but profile creation failed: ${profileInsertError.message}`,
+                id: newUser.user.id
               });
               continue;
             }
@@ -175,7 +163,8 @@ serve(async (req) => {
           results.push({ 
             email: user.email, 
             role: user.role, 
-            status: "created" 
+            status: "created",
+            id: newUser.user.id
           });
         }
       } catch (error) {

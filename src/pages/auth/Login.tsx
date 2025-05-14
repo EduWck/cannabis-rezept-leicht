@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -81,6 +80,15 @@ const Login = () => {
       <div className="mb-8 text-center">
         <h2 className="text-2xl font-bold text-cannabis-green-900">MediCannabis</h2>
         <p className="text-sm text-muted-foreground">Dein Weg zum medizinischen Cannabis-Rezept</p>
+      </div>
+      
+      {/* Test Users Link - deutlich sichtbar */}
+      <div className="mb-4 w-full max-w-md">
+        <Link to="/test-users">
+          <Button variant="outline" className="w-full border-cannabis-green-500 text-cannabis-green-700">
+            Testbenutzer erstellen/verwalten
+          </Button>
+        </Link>
       </div>
       
       <Tabs defaultValue="patient" className="w-full max-w-md">
@@ -227,4 +235,3 @@ const Login = () => {
 };
 
 export default Login;
-

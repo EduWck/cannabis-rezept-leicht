@@ -9,6 +9,7 @@ import { StaffLoginForm } from "@/components/auth/StaffLoginForm";
 import { DemoAccountsInfo } from "@/components/auth/DemoAccountsInfo";
 import { useLoginLogic } from "@/hooks/use-login-logic";
 import { useEffect } from "react";
+import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
   const { 
@@ -29,6 +30,11 @@ const Login = () => {
   useEffect(() => {
     if (!authIsLoading && user && userRole) {
       console.log(`User authenticated with role: ${userRole}, redirecting...`);
+      // Add toast notification to let the user know we're redirecting
+      toast({
+        title: "Erfolgreiche Anmeldung",
+        description: "Sie werden zur Dashboard weitergeleitet..."
+      });
       redirectUserBasedOnRole(userRole);
     }
   }, [authIsLoading, user, userRole, redirectUserBasedOnRole]);
@@ -37,6 +43,7 @@ const Login = () => {
   if (!authIsLoading && user && userRole) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500 mb-4" />
         <p>Sie sind bereits angemeldet. Weiterleitung...</p>
         <Button 
           onClick={() => redirectUserBasedOnRole(userRole)} 

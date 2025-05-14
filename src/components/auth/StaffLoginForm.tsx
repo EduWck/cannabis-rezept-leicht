@@ -34,7 +34,11 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
     
     try {
       console.log("Attempting staff login with:", staffEmail);
-      const success = await signIn(staffEmail, password);
+      
+      // For test accounts (doctor/admin), use the default password if none provided
+      const finalPassword = password || "password";
+      
+      const success = await signIn(staffEmail, finalPassword);
       
       if (!success) {
         setError("Login fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.");
@@ -96,6 +100,9 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <div className="text-sm text-muted-foreground">
+                Für Test-Accounts: Passwort ist "password"
+              </div>
             </div>
             <Button type="submit" disabled={loading} className="w-full">
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

@@ -3,6 +3,7 @@ import { User } from "@supabase/supabase-js";
 import { useState } from "react";
 import { UserRole, Profile } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 export function useRoleDetection() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -96,6 +97,11 @@ export function useRoleDetection() {
       if (!detectedRole) {
         console.log("Using default role: patient");
         detectedRole = 'patient';
+        
+        toast({
+          title: "Standard-Rolle zugewiesen",
+          description: "Da keine Rolle erkannt wurde, wurde Ihnen die Rolle 'Patient' zugewiesen."
+        });
       }
       
       // Create a profile object if we don't have one
@@ -139,17 +145,40 @@ export function useRoleDetection() {
                 
               if (updateError) {
                 console.error("Error updating profile:", updateError);
+                
+                toast({
+                  title: "Fehler beim Aktualisieren",
+                  description: "Ihr Profil konnte nicht aktualisiert werden.",
+                  variant: "destructive"
+                });
               } else {
                 console.log("Profile updated successfully");
               }
             } else {
               console.error("Error creating profile:", error);
+              
+              toast({
+                title: "Fehler beim Erstellen",
+                description: "Ihr Profil konnte nicht erstellt werden.",
+                variant: "destructive"
+              });
             }
           } else {
             console.log("Profile created successfully");
+            
+            toast({
+              title: "Profil erstellt",
+              description: "Ihr Profil wurde erfolgreich erstellt."
+            });
           }
         } catch (createError) {
           console.error("Error creating profile:", createError);
+          
+          toast({
+            title: "Fehler beim Erstellen",
+            description: "Es ist ein Fehler beim Erstellen Ihres Profils aufgetreten.",
+            variant: "destructive"
+          });
         }
       }
       

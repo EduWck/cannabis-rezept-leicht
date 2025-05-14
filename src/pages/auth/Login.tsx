@@ -36,13 +36,13 @@ const Login = () => {
       // Add toast notification to let the user know we're redirecting
       toast({
         title: "Erfolgreiche Anmeldung",
-        description: "Sie werden zur Dashboard weitergeleitet..."
+        description: `Sie werden als ${userRole} weitergeleitet...`
       });
       
       // Use a timeout to ensure the state updates before redirect
       setTimeout(() => {
         redirectUserBasedOnRole(userRole);
-      }, 100);
+      }, 200);
     }
   }, [authIsLoading, user, userRole, redirectUserBasedOnRole, redirectAttempted]);
 

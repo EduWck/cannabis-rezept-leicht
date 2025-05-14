@@ -1,35 +1,26 @@
 
-import * as React from "react";
-import { toast as sonnerToast } from "sonner";
+import {
+  Toast,
+  ToastActionElement,
+  ToastProps,
+} from "@/components/ui/toast";
 
-export type ToastProps = {
+import {
+  useToast as useToastBase,
+} from "@/components/ui/use-toast";
+
+export type ToasterToast = ToastProps & {
+  id: string;
   title?: React.ReactNode;
   description?: React.ReactNode;
-  action?: React.ReactNode;
-  variant?: "default" | "destructive";
+  action?: ToastActionElement;
 };
 
-export const useToast = () => {
-  return {
-    toast: (props: ToastProps) => {
-      const { title, description, variant, action } = props;
-      
-      return sonnerToast(title as string, {
-        description,
-        action,
-        className: variant === "destructive" ? "destructive" : undefined,
-      });
-    },
-    dismiss: sonnerToast.dismiss,
-  };
-};
+// Export the base hook
+export const useToast = useToastBase;
 
-export const toast = (props: ToastProps) => {
-  const { title, description, variant, action } = props;
-  
-  return sonnerToast(title as string, {
-    description,
-    action,
-    className: variant === "destructive" ? "destructive" : undefined,
-  });
-};
+// Export the toast function directly
+export const { toast } = useToastBase();
+
+// Re-export types
+export type { Toast, ToastProps };

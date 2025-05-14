@@ -23,6 +23,9 @@ serve(async (req) => {
       );
     }
     
+    // Normalize email
+    const normalizedEmail = email.trim().toLowerCase();
+    
     // Initialize Supabase admin client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -32,7 +35,7 @@ serve(async (req) => {
     const { data: authCode, error: fetchError } = await supabase
       .from("auth_codes")
       .select("*")
-      .eq("email", email)
+      .eq("email", normalizedEmail)
       .eq("code", code)
       .maybeSingle();
     
@@ -55,22 +58,22 @@ serve(async (req) => {
     
     // Determine user role based on email address
     let userRole = 'patient';
-    const normalizedEmail = email.toLowerCase();
+    
     if (normalizedEmail.includes('doctor')) {
       userRole = 'doctor';
-      console.log(`Setting doctor role for: ${email}`);
+      console.log(`Setting doctor role for: ${normalizedEmail}`);
     } else if (normalizedEmail.includes('admin')) {
       userRole = 'admin';
-      console.log(`Setting admin role for: ${email}`);
+      console.log(`Setting admin role for: ${normalizedEmail}`);
     } else {
-      console.log(`Setting default patient role for: ${email}`);
+      console.log(`Setting default patient role for: ${normalizedEmail}`);
     }
     
-    console.log(`Determined role for ${email}: ${userRole}`);
+    console.log(`Determined role for ${normalizedEmail}: ${userRole}`);
     
     // Check if user exists
     const { data: existingUser, error: userError } = await supabase.auth
-      .admin.listUsers({ filter: `email eq "${email}"` });
+      .admin.listUsers({ filter: `email eq "${normalizedEmail}"` });
       
     if (userError) {
       console.error("Error checking for existing user:", userError);
@@ -78,14 +81,15 @@ serve(async (req) => {
     }
     
     let userData;
+    let userId;
     
     if (!existingUser || existingUser.users.length === 0) {
       // User doesn't exist, create a new user
-      console.log("User doesn't exist, creating new user with email:", email);
+      console.log("User doesn't exist, creating new user with email:", normalizedEmail);
       
       // For doctor and admin, create with password for email/password login
       let createOptions = {
-        email,
+        email: normalizedEmail,
         email_confirm: true,
         user_metadata: { role: userRole }
       }; 
@@ -106,77 +110,93 @@ serve(async (req) => {
       }
       
       userData = newUser;
+      userId = newUser.user.id;
       
-      console.log(`Created new user with ID: ${newUser.user.id}, role: ${userRole}`);
+      console.log(`Created new user with ID: ${userId}, role: ${userRole}`);
     } else {
       userData = existingUser.users[0];
-      console.log(`Found existing user with ID: ${userData.id}`);
+      userId = userData.id;
+      console.log(`Found existing user with ID: ${userId}`);
       
       // Update user metadata with the role to ensure it's set correctly
-      const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
-        user_metadata: { ...userData.user_metadata, role: userRole }
-      });
-      
-      if (updateError) {
-        console.error(`Failed to update user metadata: ${updateError.message}`);
-      } else {
-        userData = updatedUser;
-        console.log(`Updated user ${userData.id} with role: ${userRole}`);
+      try {
+        const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userId, {
+          user_metadata: { ...userData.user_metadata, role: userRole }
+        });
+        
+        if (updateError) {
+          console.error(`Failed to update user metadata: ${updateError.message}`);
+        } else {
+          userData = updatedUser;
+          console.log(`Updated user ${userId} with role: ${userRole}`);
+        }
+      } catch (updateError) {
+        console.error("Error updating user metadata:", updateError);
       }
       
       // For doctor and admin users, make sure they have a password set
       if (userRole === 'doctor' || userRole === 'admin') {
-        const { error: passwordError } = await supabase.auth.admin.updateUserById(userData.id, {
-          password: 'password' // Reset to a simple password for test accounts
-        });
-        
-        if (passwordError) {
-          console.error("Error setting password:", passwordError);
-        } else {
-          console.log("Password set for user");
-        }
-      }
-      
-      // Check if profile exists, create if not
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("id", userData.id)
-        .maybeSingle();
-        
-      if (profileError || !profileData) {
-        console.log("Profile doesn't exist, creating new profile for user:", userData.id);
-        
-        const { error: insertError } = await supabase
-          .from("profiles")
-          .insert({
-            id: userData.id,
-            email: email,
-            role: userRole,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+        try {
+          const { error: passwordError } = await supabase.auth.admin.updateUserById(userId, {
+            password: 'password' // Reset to a simple password for test accounts
           });
           
-        if (insertError) {
-          console.error("Error creating profile:", insertError);
-        } else {
-          console.log("Profile created successfully");
+          if (passwordError) {
+            console.error("Error setting password:", passwordError);
+          } else {
+            console.log("Password set for user");
+          }
+        } catch (passwordError) {
+          console.error("Error setting password:", passwordError);
         }
-      } else {
-        // Update existing profile to ensure role is correct
-        const { error: updateProfileError } = await supabase
+      }
+    }
+    
+    // Check if profile exists, create if not
+    if (userId) {
+      try {
+        const { data: profileData, error: profileError } = await supabase
           .from("profiles")
-          .update({
-            role: userRole,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", userData.id);
+          .select("id")
+          .eq("id", userId)
+          .maybeSingle();
           
-        if (updateProfileError) {
-          console.error("Error updating profile:", updateProfileError);
+        if (profileError || !profileData) {
+          console.log("Profile doesn't exist, creating new profile for user:", userId);
+          
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert({
+              id: userId,
+              email: normalizedEmail,
+              role: userRole,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            });
+            
+          if (insertError) {
+            console.error("Error creating profile:", insertError);
+          } else {
+            console.log("Profile created successfully");
+          }
         } else {
-          console.log("Profile updated successfully");
+          // Update existing profile to ensure role is correct
+          const { error: updateProfileError } = await supabase
+            .from("profiles")
+            .update({
+              role: userRole,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", userId);
+            
+          if (updateProfileError) {
+            console.error("Error updating profile:", updateProfileError);
+          } else {
+            console.log("Profile updated successfully");
+          }
         }
+      } catch (profileError) {
+        console.error("Error handling profile:", profileError);
       }
     }
 
@@ -184,14 +204,14 @@ serve(async (req) => {
     await supabase
       .from("auth_codes")
       .delete()
-      .eq("email", email);
+      .eq("email", normalizedEmail);
     
     console.log("Deleted auth code after successful verification");
     
     // Create a magic sign in link for the user
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
       type: "magiclink",
-      email: email,
+      email: normalizedEmail,
       options: {
         redirectTo: `${new URL(req.url).origin}/login`,
         data: {
@@ -208,13 +228,13 @@ serve(async (req) => {
       );
     }
     
-    console.log("Generated magic link for email:", email);
+    console.log("Generated magic link for email:", normalizedEmail);
     
     // Return success with user data and magic link
     return new Response(
       JSON.stringify({ 
         success: true,
-        email: email,
+        email: normalizedEmail,
         role: userRole,
         user: userData,
         magicLink: linkData.properties.action_link,

@@ -33,12 +33,27 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
     setLoading(true);
     
     try {
-      console.log("Attempting staff login with:", staffEmail);
+      // Normalize email to ensure we handle demo accounts properly
+      let normalizedEmail = staffEmail.trim().toLowerCase();
       
-      // For test accounts (doctor/admin), use the default password if none provided
+      // Auto-format known test accounts
+      if (normalizedEmail === "doctor" || normalizedEmail === "arzt") {
+        normalizedEmail = "doctor@example.com";
+      } else if (normalizedEmail === "admin") {
+        normalizedEmail = "admin@example.com";
+      }
+      
+      // Auto-add domain for simplified input
+      if (!normalizedEmail.includes('@')) {
+        normalizedEmail = `${normalizedEmail}@example.com`;
+      }
+      
+      console.log("Attempting staff login with:", normalizedEmail);
+      
+      // For test accounts, use the default password if none provided
       const finalPassword = password || "password";
       
-      const success = await signIn(staffEmail, finalPassword);
+      const success = await signIn(normalizedEmail, finalPassword);
       
       if (!success) {
         setError("Login fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten.");
@@ -85,8 +100,8 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
             )}
             <div className="grid gap-2">
               <Input
-                type="email"
-                placeholder="E-Mail-Adresse"
+                type="text" /* Changed from email to text to allow simplified inputs */
+                placeholder="E-Mail-Adresse oder Benutzername"
                 value={staffEmail}
                 onChange={(e) => setStaffEmail(e.target.value)}
                 required

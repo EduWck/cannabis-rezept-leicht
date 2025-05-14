@@ -24,14 +24,20 @@ export function useAuthMethods() {
         return false;
       }
       
+      // Normalize email
+      const normalizedEmail = email.trim().toLowerCase();
+      
       // Handle special case for test accounts
-      const isTestAccount = email.includes('doctor@') || email.includes('admin@') || email.includes('patient@');
+      const isTestAccount = 
+        normalizedEmail.includes('doctor@') || 
+        normalizedEmail.includes('admin@') || 
+        normalizedEmail.includes('patient@');
       
       // For test accounts, ensure we're using the correct password
       const finalPassword = isTestAccount && password !== "password" ? "password" : password;
       
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: normalizedEmail,
         password: finalPassword.trim(),
       });
 
@@ -41,11 +47,11 @@ export function useAuthMethods() {
         // If this is a test account and password login failed, try with magic link
         if (isTestAccount && (error.message.includes('Invalid login') || error.message.includes('invalid password'))) {
           console.log("Test account password login failed, attempting to request login code...");
-          const codeResult = await requestLoginCode(email);
+          const codeResult = await requestLoginCode(normalizedEmail);
           
           if (codeResult.success && codeResult.code) {
             console.log("Login code generated for test account, attempting to verify:", codeResult.code);
-            const verifySuccess = await verifyLoginCode(email, codeResult.code);
+            const verifySuccess = await verifyLoginCode(normalizedEmail, codeResult.code);
             
             if (verifySuccess) {
               console.log("Test account verified with code successfully");
@@ -88,11 +94,21 @@ export function useAuthMethods() {
     try {
       console.log("Attempting to sign out");
       setIsProcessing(true);
+      
+      // First, capture current session data for logging
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      const userEmail = sessionData.session?.user?.email;
+      
+      console.log(`Signing out user: ${userEmail} (${userId})`);
+      
       const { error } = await supabase.auth.signOut();
+      
       if (error) {
         console.error("Logout error:", error.message);
         throw error;
       }
+      
       console.log("Logout successful");
       toast({
         title: "Abgemeldet",
@@ -117,9 +133,12 @@ export function useAuthMethods() {
   const requestLoginCode = async (email: string) => {
     try {
       setIsProcessing(true);
-      console.log("Requesting login code for:", email);
       
-      if (!email || !email.trim()) {
+      // Normalize email
+      const normalizedEmail = email.trim().toLowerCase();
+      console.log("Requesting login code for:", normalizedEmail);
+      
+      if (!normalizedEmail) {
         toast({
           title: "E-Mail erforderlich",
           description: "Bitte geben Sie eine E-Mail-Adresse ein.",
@@ -130,7 +149,7 @@ export function useAuthMethods() {
       
       // For development environment, use the serverless function
       const response = await supabase.functions.invoke('send-login-code', {
-        body: { email: email.trim() }
+        body: { email: normalizedEmail }
       });
       
       if (response.error) {
@@ -184,7 +203,10 @@ export function useAuthMethods() {
     try {
       setIsProcessing(true);
       
-      if (!email || !code) {
+      // Normalize email
+      const normalizedEmail = email.trim().toLowerCase();
+      
+      if (!normalizedEmail || !code) {
         toast({
           title: "Fehlende Daten",
           description: "E-Mail und Code werden benötigt",
@@ -193,11 +215,11 @@ export function useAuthMethods() {
         return false;
       }
       
-      console.log(`Attempting to verify code for email: ${email} with code: ${code}`);
+      console.log(`Attempting to verify code for email: ${normalizedEmail} with code: ${code}`);
       
       // Step 1: Verify the code through our Edge Function
       const response = await supabase.functions.invoke('verify-login-code', {
-        body: { email: email.trim(), code: code.trim() }
+        body: { email: normalizedEmail, code: code.trim() }
       });
       
       if (response.error) {
@@ -245,7 +267,7 @@ export function useAuthMethods() {
       try {
         console.log("Attempting direct signin with email OTP");
         const { error: otpError } = await supabase.auth.signInWithOtp({
-          email: email.trim(),
+          email: normalizedEmail,
           options: {
             shouldCreateUser: true,
             data: {

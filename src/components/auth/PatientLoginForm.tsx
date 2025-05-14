@@ -78,10 +78,23 @@ export const PatientLoginForm = ({
       return;
     }
     
+    // Normalize email to ensure demo accounts work properly
+    let normalizedEmail = email.trim().toLowerCase();
+    
+    // Auto-format known test accounts
+    if (normalizedEmail === "patient" || normalizedEmail === "patien") {
+      normalizedEmail = "patient@example.com";
+    }
+    
+    // Auto-add domain for simplified input
+    if (!normalizedEmail.includes('@')) {
+      normalizedEmail = `${normalizedEmail}@example.com`;
+    }
+    
     setLoading(true);
     
     try {
-      const result = await requestLoginCode(email.trim());
+      const result = await requestLoginCode(normalizedEmail);
       if (result.success) {
         setCodeSent(true);
         setCooldown(COOLDOWN_TIME);
@@ -120,9 +133,22 @@ export const PatientLoginForm = ({
     
     setLoading(true);
     
+    // Normalize email to ensure demo accounts work properly
+    let normalizedEmail = email.trim().toLowerCase();
+    
+    // Auto-format known test accounts
+    if (normalizedEmail === "patient" || normalizedEmail === "patien") {
+      normalizedEmail = "patient@example.com";
+    }
+    
+    // Auto-add domain for simplified input
+    if (!normalizedEmail.includes('@')) {
+      normalizedEmail = `${normalizedEmail}@example.com`;
+    }
+    
     try {
-      console.log(`Attempting to verify code for email: ${email} with code: ${code}`);
-      const success = await verifyLoginCode(email.trim(), code.trim());
+      console.log(`Attempting to verify code for email: ${normalizedEmail} with code: ${code}`);
+      const success = await verifyLoginCode(normalizedEmail, code.trim());
       
       if (success) {
         setVerificationSuccess(true);
@@ -169,8 +195,8 @@ export const PatientLoginForm = ({
             <div className="grid gap-4">
               <div className="grid gap-2">
                 <Input
-                  type="email"
-                  placeholder="E-Mail-Adresse"
+                  type="text" /* Changed from email to text to allow simplified inputs */
+                  placeholder="E-Mail-Adresse oder Benutzername"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

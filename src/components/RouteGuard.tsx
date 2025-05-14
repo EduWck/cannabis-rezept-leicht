@@ -52,7 +52,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         console.log("No user detected, redirecting to login");
         setIsRedirecting(true);
         setRedirectCount(prev => prev + 1);
-        navigate("/login", { state: { from: location.pathname } });
+        navigate("/login", { replace: true });
         return;
       }
 

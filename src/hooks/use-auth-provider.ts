@@ -29,6 +29,7 @@ export function useAuthProvider() {
         } else {
           setProfile(null);
           setUserRole(null);
+          setIsLoading(false);
         }
       }
     );
@@ -55,6 +56,8 @@ export function useAuthProvider() {
   const detectUserRole = async (currentUser: User) => {
     try {
       console.log("Detecting user role for:", currentUser.id);
+      console.log("User metadata:", JSON.stringify(currentUser.user_metadata));
+      
       let detectedRole: UserRole | null = null;
       let userProfile: Profile | null = null;
       
@@ -267,16 +270,23 @@ export function useAuthProvider() {
 
   const verifyLoginCode = async (email: string, code: string) => {
     try {
+      console.log(`Verifying login code for email: ${email}`);
       const response = await supabase.functions.invoke('verify-login-code', {
         body: { email, code }
       });
 
       if (response.error) {
+        console.error("Error in verify-login-code function:", response.error);
         throw new Error(response.error.message);
       }
 
       // Set the session from the response
       const newSession = response.data.session;
+      
+      console.log("Login code verified successfully, setting session:", newSession);
+      console.log("User role from session:", 
+        newSession.user.user_metadata?.role || "No role in metadata");
+      
       await supabase.auth.setSession(newSession);
       
       toast({

@@ -39,7 +39,7 @@ const Login = () => {
       console.log("User is logged in, redirecting based on role:", userRole);
       redirectUserBasedOnRole(userRole);
     }
-  }, [user, userRole, isLoading, navigate]);
+  }, [user, userRole, isLoading]);
 
   const redirectUserBasedOnRole = (role: UserRole) => {
     console.log("Redirecting based on role:", role);
@@ -93,19 +93,23 @@ const Login = () => {
     setLoading(true);
     
     try {
+      console.log(`Attempting to verify code for email: ${email} with code: ${code}`);
       const success = await verifyLoginCode(email, code);
+      
       if (success) {
         toast({
-          title: "Login successful",
-          description: "Redirecting..."
+          title: "Login erfolgreich",
+          description: "Willkommen zurück!"
         });
-        // Explicitly redirect patients to profile page
-        navigate('/dashboard/profile', { replace: true });
+        
+        // Let the auth context effect handle redirection
+        // The effect will detect the role and redirect accordingly
       } else {
-        setErrorMessage("Invalid verification code");
+        setErrorMessage("Ungültiger Verifizierungscode");
       }
     } catch (error: any) {
-      setErrorMessage(error.message || "Verification failed");
+      console.error("Verification error:", error);
+      setErrorMessage(error.message || "Verifizierung fehlgeschlagen");
     } finally {
       setLoading(false);
     }
@@ -120,17 +124,11 @@ const Login = () => {
       console.log("Attempting staff login with:", staffEmail);
       await signIn(staffEmail, password);
       
-      // Explicitly redirect based on email pattern
-      if (staffEmail.includes('doctor')) {
-        navigate('/dashboard', { replace: true });
-      } else if (staffEmail.includes('admin')) {
-        navigate('/dashboard', { replace: true });
-      } else {
-        navigate('/dashboard/profile', { replace: true });
-      }
+      // Let the auth context effect handle redirection
+      // It will detect the role from the session and redirect
     } catch (error: any) {
       console.error("Login error:", error);
-      setErrorMessage(error.message || "Invalid login credentials");
+      setErrorMessage(error.message || "Ungültige Anmeldedaten");
     } finally {
       setLoading(false);
     }

@@ -51,13 +51,15 @@ serve(async (req) => {
       );
     }
     
-    // Determine user role based on email address for simplicity in the demo
+    // Explicit role assignment based on email address
     let userRole = 'patient';
     if (email.includes('doctor')) {
       userRole = 'doctor';
     } else if (email.includes('admin')) {
       userRole = 'admin';
     }
+    
+    console.log(`Determined role for ${email}: ${userRole}`);
     
     // Check if user exists
     let userData;
@@ -77,18 +79,27 @@ serve(async (req) => {
       }
       
       userData = newUser;
+      
+      console.log(`Created new user with ID: ${newUser.user.id}, role: ${userRole}`);
     } else {
       userData = existingUser.users[0];
       
-      // Update user role in metadata if it's not already set
+      // Ensure user metadata has the role
       if (!userData.user_metadata?.role) {
-        await supabase.auth.admin.updateUserById(userData.id, {
+        const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userData.id, {
           user_metadata: { ...userData.user_metadata, role: userRole }
         });
+        
+        if (updateError) {
+          console.error(`Failed to update user metadata: ${updateError.message}`);
+        } else {
+          userData = updatedUser;
+          console.log(`Updated user ${userData.id} with role: ${userRole}`);
+        }
       }
     }
 
-    // Create a sign-in link and get the session that way
+    // Create a sign-in link and get the session
     const { data: signInData, error: signInError } = await supabase.auth.admin.generateLink({
       type: 'magiclink',
       email: email,
@@ -110,7 +121,13 @@ serve(async (req) => {
           access_token: signInData.properties.access_token,
           refresh_token: signInData.properties.refresh_token,
           expires_in: 3600,
-          user: userData
+          user: {
+            ...userData,
+            user_metadata: { 
+              ...userData.user_metadata,
+              role: userRole // Ensure role is set correctly in the response
+            }
+          }
         }
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

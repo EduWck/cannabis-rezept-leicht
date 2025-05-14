@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Steps } from 'lucide-react';
+// Remove Steps import as it doesn't exist in lucide-react
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CompletionStep } from "@/components/fragebogen/CompletionStep";
+// Fix import for CompletionStep
+import CompletionStep from "@/components/fragebogen/CompletionStep";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -59,7 +60,8 @@ const step2Schema = z.object({
   medicalConditions: z.string().optional(),
   medicationList: z.string().optional(),
   consent: z.literal(true, {
-    error: "Du musst den Bedingungen zustimmen, um fortzufahren.",
+    // Fix here: use message instead of error
+    message: "Du musst den Bedingungen zustimmen, um fortzufahren."
   }),
 });
 
@@ -145,190 +147,188 @@ const Fragebogen = () => {
       <Progress value={progress} className="mb-6" />
 
       {step === 1 && (
-        <FormProvider {...step1Form}>
-          <Form>
-            <form onSubmit={step1Form.handleSubmit(nextStep)} className="space-y-8">
-              <FormField
-                control={step1Form.control}
-                name="treatmentType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Wie möchtest du behandelt werden?</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Wähle eine Option" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {treatmentTypeOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        // Fix FormProvider by passing form instance explicitly
+        <Form {...step1Form}>
+          <form onSubmit={step1Form.handleSubmit(nextStep)} className="space-y-8">
+            <FormField
+              control={step1Form.control}
+              name="treatmentType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Wie möchtest du behandelt werden?</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Wähle eine Option" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {treatmentTypeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <div>
-                <Button type="button" onClick={nextStep}>
-                  Weiter
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </FormProvider>
+            <div>
+              <Button type="button" onClick={nextStep}>
+                Weiter
+              </Button>
+            </div>
+          </form>
+        </Form>
       )}
 
       {step === 2 && (
-        <FormProvider {...step2Form}>
-          <Form>
-            <form onSubmit={step2Form.handleSubmit(submitForm)} className="space-y-8">
-              <FormField
-                control={step2Form.control}
-                name="symptoms"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Bitte beschreibe deine Symptome</FormLabel>
+        // Fix FormProvider by passing form instance explicitly
+        <Form {...step2Form}>
+          <form onSubmit={step2Form.handleSubmit(submitForm)} className="space-y-8">
+            <FormField
+              control={step2Form.control}
+              name="symptoms"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Bitte beschreibe deine Symptome</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Ich leide unter..." {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Eine detaillierte Beschreibung hilft uns, dich besser zu verstehen.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={step2Form.control}
+              name="painLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Wie stark sind deine Schmerzen?</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Textarea placeholder="Ich leide unter..." {...field} />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Schmerzniveau wählen" />
+                      </SelectTrigger>
                     </FormControl>
+                    <SelectContent>
+                      <SelectItem value="mild">Leicht</SelectItem>
+                      <SelectItem value="moderate">Mittel</SelectItem>
+                      <SelectItem value="severe">Stark</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={step2Form.control}
+              name="previousTreatments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Welche Behandlungen hast du bereits ausprobiert?</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Ich habe bereits..." {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Bitte gib alle Behandlungen an, die du bereits versucht hast.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={step2Form.control}
+              name="medicalConditions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hast du Vorerkrankungen?</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wenn ja, welche?" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Bitte gib alle relevanten Vorerkrankungen an.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={step2Form.control}
+              name="medicationList"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nimmst du aktuell Medikamente ein?</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Wenn ja, welche?" {...field} />
+                  </FormControl>
+                  <FormDescription>
+                    Bitte gib alle Medikamente an, die du aktuell einnimmst.
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={step2Form.control}
+              name="consent"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Ich stimme den{" "}
+                      <a
+                        href="/datenschutz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2"
+                      >
+                        Datenschutzbestimmungen
+                      </a>{" "}
+                      und{" "}
+                      <a
+                        href="/agb"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="underline underline-offset-2"
+                      >
+                        AGB
+                      </a>{" "}
+                      zu.
+                    </FormLabel>
                     <FormDescription>
-                      Eine detaillierte Beschreibung hilft uns, dich besser zu verstehen.
+                      Du musst zustimmen, um fortzufahren.
                     </FormDescription>
                     <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  </div>
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={step2Form.control}
-                name="painLevel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Wie stark sind deine Schmerzen?</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Schmerzniveau wählen" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="mild">Leicht</SelectItem>
-                        <SelectItem value="moderate">Mittel</SelectItem>
-                        <SelectItem value="severe">Stark</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={step2Form.control}
-                name="previousTreatments"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Welche Behandlungen hast du bereits ausprobiert?</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Ich habe bereits..." {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Bitte gib alle Behandlungen an, die du bereits versucht hast.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={step2Form.control}
-                name="medicalConditions"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Hast du Vorerkrankungen?</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Wenn ja, welche?" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Bitte gib alle relevanten Vorerkrankungen an.
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={step2Form.control}
-                name="medicationList"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nimmst du aktuell Medikamente ein?</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Wenn ja, welche?" {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Bitte gib alle Medikamente an, die du aktuell einnimmst.
-                    </FormDescription>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={step2Form.control}
-                name="consent"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>
-                        Ich stimme den{" "}
-                        <a
-                          href="/datenschutz"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2"
-                        >
-                          Datenschutzbestimmungen
-                        </a>{" "}
-                        und{" "}
-                        <a
-                          href="/agb"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline underline-offset-2"
-                        >
-                          AGB
-                        </a>{" "}
-                        zu.
-                      </FormLabel>
-                      <FormDescription>
-                        Du musst zustimmen, um fortzufahren.
-                      </FormDescription>
-                      <FormMessage />
-                    </div>
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-between">
-                <Button variant="outline" onClick={prevStep}>
-                  Zurück
-                </Button>
-                <Button type="button" onClick={submitForm}>
-                  Absenden
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </FormProvider>
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={prevStep}>
+                Zurück
+              </Button>
+              <Button type="button" onClick={submitForm}>
+                Absenden
+              </Button>
+            </div>
+          </form>
+        </Form>
       )}
 
       {step === 3 && (

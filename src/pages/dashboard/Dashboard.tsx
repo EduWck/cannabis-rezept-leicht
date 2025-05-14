@@ -23,36 +23,47 @@ const Dashboard = () => {
     const fetchDashboardStats = async () => {
       try {
         if (userRole === "patient") {
-          const [prescriptionsRes, ordersRes, appointmentsRes] = await Promise.all([
-            supabase.from("prescriptions").select("id", { count: "exact" }).eq("patient_id", supabase.auth.getUser().data.user?.id),
-            supabase.from("orders").select("id", { count: "exact" }).eq("patient_id", supabase.auth.getUser().data.user?.id),
-            supabase.from("appointments").select("id", { count: "exact" }).eq("patient_id", supabase.auth.getUser().data.user?.id),
-          ]);
+          // Fix the async/await for getUserData
+          const user = await supabase.auth.getUser();
+          const userId = user.data.user?.id;
+          
+          if (userId) {
+            const [prescriptionsRes, ordersRes, appointmentsRes] = await Promise.all([
+              supabase.from("prescriptions").select("id", { count: "exact" }).eq("patient_id", userId),
+              supabase.from("orders").select("id", { count: "exact" }).eq("patient_id", userId),
+              supabase.from("appointments").select("id", { count: "exact" }).eq("patient_id", userId),
+            ]);
 
-          setStats({
-            prescriptions: prescriptionsRes.count || 0,
-            orders: ordersRes.count || 0,
-            appointments: appointmentsRes.count || 0,
-            pendingRequests: 0,
-          });
+            setStats({
+              prescriptions: prescriptionsRes.count || 0,
+              orders: ordersRes.count || 0,
+              appointments: appointmentsRes.count || 0,
+              pendingRequests: 0,
+            });
+          }
         } else if (userRole === "doctor") {
-          const pendingRes = await supabase
-            .from("prescriptions")
-            .select("id", { count: "exact" })
-            .eq("doctor_id", supabase.auth.getUser().data.user?.id)
-            .eq("status", "in_review");
+          const user = await supabase.auth.getUser();
+          const userId = user.data.user?.id;
+          
+          if (userId) {
+            const pendingRes = await supabase
+              .from("prescriptions")
+              .select("id", { count: "exact" })
+              .eq("doctor_id", userId)
+              .eq("status", "in_review");
 
-          const [prescriptionsRes, appointmentsRes] = await Promise.all([
-            supabase.from("prescriptions").select("id", { count: "exact" }).eq("doctor_id", supabase.auth.getUser().data.user?.id),
-            supabase.from("appointments").select("id", { count: "exact" }).eq("doctor_id", supabase.auth.getUser().data.user?.id),
-          ]);
+            const [prescriptionsRes, appointmentsRes] = await Promise.all([
+              supabase.from("prescriptions").select("id", { count: "exact" }).eq("doctor_id", userId),
+              supabase.from("appointments").select("id", { count: "exact" }).eq("doctor_id", userId),
+            ]);
 
-          setStats({
-            prescriptions: prescriptionsRes.count || 0,
-            orders: 0,
-            appointments: appointmentsRes.count || 0,
-            pendingRequests: pendingRes.count || 0,
-          });
+            setStats({
+              prescriptions: prescriptionsRes.count || 0,
+              orders: 0,
+              appointments: appointmentsRes.count || 0,
+              pendingRequests: pendingRes.count || 0,
+            });
+          }
         } else if (userRole === "admin") {
           const [prescriptionsRes, ordersRes, appointmentsRes, pendingRes] = await Promise.all([
             supabase.from("prescriptions").select("id", { count: "exact" }),
@@ -325,15 +336,21 @@ const RecentPrescriptions = () => {
   useEffect(() => {
     const fetchPrescriptions = async () => {
       try {
-        const { data, error } = await supabase
-          .from("prescriptions")
-          .select("*")
-          .eq("patient_id", supabase.auth.getUser().data.user?.id)
-          .order("created_at", { ascending: false })
-          .limit(3);
+        // Fix the getUserData call
+        const user = await supabase.auth.getUser();
+        const userId = user.data.user?.id;
+        
+        if (userId) {
+          const { data, error } = await supabase
+            .from("prescriptions")
+            .select("*")
+            .eq("patient_id", userId)
+            .order("created_at", { ascending: false })
+            .limit(3);
 
-        if (error) throw error;
-        setPrescriptions(data || []);
+          if (error) throw error;
+          setPrescriptions(data || []);
+        }
       } catch (error) {
         console.error("Error fetching prescriptions:", error);
       } finally {
@@ -413,16 +430,29 @@ const PendingRequests = () => {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const { data, error } = await supabase
-          .from("prescriptions")
-          .select("*, profiles:patient_id(*)")
-          .eq("doctor_id", supabase.auth.getUser().data.user?.id)
-          .eq("status", "in_review")
-          .order("created_at", { ascending: false })
-          .limit(5);
+        // Fix the getUserData call
+        const user = await supabase.auth.getUser();
+        const userId = user.data.user?.id;
+        
+        if (userId) {
+          // Fix the query to include patient profile information directly
+          const { data, error } = await supabase
+            .from("prescriptions")
+            .select(`
+              *,
+              patient:patient_id (
+                first_name,
+                last_name
+              )
+            `)
+            .eq("doctor_id", userId)
+            .eq("status", "in_review")
+            .order("created_at", { ascending: false })
+            .limit(5);
 
-        if (error) throw error;
-        setRequests(data || []);
+          if (error) throw error;
+          setRequests(data || []);
+        }
       } catch (error) {
         console.error("Error fetching requests:", error);
       } finally {
@@ -461,7 +491,8 @@ const PendingRequests = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-medium">
-                      {request.profiles?.first_name} {request.profiles?.last_name}
+                      {/* Fix access to patient information */}
+                      {request.patient?.first_name} {request.patient?.last_name}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Vom {new Date(request.created_at).toLocaleDateString("de-DE")}

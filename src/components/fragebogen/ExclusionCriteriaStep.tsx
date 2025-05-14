@@ -21,7 +21,7 @@ interface ExclusionCriteriaStepProps {
     thcAllergy: boolean;
     none: boolean;
   };
-  onPreExistingConditionChange: (condition: keyof typeof preExistingConditions, value: boolean) => void;
+  onPreExistingConditionChange: (condition: keyof ExclusionCriteriaStepProps["preExistingConditions"], value: boolean) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -39,12 +39,12 @@ const ExclusionCriteriaStep = ({
   onBack
 }: ExclusionCriteriaStepProps) => {
   // Handle "none" checkbox logic for pre-existing conditions
-  const handlePreExistingConditionChange = (condition: keyof typeof preExistingConditions, checked: boolean) => {
+  const handlePreExistingConditionChange = (condition: keyof ExclusionCriteriaStepProps["preExistingConditions"], checked: boolean) => {
     if (condition === 'none' && checked) {
       // If "none" is checked, uncheck all others
       Object.keys(preExistingConditions).forEach(key => {
         if (key !== 'none') {
-          onPreExistingConditionChange(key as keyof typeof preExistingConditions, false);
+          onPreExistingConditionChange(key as keyof ExclusionCriteriaStepProps["preExistingConditions"], false);
         }
       });
     } else if (condition !== 'none' && checked) {

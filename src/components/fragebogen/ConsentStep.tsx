@@ -14,7 +14,7 @@ interface ConsentStepProps {
     termsAndPrivacy: boolean;
     newsletter: boolean;
   };
-  onConsentChange: (key: keyof typeof consents, value: boolean) => void;
+  onConsentChange: (key: keyof ConsentStepProps["consents"], value: boolean) => void;
   onNext: () => void;
   onBack: () => void;
 }

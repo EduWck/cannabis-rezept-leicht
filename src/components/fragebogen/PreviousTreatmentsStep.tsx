@@ -17,7 +17,7 @@ interface PreviousTreatmentsStepProps {
     naturopath: boolean;
     selfTherapy: boolean;
   };
-  onDoctorTypeChange: (type: keyof typeof doctorTypes, value: boolean) => void;
+  onDoctorTypeChange: (type: keyof PreviousTreatmentsStepProps["doctorTypes"], value: boolean) => void;
   tookMedication: boolean | null;
   onTookMedicationChange: (value: boolean) => void;
   medicationDetails: string;
@@ -30,7 +30,7 @@ interface PreviousTreatmentsStepProps {
     other: boolean;
     none: boolean;
   };
-  onNonMedicalTherapyChange: (therapy: keyof typeof nonMedicalTherapies, value: boolean) => void;
+  onNonMedicalTherapyChange: (therapy: keyof PreviousTreatmentsStepProps["nonMedicalTherapies"], value: boolean) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -56,12 +56,12 @@ const PreviousTreatmentsStep = ({
                     Object.values(nonMedicalTherapies).some(val => val);
 
   // Handle "none" checkbox logic for non-medical therapies
-  const handleNonMedicalTherapyChange = (therapy: keyof typeof nonMedicalTherapies, checked: boolean) => {
+  const handleNonMedicalTherapyChange = (therapy: keyof PreviousTreatmentsStepProps["nonMedicalTherapies"], checked: boolean) => {
     if (therapy === 'none' && checked) {
       // If "none" is checked, uncheck all others
       Object.keys(nonMedicalTherapies).forEach(key => {
         if (key !== 'none') {
-          onNonMedicalTherapyChange(key as keyof typeof nonMedicalTherapies, false);
+          onNonMedicalTherapyChange(key as keyof PreviousTreatmentsStepProps["nonMedicalTherapies"], false);
         }
       });
     } else if (therapy !== 'none' && checked) {

@@ -19,7 +19,7 @@ interface CannabisExperienceStepProps {
     reduceMedication: boolean;
     reduceSideEffects: boolean;
   };
-  onTreatmentGoalChange: (goal: keyof typeof treatmentGoals, value: boolean) => void;
+  onTreatmentGoalChange: (goal: keyof CannabisExperienceStepProps["treatmentGoals"], value: boolean) => void;
   onNext: () => void;
   onBack: () => void;
 }

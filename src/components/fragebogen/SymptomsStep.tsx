@@ -12,7 +12,7 @@ interface SymptomsStepProps {
     adhd: boolean;
     migraine: boolean;
   };
-  onSymptomChange: (symptom: keyof typeof symptoms, value: boolean) => void;
+  onSymptomChange: (symptom: keyof SymptomsStepProps["symptoms"], value: boolean) => void;
   description: string;
   onDescriptionChange: (value: string) => void;
   symptomIntensity: number;

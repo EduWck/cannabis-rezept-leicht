@@ -58,8 +58,22 @@ export function useAuthProvider() {
       let detectedRole: UserRole | null = null;
       let userProfile: Profile | null = null;
       
-      // First try to get role from user metadata (most reliable)
-      if (currentUser.user_metadata?.role) {
+      // First check if email contains role indicators (most reliable for test users)
+      const email = currentUser.email?.toLowerCase() || '';
+      
+      if (email.includes('admin')) {
+        detectedRole = 'admin';
+        console.log("Role from email detection:", detectedRole);
+      } else if (email.includes('doctor')) {
+        detectedRole = 'doctor';
+        console.log("Role from email detection:", detectedRole);
+      } else if (email.includes('patient')) {
+        detectedRole = 'patient';
+        console.log("Role from email detection:", detectedRole);
+      }
+      
+      // Then try to get role from user metadata (reliable for new users)
+      if (!detectedRole && currentUser.user_metadata?.role) {
         detectedRole = currentUser.user_metadata.role as UserRole;
         console.log("Role from user metadata:", detectedRole);
       }
@@ -84,7 +98,7 @@ export function useAuthProvider() {
           console.log("Fetched profile from database:", data);
           userProfile = data as Profile;
           
-          // Only use role from profile if we don't already have one from metadata
+          // Only use role from profile if we don't already have one from metadata or email
           if (!detectedRole && userProfile.role) {
             detectedRole = userProfile.role;
             console.log("Role from profile:", detectedRole);
@@ -108,7 +122,7 @@ export function useAuthProvider() {
             console.log("Fetched profile via function:", response.data);
             userProfile = response.data as Profile;
             
-            // Only use role from profile if we don't already have one from metadata
+            // Only use role from profile if we don't already have one from metadata or email
             if (!detectedRole && userProfile.role) {
               detectedRole = userProfile.role;
               console.log("Role from profile via function:", detectedRole);
@@ -119,19 +133,10 @@ export function useAuthProvider() {
         }
       }
       
-      // If we still don't have a role, use email-based detection as last resort
+      // If we still don't have a role, use 'patient' as default
       if (!detectedRole) {
-        console.log("Using email-based role detection as fallback");
-        const email = currentUser.email?.toLowerCase() || '';
-        
-        if (email.includes('admin')) {
-          detectedRole = 'admin';
-        } else if (email.includes('doctor')) {
-          detectedRole = 'doctor';
-        } else {
-          detectedRole = 'patient';
-        }
-        console.log("Role from email detection:", detectedRole);
+        console.log("Using default role: patient");
+        detectedRole = 'patient';
       }
       
       // Create a profile object if we don't have one
@@ -169,7 +174,6 @@ export function useAuthProvider() {
     } catch (error) {
       console.error("Error detecting user role:", error);
       // Don't show toast here as it might be annoying during automatic role detection
-      // Instead, just log the error and continue with what we have
     } finally {
       setIsLoading(false);
     }

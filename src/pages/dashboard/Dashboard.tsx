@@ -11,8 +11,14 @@ const Dashboard = () => {
 
   useEffect(() => {
     // If not loading and user is authenticated but is a patient, redirect to profile
-    if (!isLoading && user && userRole === "patient") {
-      navigate("/dashboard/profile", { replace: true });
+    if (!isLoading && user) {
+      if (userRole === "patient") {
+        console.log("User is patient, redirecting to profile");
+        navigate("/dashboard/profile", { replace: true });
+      } else if (!userRole) {
+        console.log("No user role detected in Dashboard");
+        // Don't redirect, just show the no role detected message
+      }
     }
   }, [user, userRole, isLoading, navigate]);
 

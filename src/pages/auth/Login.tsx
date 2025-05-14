@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -100,7 +99,8 @@ const Login = () => {
           title: "Login successful",
           description: "Redirecting..."
         });
-        // Patient redirection happens in auth state change
+        // Explicitly redirect patients to profile page
+        navigate('/dashboard/profile', { replace: true });
       } else {
         setErrorMessage("Invalid verification code");
       }
@@ -119,7 +119,15 @@ const Login = () => {
     try {
       console.log("Attempting staff login with:", staffEmail);
       await signIn(staffEmail, password);
-      // Redirect happens automatically via auth state change and RouteGuard
+      
+      // Explicitly redirect based on email pattern
+      if (staffEmail.includes('doctor')) {
+        navigate('/dashboard', { replace: true });
+      } else if (staffEmail.includes('admin')) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard/profile', { replace: true });
+      }
     } catch (error: any) {
       console.error("Login error:", error);
       setErrorMessage(error.message || "Invalid login credentials");

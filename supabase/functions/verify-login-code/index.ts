@@ -51,6 +51,14 @@ serve(async (req) => {
       );
     }
     
+    // Determine user role based on email address for simplicity in the demo
+    let userRole = 'patient';
+    if (email.includes('doctor')) {
+      userRole = 'doctor';
+    } else if (email.includes('admin')) {
+      userRole = 'admin';
+    }
+    
     // Check if user exists
     let userData;
     const { data: existingUser, error: userError } = await supabase.auth
@@ -61,7 +69,7 @@ serve(async (req) => {
       const { data: newUser, error: signUpError } = await supabase.auth.admin.createUser({
         email,
         email_confirm: true,
-        user_metadata: { role: "patient" }
+        user_metadata: { role: userRole }
       });
       
       if (signUpError) {
@@ -71,6 +79,13 @@ serve(async (req) => {
       userData = newUser;
     } else {
       userData = existingUser.users[0];
+      
+      // Update user role in metadata if it's not already set
+      if (!userData.user_metadata?.role) {
+        await supabase.auth.admin.updateUserById(userData.id, {
+          user_metadata: { ...userData.user_metadata, role: userRole }
+        });
+      }
     }
 
     // Create a sign-in link and get the session that way

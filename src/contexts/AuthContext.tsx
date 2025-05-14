@@ -72,12 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
+      console.log("Fetched user profile:", data);
       setProfile(data);
-      setUserRole(data?.role as UserRole || user?.user_metadata?.role as UserRole);
+      setUserRole(data?.role as UserRole || null);
     } catch (error) {
       console.error("Error fetching user profile:", error);
+      
       // Fallback to user metadata if profile isn't available
       if (user?.user_metadata?.role) {
+        console.log("Using role from user metadata:", user.user_metadata.role);
         setUserRole(user.user_metadata.role as UserRole);
       }
       
@@ -91,15 +94,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log(`Attempting login for: ${email}`);
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
+        console.error("Login error details:", error);
         throw error;
       }
 
+      console.log("Login successful:", data.user);
+      
       // Show success toast on successful login
       toast({
         title: "Login successful",

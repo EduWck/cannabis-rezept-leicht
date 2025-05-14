@@ -97,7 +97,7 @@ const OptionsSection = () => {
                   <span className="text-dark-gray-light dark:text-gray-300">Nach Zahlung: Manuelle Terminvereinbarung</span>
                 </li>
                 <li className="flex items-start">
-                  <Check size={18} className "text-cannabis-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <Check size={18} className="text-cannabis-green-500 mr-2 mt-0.5 flex-shrink-0" />
                   <span className="text-dark-gray-light dark:text-gray-300">Ausführliche Anamnese und persönliche Beratung</span>
                 </li>
               </ul>

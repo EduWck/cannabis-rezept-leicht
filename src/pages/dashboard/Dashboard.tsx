@@ -10,23 +10,23 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If not loading and the user is authenticated but is a patient, redirect to profile
+    // If not loading and user is authenticated but is a patient, redirect to profile
     if (!isLoading && user && userRole === "patient") {
-      navigate("/dashboard/profile");
+      navigate("/dashboard/profile", { replace: true });
     }
   }, [user, userRole, isLoading, navigate]);
 
   // If still loading, show a loading indicator
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center py-20">
+      <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500" />
         <span className="ml-2">Lade Benutzerdaten...</span>
       </div>
     );
   }
 
-  // If no user or no role, show appropriate message
+  // If no user, show appropriate message
   if (!user) {
     return (
       <div className="text-center py-20">
@@ -54,7 +54,7 @@ const Dashboard = () => {
         // This shouldn't usually happen as patients are redirected
         return (
           <div className="text-center py-20">
-            <p>Redirecting to patient profile...</p>
+            <p>Weiterleitung zum Patientenprofil...</p>
           </div>
         );
       default:

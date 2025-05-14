@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,9 +41,9 @@ export function useAuthProvider() {
       
       if (currentSession?.user) {
         await detectUserRole(currentSession.user);
+      } else {
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
     });
 
     return () => {
@@ -167,12 +168,8 @@ export function useAuthProvider() {
       
     } catch (error) {
       console.error("Error detecting user role:", error);
-      toast({
-        title: "Error",
-        description: "Benutzerprofil konnte nicht vollständig geladen werden.",
-        variant: "destructive"
-      });
-      setIsLoading(false);
+      // Don't show toast here as it might be annoying during automatic role detection
+      // Instead, just log the error and continue with what we have
     } finally {
       setIsLoading(false);
     }
@@ -199,13 +196,13 @@ export function useAuthProvider() {
       
       // Show success toast on successful login
       toast({
-        title: "Login successful",
-        description: "Welcome back!",
+        title: "Login erfolgreich",
+        description: "Willkommen zurück!",
       });
     } catch (error: any) {
       console.error("Login error:", error);
       toast({
-        title: "Login failed",
+        title: "Login fehlgeschlagen",
         description: error.message,
         variant: "destructive"
       });
@@ -224,12 +221,12 @@ export function useAuthProvider() {
       setUserRole(null);
       
       toast({
-        title: "Signed out",
-        description: "You have been successfully signed out",
+        title: "Abgemeldet",
+        description: "Sie wurden erfolgreich abgemeldet",
       });
     } catch (error: any) {
       toast({
-        title: "Sign out failed",
+        title: "Abmeldung fehlgeschlagen",
         description: error.message,
         variant: "destructive"
       });
@@ -247,8 +244,8 @@ export function useAuthProvider() {
       }
 
       toast({
-        title: "Code sent",
-        description: "Check your email for the login code",
+        title: "Code gesendet",
+        description: "Prüfen Sie Ihre E-Mail nach dem Login-Code",
       });
 
       // Return the code for testing purposes (would be removed in production)
@@ -256,7 +253,7 @@ export function useAuthProvider() {
     } catch (error: any) {
       console.error("Error requesting login code:", error);
       toast({
-        title: "Failed to send code",
+        title: "Code konnte nicht gesendet werden",
         description: error.message,
         variant: "destructive"
       });
@@ -279,15 +276,15 @@ export function useAuthProvider() {
       await supabase.auth.setSession(newSession);
       
       toast({
-        title: "Login successful",
-        description: "Welcome back!",
+        title: "Login erfolgreich",
+        description: "Willkommen zurück!",
       });
 
       return true;
     } catch (error: any) {
       console.error("Error verifying login code:", error);
       toast({
-        title: "Verification failed",
+        title: "Verifizierung fehlgeschlagen",
         description: error.message,
         variant: "destructive"
       });

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,8 @@ const Login = () => {
         navigate('/dashboard/profile', { replace: true });
         break;
       case 'doctor':
+        navigate('/dashboard', { replace: true });
+        break;
       case 'admin':
         navigate('/dashboard', { replace: true });
         break;
@@ -97,7 +100,7 @@ const Login = () => {
           title: "Login successful",
           description: "Redirecting..."
         });
-        // Patient redirection happens in RouteGuard or auth state change
+        // Patient redirection happens in auth state change
       } else {
         setErrorMessage("Invalid verification code");
       }
@@ -124,6 +127,21 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  // If already loaded and authenticated, don't show login form
+  if (!isLoading && user && userRole) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center">
+        <p>Sie sind bereits angemeldet. Weiterleitung...</p>
+        <Button 
+          onClick={() => redirectUserBasedOnRole(userRole)} 
+          className="mt-4"
+        >
+          Zur Übersicht
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/40 p-4">

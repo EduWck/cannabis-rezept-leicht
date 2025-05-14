@@ -4,6 +4,7 @@ import { useLocation, useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { UserRole } from "@/types";
 import { Loader2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface RouteGuardProps {
   allowedRoles?: UserRole[];
@@ -49,15 +50,20 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
         console.log("User doesn't have required role, redirecting based on role");
         if (userRole === "patient") {
           navigate("/dashboard/profile", { replace: true });
-        } else if (userRole) {
+        } else if (userRole === "doctor" || userRole === "admin") {
           navigate("/dashboard", { replace: true });
         } else {
           // If no role is detected, redirect to login with error
           console.log("No role detected, redirecting to login with error");
+          toast({
+            title: "Zugriff verweigert",
+            description: "Ihr Konto hat nicht die erforderlichen Berechtigungen.",
+            variant: "destructive"
+          });
           navigate("/login", { 
             state: { 
               from: location.pathname,
-              error: "Your account doesn't have sufficient permissions"
+              error: "Ihr Konto hat nicht die erforderlichen Berechtigungen"
             } 
           });
         }

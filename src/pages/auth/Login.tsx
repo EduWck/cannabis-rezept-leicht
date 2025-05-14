@@ -44,7 +44,8 @@ const Login = () => {
       // Check for hash parameters that might indicate a magic link or token
       const hash = window.location.hash;
       if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
-        toast("Automatische Anmeldung", {
+        toast({
+          title: "Automatische Anmeldung",
           description: "Sie werden angemeldet..."
         });
       }
@@ -100,14 +101,16 @@ const Login = () => {
     clearErrors();
     
     if (cooldown > 0) {
-      toast("Bitte warten", {
+      toast({
+        title: "Bitte warten",
         description: `Sie können in ${cooldown} Sekunden einen neuen Code anfordern.`
       });
       return;
     }
     
     if (!email || !email.trim()) {
-      toast("E-Mail erforderlich", {
+      toast({
+        title: "E-Mail erforderlich",
         description: "Bitte geben Sie eine E-Mail-Adresse ein."
       });
       return;
@@ -123,7 +126,8 @@ const Login = () => {
         // For demo purposes, auto-fill the code if provided by the function
         if (result.code) {
           setCode(result.code);
-          toast("Demo Code", {
+          toast({
+            title: "Demo Code",
             description: `Ihr Login-Code ist: ${result.code}`
           });
         }
@@ -140,7 +144,8 @@ const Login = () => {
     clearErrors();
     
     if (!code || code.length < 6) {
-      toast("Code erforderlich", {
+      toast({
+        title: "Code erforderlich",
         description: "Bitte geben Sie einen gültigen 6-stelligen Code ein."
       });
       return;
@@ -153,7 +158,8 @@ const Login = () => {
       const success = await verifyLoginCode(email.trim(), code.trim());
       
       if (success) {
-        toast("Code bestätigt", {
+        toast({
+          title: "Code bestätigt",
           description: "Ihr Code wurde erfolgreich verifiziert."
         });
         
@@ -163,7 +169,8 @@ const Login = () => {
         setTimeout(() => {
           // If we're still on this page after 5 seconds, show a message
           setLoading(false);
-          toast("Fast geschafft", {
+          toast({
+            title: "Fast geschafft",
             description: "Die Anmeldung läuft. Bitte überprüfen Sie Ihre E-Mails für einen Login-Link, falls Sie nicht automatisch weitergeleitet werden."
           });
         }, 5000);
@@ -183,7 +190,8 @@ const Login = () => {
     clearErrors();
     
     if (!staffEmail || !password) {
-      toast("Fehlende Angaben", {
+      toast({
+        title: "Fehlende Angaben",
         description: "Bitte geben Sie E-Mail und Passwort ein."
       });
       return;
@@ -412,3 +420,4 @@ const Login = () => {
 };
 
 export default Login;
+

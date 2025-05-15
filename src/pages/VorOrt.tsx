@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,12 +7,122 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MapPin, CheckCircle } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import CompletionStep from '@/components/fragebogen/CompletionStep';
 
 const VorOrt = () => {
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [preferredDates, setPreferredDates] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+
   useEffect(() => {
     document.title = 'Vor-Ort-Termin - MediCannabis';
     window.scrollTo(0, 0);
   }, []);
+  
+  const locationData = [
+    {
+      name: "MediCannabis Berlin",
+      address: "Kantstraße 24, 10623 Berlin",
+      doctors: 4
+    },
+    {
+      name: "MediCannabis München",
+      address: "Leopoldstraße 81, 80802 München",
+      doctors: 3
+    },
+    {
+      name: "MediCannabis Hamburg",
+      address: "Eppendorfer Baum 26, 20249 Hamburg",
+      doctors: 2
+    }
+  ];
+  
+  const handleSelectLocation = (location: string) => {
+    setSelectedLocation(location);
+  };
+  
+  const validateForm = () => {
+    if (!selectedLocation) {
+      toast({
+        title: "Bitte auswählen",
+        description: "Bitte wähle einen Standort aus.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!name || name.length < 3) {
+      toast({
+        title: "Bitte Namen angeben",
+        description: "Bitte gib deinen Namen ein.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      toast({
+        title: "Ungültige E-Mail",
+        description: "Bitte gib eine gültige E-Mail-Adresse ein.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!phone || phone.length < 6) {
+      toast({
+        title: "Ungültige Telefonnummer",
+        description: "Bitte gib eine gültige Telefonnummer ein.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!preferredDates || preferredDates.length < 5) {
+      toast({
+        title: "Terminangabe fehlt",
+        description: "Bitte gib mindestens einen Wunschtermin an.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = () => {
+    if (!validateForm()) return;
+    
+    setIsSubmitting(true);
+    
+    // Simuliere eine API-Anfrage
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsComplete(true);
+      
+      toast({
+        title: "Terminanfrage gesendet!",
+        description: "Deine Anfrage wurde erfolgreich übermittelt. Wir werden dich innerhalb von 24 Stunden kontaktieren.",
+      });
+    }, 1500);
+  };
+  
+  if (isComplete) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="page-container pt-24">
+          <CompletionStep treatmentType="vor-ort" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-background">
@@ -41,38 +151,28 @@ const VorOrt = () => {
                     </div>
                     
                     <div className="space-y-4">
-                      <div className="border rounded-lg p-4 hover:border-cannabis-green-500 dark:border-gray-700 dark:hover:border-cannabis-green-500 transition-colors cursor-pointer">
-                        <div className="flex items-start gap-3">
-                          <MapPin className="text-cannabis-green-500 mt-1" />
-                          <div>
-                            <h3 className="font-medium text-dark-gray dark:text-white">MediCannabis Berlin</h3>
-                            <p className="text-gray-600 dark:text-gray-300">Kantstraße 24, 10623 Berlin</p>
-                            <p className="text-sm text-cannabis-green-600 dark:text-cannabis-green-400 mt-1">4 Ärzte verfügbar</p>
+                      {locationData.map((location) => (
+                        <div 
+                          key={location.name}
+                          className={`border rounded-lg p-4 transition-colors cursor-pointer ${
+                            selectedLocation === location.name 
+                              ? 'border-cannabis-green-500 bg-cannabis-green-50 dark:bg-dark-gray-light dark:border-cannabis-green-500' 
+                              : 'hover:border-cannabis-green-500 dark:border-gray-700 dark:hover:border-cannabis-green-500'
+                          }`}
+                          onClick={() => handleSelectLocation(location.name)}
+                        >
+                          <div className="flex items-start gap-3">
+                            <MapPin className="text-cannabis-green-500 mt-1" />
+                            <div>
+                              <h3 className="font-medium text-dark-gray dark:text-white">{location.name}</h3>
+                              <p className="text-gray-600 dark:text-gray-300">{location.address}</p>
+                              <p className="text-sm text-cannabis-green-600 dark:text-cannabis-green-400 mt-1">
+                                {location.doctors} Ärzte verfügbar
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="border rounded-lg p-4 hover:border-cannabis-green-500 dark:border-gray-700 dark:hover:border-cannabis-green-500 transition-colors cursor-pointer">
-                        <div className="flex items-start gap-3">
-                          <MapPin className="text-cannabis-green-500 mt-1" />
-                          <div>
-                            <h3 className="font-medium text-dark-gray dark:text-white">MediCannabis München</h3>
-                            <p className="text-gray-600 dark:text-gray-300">Leopoldstraße 81, 80802 München</p>
-                            <p className="text-sm text-cannabis-green-600 dark:text-cannabis-green-400 mt-1">3 Ärzte verfügbar</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="border rounded-lg p-4 hover:border-cannabis-green-500 dark:border-gray-700 dark:hover:border-cannabis-green-500 transition-colors cursor-pointer">
-                        <div className="flex items-start gap-3">
-                          <MapPin className="text-cannabis-green-500 mt-1" />
-                          <div>
-                            <h3 className="font-medium text-dark-gray dark:text-white">MediCannabis Hamburg</h3>
-                            <p className="text-gray-600 dark:text-gray-300">Eppendorfer Baum 26, 20249 Hamburg</p>
-                            <p className="text-sm text-cannabis-green-600 dark:text-cannabis-green-400 mt-1">2 Ärzte verfügbar</p>
-                          </div>
-                        </div>
-                      </div>
+                      ))}
                     </div>
                   </div>
                 </CardContent>
@@ -86,22 +186,46 @@ const VorOrt = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="p-4 bg-cannabis-green-50 dark:bg-dark-gray-light rounded-lg">
-                    <h3 className="font-medium text-dark-gray dark:text-white">MediCannabis Berlin</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">Kantstraße 24, 10623 Berlin</p>
+                    <h3 className="font-medium text-dark-gray dark:text-white">
+                      {selectedLocation || "MediCannabis Berlin"}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {selectedLocation === "MediCannabis München" 
+                        ? "Leopoldstraße 81, 80802 München" 
+                        : selectedLocation === "MediCannabis Hamburg"
+                          ? "Eppendorfer Baum 26, 20249 Hamburg"
+                          : "Kantstraße 24, 10623 Berlin"}
+                    </p>
                   </div>
                   
                   <div className="space-y-3">
                     <div className="space-y-2">
                       <Label htmlFor="name">Name</Label>
-                      <Input id="name" placeholder="Vor- und Nachname" />
+                      <Input 
+                        id="name" 
+                        placeholder="Vor- und Nachname" 
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">E-Mail</Label>
-                      <Input id="email" type="email" placeholder="deine-email@beispiel.de" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="deine-email@beispiel.de" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Telefonnummer</Label>
-                      <Input id="phone" placeholder="+49 123 456789" />
+                      <Input 
+                        id="phone" 
+                        placeholder="+49 123 456789" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="preferred-dates">Gewünschte Termine</Label>
@@ -109,6 +233,8 @@ const VorOrt = () => {
                         id="preferred-dates" 
                         className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 min-h-[80px]"
                         placeholder="Gib bitte 2-3 mögliche Termine an"
+                        value={preferredDates}
+                        onChange={(e) => setPreferredDates(e.target.value)}
                       ></textarea>
                     </div>
                   </div>
@@ -124,8 +250,12 @@ const VorOrt = () => {
                     </div>
                   </div>
                   
-                  <Button className="w-full bg-cannabis-green-500 hover:bg-cannabis-green-600 dark:bg-cannabis-green-600 dark:hover:bg-cannabis-green-700">
-                    Jetzt bezahlen & anfragen
+                  <Button 
+                    className="w-full bg-cannabis-green-500 hover:bg-cannabis-green-600 dark:bg-cannabis-green-600 dark:hover:bg-cannabis-green-700"
+                    disabled={isSubmitting}
+                    onClick={handleSubmit}
+                  >
+                    {isSubmitting ? 'Wird verarbeitet...' : 'Jetzt bezahlen & anfragen'}
                   </Button>
                   
                   <div className="flex items-start gap-2 text-sm text-gray-500 dark:text-gray-400">

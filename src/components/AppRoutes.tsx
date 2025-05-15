@@ -14,6 +14,13 @@ import VideoCall from "@/pages/VideoCall";
 import Login from "@/pages/auth/Login";
 import TestUsers from "@/pages/auth/TestUsers";
 
+// Legal pages
+import AGB from "@/pages/legal/AGB";
+import Datenschutz from "@/pages/legal/Datenschutz";
+import Impressum from "@/pages/legal/Impressum";
+import CookiePolicy from "@/pages/legal/CookiePolicy";
+import FAQ from "@/pages/FAQ";
+
 // Dashboard
 import RouteGuard from "@/components/RouteGuard";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
@@ -112,6 +119,53 @@ const AppRoutes = () => {
           <Navbar />
           <main className="pt-16">
             <TestUsers />
+          </main>
+          <Footer />
+        </>
+      } />
+      
+      {/* Legal Pages */}
+      <Route path="/agb" element={
+        <>
+          <Navbar />
+          <main className="pt-16">
+            <AGB />
+          </main>
+          <Footer />
+        </>
+      } />
+      <Route path="/datenschutz" element={
+        <>
+          <Navbar />
+          <main className="pt-16">
+            <Datenschutz />
+          </main>
+          <Footer />
+        </>
+      } />
+      <Route path="/impressum" element={
+        <>
+          <Navbar />
+          <main className="pt-16">
+            <Impressum />
+          </main>
+          <Footer />
+        </>
+      } />
+      <Route path="/cookie-policy" element={
+        <>
+          <Navbar />
+          <main className="pt-16">
+            <CookiePolicy />
+          </main>
+          <Footer />
+        </>
+      } />
+      <Route path="/faq" element={
+        <>
+          <Navbar />
+          <main className="pt-16">
+            <FAQ />
           </main>
           <Footer />
         </>

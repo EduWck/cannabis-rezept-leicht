@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -7,12 +7,88 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar, CheckCircle, Clock, Video } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
+import CompletionStep from '@/components/fragebogen/CompletionStep';
 
 const VideoCall = () => {
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
+  
+  const navigate = useNavigate();
+
   useEffect(() => {
     document.title = 'Video-Call - MediCannabis';
     window.scrollTo(0, 0);
   }, []);
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+  };
+
+  const validateForm = () => {
+    if (!selectedDate || !selectedTime) {
+      toast({
+        title: "Bitte auswählen",
+        description: "Bitte wähle ein Datum und eine Uhrzeit aus.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      toast({
+        title: "Ungültige E-Mail",
+        description: "Bitte gib eine gültige E-Mail-Adresse ein.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    if (!phone || phone.length < 6) {
+      toast({
+        title: "Ungültige Telefonnummer",
+        description: "Bitte gib eine gültige Telefonnummer ein.",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = () => {
+    if (!validateForm()) return;
+    
+    setIsSubmitting(true);
+    
+    // Simuliere eine API-Anfrage
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsComplete(true);
+      
+      toast({
+        title: "Video-Call gebucht!",
+        description: "Dein Termin wurde erfolgreich gebucht. Wir haben dir eine E-Mail mit allen Details zugeschickt.",
+      });
+    }, 1500);
+  };
+  
+  if (isComplete) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="page-container pt-24">
+          <CompletionStep treatmentType="video" />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-background">
@@ -38,6 +114,15 @@ const VideoCall = () => {
                     {/* Calendar Widget Placeholder */}
                     <div className="bg-gray-100 dark:bg-dark-gray-medium rounded-lg p-6">
                       <p className="text-center text-dark-gray dark:text-gray-200">Hier würde ein Kalender-Widget angezeigt werden</p>
+                      <div className="mt-4 flex justify-center">
+                        <Button 
+                          variant="outline"
+                          onClick={() => setSelectedDate('15.05.2025')}
+                          className={selectedDate === '15.05.2025' ? 'border-cannabis-green-500 bg-cannabis-green-50 dark:bg-dark-gray-light' : ''}
+                        >
+                          15.05.2025
+                        </Button>
+                      </div>
                     </div>
                     
                     <div className="space-y-4">
@@ -48,7 +133,12 @@ const VideoCall = () => {
                         {['09:00', '10:00', '11:30', '14:00', '15:30', '16:45'].map((time) => (
                           <button 
                             key={time}
-                            className="p-3 border border-gray-200 dark:border-gray-600 rounded-md hover:border-cannabis-green-500 dark:hover:border-cannabis-green-500 hover:bg-cannabis-green-50 dark:hover:bg-dark-gray-light transition-colors"
+                            className={`p-3 border rounded-md transition-colors ${
+                              selectedTime === time 
+                                ? 'border-cannabis-green-500 bg-cannabis-green-50 dark:bg-dark-gray-light dark:border-cannabis-green-500' 
+                                : 'border-gray-200 dark:border-gray-600 hover:border-cannabis-green-500 dark:hover:border-cannabis-green-500 hover:bg-cannabis-green-50 dark:hover:bg-dark-gray-light'
+                            }`}
+                            onClick={() => handleTimeSelect(time)}
                           >
                             {time}
                           </button>
@@ -69,11 +159,11 @@ const VideoCall = () => {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-cannabis-green-600 dark:text-cannabis-green-400">
                       <Calendar size={18} />
-                      <span className="font-medium">15.05.2025</span>
+                      <span className="font-medium">{selectedDate || '15.05.2025'}</span>
                     </div>
                     <div className="flex items-center gap-2 text-cannabis-green-600 dark:text-cannabis-green-400">
                       <Clock size={18} />
-                      <span className="font-medium">14:00 Uhr</span>
+                      <span className="font-medium">{selectedTime || '14:00'} Uhr</span>
                     </div>
                     <div className="flex items-center gap-2 text-cannabis-green-600 dark:text-cannabis-green-400">
                       <Video size={18} />
@@ -95,16 +185,31 @@ const VideoCall = () => {
                   <div className="space-y-3">
                     <div className="space-y-2">
                       <Label htmlFor="email">E-Mail</Label>
-                      <Input id="email" type="email" placeholder="deine-email@beispiel.de" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="deine-email@beispiel.de" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Telefonnummer</Label>
-                      <Input id="phone" placeholder="+49 123 456789" />
+                      <Input 
+                        id="phone" 
+                        placeholder="+49 123 456789" 
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                      />
                     </div>
                   </div>
                   
-                  <Button className="w-full bg-cannabis-green-500 hover:bg-cannabis-green-600 dark:bg-cannabis-green-600 dark:hover:bg-cannabis-green-700">
-                    Jetzt bezahlen & buchen
+                  <Button 
+                    className="w-full bg-cannabis-green-500 hover:bg-cannabis-green-600 dark:bg-cannabis-green-600 dark:hover:bg-cannabis-green-700"
+                    disabled={isSubmitting}
+                    onClick={handleSubmit}
+                  >
+                    {isSubmitting ? 'Wird verarbeitet...' : 'Jetzt bezahlen & buchen'}
                   </Button>
                   
                   <div className="flex items-start gap-2 text-sm text-gray-500 dark:text-gray-400">

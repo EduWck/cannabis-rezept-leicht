@@ -19,16 +19,16 @@ const Footer = () => {
               Deine vertrauensvolle Plattform für den Zugang zu medizinischem Cannabis. Legal, sicher und diskret.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Twitter size={20} />
               </a>
-              <a href="#" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Linkedin size={20} />
               </a>
             </div>
@@ -39,10 +39,10 @@ const Footer = () => {
             <h3 className="font-semibold text-lg mb-4">Schnelllinks</h3>
             <ul className="space-y-3">
               <li><Link to="/" className="text-gray-400 hover:text-white transition-colors">Home</Link></li>
-              <li><Link to="#fragebogen" className="text-gray-400 hover:text-white transition-colors">Fragebogen</Link></li>
-              <li><Link to="#video-call" className="text-gray-400 hover:text-white transition-colors">Video-Call</Link></li>
-              <li><Link to="#vor-ort" className="text-gray-400 hover:text-white transition-colors">Vor-Ort-Termin</Link></li>
-              <li><Link to="#uber-uns" className="text-gray-400 hover:text-white transition-colors">Über uns</Link></li>
+              <li><Link to="/fragebogen" className="text-gray-400 hover:text-white transition-colors">Fragebogen</Link></li>
+              <li><Link to="/video-call" className="text-gray-400 hover:text-white transition-colors">Video-Call</Link></li>
+              <li><Link to="/vor-ort" className="text-gray-400 hover:text-white transition-colors">Vor-Ort-Termin</Link></li>
+              <li><Link to="/uber-uns" className="text-gray-400 hover:text-white transition-colors">Über uns</Link></li>
             </ul>
           </div>
 

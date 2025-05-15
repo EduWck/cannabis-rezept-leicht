@@ -34,8 +34,8 @@ const Fragebogen = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   
   // Form data state
-  const [treatmentType, setTreatmentType] = useState<"fragebogen" | "video" | "vorort" | null>(null);
-  const [deliveryOption, setDeliveryOption] = useState<"rezept_kurier" | "rezept_versand" | "nur_rezept" | null>(null);
+  const [treatmentType, setTreatmentType] = useState<string>("");
+  const [deliveryOption, setDeliveryOption] = useState<string>("");
   const [hasPreviousPrescription, setHasPreviousPrescription] = useState<boolean | null>(null);
   const [consents, setConsents] = useState({
     accuracy: false,
@@ -46,58 +46,58 @@ const Fragebogen = () => {
     termsAndPrivacy: false,
     newsletter: false,
   });
+  
+  // Symptoms data matching the component props structure
   const [symptoms, setSymptoms] = useState({
-    painSymptoms: {
-      chronicPain: false,
-      backPain: false,
-      neuropathicPain: false,
-      migraines: false,
-      arthritisPain: false,
-      otherPain: false,
-    },
-    mentalSymptoms: {
-      anxiety: false,
-      depression: false,
-      insomnia: false,
-      ptsd: false,
-      adhd: false,
-      otherMental: false,
-    },
-    neurologicalSymptoms: {
-      epilepsy: false,
-      multiplesclerosis: false,
-      parkinson: false,
-      tourette: false,
-      alzheimer: false,
-      otherNeurological: false,
-    },
-    digestiveSymptoms: {
-      crohn: false,
-      ibs: false,
-      ulcerativeColitis: false,
-      nausea: false,
-      otherDigestive: false,
-    },
-    symptomDetails: "",
-    symptomDuration: "",
-    painLevel: null,
+    chronicPain: false,
+    sleepDisorder: false,
+    adhd: false,
+    migraine: false
   });
-  const [previousTreatments, setPreviousTreatments] = useState({
-    visitedDoctor: false,
-    treatmentPlace: "",
-    medications: [],
-    otherTherapies: [],
-    treatmentDetails: "",
+  
+  const [symptomDescription, setSymptomDescription] = useState("");
+  const [symptomIntensity, setSymptomIntensity] = useState(5);
+  const [symptomDuration, setSymptomDuration] = useState("");
+  
+  // Previous treatments data
+  const [visitedDoctor, setVisitedDoctor] = useState<boolean | null>(null);
+  const [doctorTypes, setDoctorTypes] = useState({
+    generalPractitioner: false,
+    specialist: false,
+    hospital: false,
+    psychologist: false,
+    naturopath: false,
+    selfTherapy: false,
   });
-  const [exclusionCriteria, setExclusionCriteria] = useState({
-    isUnder21: false,
-    isPregnant: false,
-    hasSchizophrenia: false,
-    hasHeartCondition: false,
-    hasDrugAddiction: false,
-    hasOtherMentalDisorder: false,
-    detailsOther: "",
+  
+  const [tookMedication, setTookMedication] = useState<boolean | null>(null);
+  const [medicationDetails, setMedicationDetails] = useState("");
+  
+  const [nonMedicalTherapies, setNonMedicalTherapies] = useState({
+    physiotherapy: false,
+    spa: false,
+    massage: false,
+    meditation: false,
+    other: false,
+    none: false,
   });
+  
+  // Exclusion criteria data matching the component props
+  const [isOver21, setIsOver21] = useState<boolean | null>(null);
+  const [isPregnantOrNursing, setIsPregnantOrNursing] = useState<boolean | null>(null);
+  const [highTHCConsumption, setHighTHCConsumption] = useState<boolean | null>(null);
+  const [preExistingConditions, setPreExistingConditions] = useState({
+    schizophrenia: false,
+    personalityDisorder: false,
+    addiction: false,
+    cardiovascular: false,
+    liverKidney: false,
+    anxietyDisorder: false,
+    thcAllergy: false,
+    none: false,
+  });
+  
+  // Cannabis experience
   const [cannabisExperience, setCannabisExperience] = useState({
     hasCannabisExperience: null as boolean | null,
     hadSideEffects: null as boolean | null,
@@ -112,7 +112,11 @@ const Fragebogen = () => {
       reduceSideEffects: false,
     },
   });
-  const [selectedProducts, setSelectedProducts] = useState([]);
+  
+  // Product selection
+  const [selectedProducts, setSelectedProducts] = useState<Record<string, { quantity: number }>>({});
+  
+  // Personal information
   const [personalDetails, setPersonalDetails] = useState({
     firstName: "",
     lastName: "",
@@ -137,8 +141,7 @@ const Fragebogen = () => {
   const nextStep = () => {
     // Check exclusion criteria before proceeding further
     if (step === 7) {
-      const hasExclusions = Object.values(exclusionCriteria).some(value => value === true);
-      if (hasExclusions) {
+      if (isOver21 === false || isPregnantOrNursing === true) {
         toast({
           title: "Leider nicht geeignet",
           description: "Aufgrund deiner Angaben können wir dir kein Rezept ausstellen. Bitte konsultiere einen Arzt direkt.",
@@ -175,6 +178,38 @@ const Fragebogen = () => {
     }));
   };
 
+  // Handle symptom changes
+  const handleSymptomChange = (symptom: keyof typeof symptoms, value: boolean) => {
+    setSymptoms(prev => ({
+      ...prev,
+      [symptom]: value
+    }));
+  };
+
+  // Handle doctor type changes
+  const handleDoctorTypeChange = (type: keyof typeof doctorTypes, value: boolean) => {
+    setDoctorTypes(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
+
+  // Handle non-medical therapy changes
+  const handleNonMedicalTherapyChange = (therapy: keyof typeof nonMedicalTherapies, value: boolean) => {
+    setNonMedicalTherapies(prev => ({
+      ...prev,
+      [therapy]: value
+    }));
+  };
+
+  // Handle pre-existing condition changes
+  const handlePreExistingConditionChange = (condition: keyof typeof preExistingConditions, value: boolean) => {
+    setPreExistingConditions(prev => ({
+      ...prev,
+      [condition]: value
+    }));
+  };
+
   // Handle cannabis experience changes
   const handleCannabisExperienceChange = (value: boolean) => {
     setCannabisExperience(prev => ({
@@ -183,6 +218,7 @@ const Fragebogen = () => {
     }));
   };
 
+  // Handle side effects changes
   const handleSideEffectsChange = (value: boolean) => {
     setCannabisExperience(prev => ({
       ...prev,
@@ -190,6 +226,7 @@ const Fragebogen = () => {
     }));
   };
 
+  // Handle treatment goal changes
   const handleTreatmentGoalChange = (goal: keyof typeof cannabisExperience.treatmentGoals, value: boolean) => {
     setCannabisExperience(prev => ({
       ...prev,
@@ -200,6 +237,14 @@ const Fragebogen = () => {
     }));
   };
 
+  // Handle product selection changes
+  const handleProductSelectChange = (productId: string, quantity: number) => {
+    setSelectedProducts(prev => ({
+      ...prev,
+      [productId]: { quantity }
+    }));
+  };
+
   // Render the current step
   const renderStep = () => {
     switch (step) {
@@ -207,7 +252,7 @@ const Fragebogen = () => {
         return (
           <TreatmentTypeStep
             selectedType={treatmentType}
-            onTypeChange={setTreatmentType}
+            onSelect={setTreatmentType}
             onNext={nextStep}
           />
         );
@@ -215,7 +260,7 @@ const Fragebogen = () => {
         return (
           <DeliveryOptionsStep
             selectedOption={deliveryOption}
-            onOptionChange={setDeliveryOption}
+            onSelect={setDeliveryOption}
             onNext={nextStep}
             onBack={prevStep}
           />
@@ -224,7 +269,7 @@ const Fragebogen = () => {
         return (
           <PreviousPrescriptionStep
             hasPreviousPrescription={hasPreviousPrescription}
-            onHasPreviousPrescriptionChange={setHasPreviousPrescription}
+            onSelect={setHasPreviousPrescription}
             onNext={nextStep}
             onBack={prevStep}
           />
@@ -242,7 +287,13 @@ const Fragebogen = () => {
         return (
           <SymptomsStep
             symptoms={symptoms}
-            setSymptoms={setSymptoms}
+            onSymptomChange={handleSymptomChange}
+            description={symptomDescription}
+            onDescriptionChange={setSymptomDescription}
+            symptomIntensity={symptomIntensity}
+            onSymptomIntensityChange={setSymptomIntensity}
+            symptomDuration={symptomDuration}
+            onSymptomDurationChange={setSymptomDuration}
             onNext={nextStep}
             onBack={prevStep}
           />
@@ -250,8 +301,16 @@ const Fragebogen = () => {
       case 6:
         return (
           <PreviousTreatmentsStep
-            previousTreatments={previousTreatments}
-            setPreviousTreatments={setPreviousTreatments}
+            visitedDoctor={visitedDoctor}
+            onVisitedDoctorChange={setVisitedDoctor}
+            doctorTypes={doctorTypes}
+            onDoctorTypeChange={handleDoctorTypeChange}
+            tookMedication={tookMedication}
+            onTookMedicationChange={setTookMedication}
+            medicationDetails={medicationDetails}
+            onMedicationDetailsChange={setMedicationDetails}
+            nonMedicalTherapies={nonMedicalTherapies}
+            onNonMedicalTherapyChange={handleNonMedicalTherapyChange}
             onNext={nextStep}
             onBack={prevStep}
           />
@@ -259,8 +318,14 @@ const Fragebogen = () => {
       case 7:
         return (
           <ExclusionCriteriaStep
-            exclusionCriteria={exclusionCriteria}
-            setExclusionCriteria={setExclusionCriteria}
+            isOver21={isOver21}
+            onIsOver21Change={setIsOver21}
+            isPregnantOrNursing={isPregnantOrNursing}
+            onIsPregnantOrNursingChange={setIsPregnantOrNursing}
+            highTHCConsumption={highTHCConsumption}
+            onHighTHCConsumptionChange={setHighTHCConsumption}
+            preExistingConditions={preExistingConditions}
+            onPreExistingConditionChange={handlePreExistingConditionChange}
             onNext={nextStep}
             onBack={prevStep}
           />
@@ -282,7 +347,7 @@ const Fragebogen = () => {
         return (
           <ProductSelectionStep
             selectedProducts={selectedProducts}
-            setSelectedProducts={setSelectedProducts}
+            onProductSelectChange={handleProductSelectChange}
             onNext={nextStep}
             onBack={prevStep}
           />
@@ -290,10 +355,6 @@ const Fragebogen = () => {
       case 10:
         return (
           <CheckoutStep
-            personalDetails={personalDetails}
-            setPersonalDetails={setPersonalDetails}
-            selectedProducts={selectedProducts}
-            deliveryOption={deliveryOption}
             onSubmit={nextStep}
             onBack={prevStep}
           />

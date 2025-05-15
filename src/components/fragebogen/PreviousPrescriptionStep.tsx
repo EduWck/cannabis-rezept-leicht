@@ -1,6 +1,7 @@
 
 import { Check, X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/use-toast";
 
 interface PreviousPrescriptionStepProps {
   hasPreviousPrescription: boolean | null;
@@ -15,6 +16,17 @@ const PreviousPrescriptionStep = ({
   onNext, 
   onBack 
 }: PreviousPrescriptionStepProps) => {
+  
+  const handleNext = () => {
+    if (hasPreviousPrescription === true) {
+      toast({
+        title: "Hinweis",
+        description: "Deine Daten werden automatisch geladen, du musst sie nicht erneut eingeben.",
+      });
+    }
+    onNext();
+  };
+  
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center">Hast du bereits ein Rezept über unsere Plattform erhalten?</h2>
@@ -49,7 +61,7 @@ const PreviousPrescriptionStep = ({
         </Button>
         
         <Button 
-          onClick={onNext} 
+          onClick={handleNext} 
           disabled={hasPreviousPrescription === null}
           className="py-6 px-8"
         >

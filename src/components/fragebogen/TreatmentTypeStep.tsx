@@ -28,7 +28,7 @@ const TreatmentTypeStep = ({ selectedType, onSelect, onNext }: TreatmentTypeStep
                   </div>
                   <h3 className="font-medium text-lg">Online-Fragebogen</h3>
                   <p className="text-muted-foreground text-sm">Schneller digitaler Prozess</p>
-                  <p className="font-bold mt-2 text-lg">14,99 €</p>
+                  <p className="font-bold mt-2 text-lg">4,99 €</p>
                 </div>
               </CardContent>
             </Card>
@@ -46,7 +46,7 @@ const TreatmentTypeStep = ({ selectedType, onSelect, onNext }: TreatmentTypeStep
                   </div>
                   <h3 className="font-medium text-lg">Video-Sprechstunde</h3>
                   <p className="text-muted-foreground text-sm">Persönliches Gespräch</p>
-                  <p className="font-bold mt-2 text-lg">ab 45,00 €</p>
+                  <p className="font-bold mt-2 text-lg">49,99 €</p>
                 </div>
               </CardContent>
             </Card>
@@ -64,7 +64,7 @@ const TreatmentTypeStep = ({ selectedType, onSelect, onNext }: TreatmentTypeStep
                   </div>
                   <h3 className="font-medium text-lg">Vor-Ort-Termin</h3>
                   <p className="text-muted-foreground text-sm">Persönlicher Termin</p>
-                  <p className="font-bold mt-2 text-lg">ab 149,99 €</p>
+                  <p className="font-bold mt-2 text-lg">149,99 €</p>
                 </div>
               </CardContent>
             </Card>

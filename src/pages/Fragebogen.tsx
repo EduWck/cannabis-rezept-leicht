@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -245,6 +244,13 @@ const Fragebogen = () => {
     }));
   };
 
+  // Calculate total amount based on selected products
+  const calculateTotalAmount = () => {
+    // In a real application, this would sum up the prices of all selected products
+    // For now, let's return a placeholder value
+    return 114.99; // Example total amount including product costs and fees
+  };
+
   // Render the current step
   const renderStep = () => {
     switch (step) {
@@ -355,7 +361,8 @@ const Fragebogen = () => {
       case 10:
         return (
           <CheckoutStep
-            onSubmit={nextStep}
+            totalAmount={calculateTotalAmount()}
+            onComplete={nextStep}
             onBack={prevStep}
           />
         );

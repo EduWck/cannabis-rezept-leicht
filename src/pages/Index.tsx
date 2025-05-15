@@ -51,7 +51,7 @@ const Index = () => {
   }, [user, userRole, isLoading, navigate]);
 
   return (
-    <div>
+    <div className="bg-background text-foreground">
       <Hero />
       <ProcessSection />
       <BenefitsSection />

@@ -128,6 +128,20 @@ export default {
 						opacity: "1"
 					}
 				},
+				"blob": {
+					"0%": {
+						transform: "translate(0px, 0px) scale(1)"
+					},
+					"33%": {
+						transform: "translate(30px, -50px) scale(1.1)"
+					},
+					"66%": {
+						transform: "translate(-20px, 20px) scale(0.9)"
+					},
+					"100%": {
+						transform: "translate(0px, 0px) scale(1)"
+					}
+				}
 			},
 			animation: {
 				"accordion-down": "accordion-down 0.2s ease-out",
@@ -135,6 +149,7 @@ export default {
 				"fade-in": "fade-in 0.3s ease-out",
 				"fade-out": "fade-out 0.3s ease-out",
 				"scale-in": "scale-in 0.2s ease-out",
+				"blob": "blob 25s infinite alternate",
 			},
 			fontFamily: {
 				sans: [
@@ -149,6 +164,14 @@ export default {
 					"Arial",
 					"sans-serif",
 				],
+			},
+			utilities: {
+				".animation-delay-2000": {
+					"animation-delay": "2s",
+				},
+				".animation-delay-4000": {
+					"animation-delay": "4s",
+				},
 			},
 		},
 	},

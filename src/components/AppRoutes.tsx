@@ -47,129 +47,36 @@ import CalendarPage from "@/pages/dashboard/doctor/CalendarPage";
 import RequestsPage from "@/pages/dashboard/doctor/RequestsPage";
 import DoctorPrescriptionsPage from "@/pages/dashboard/doctor/DoctorPrescriptionsPage";
 
+// Create a layout component to avoid repetition
+const MainLayout = ({ children }: { children: React.ReactNode }) => (
+  <>
+    <Navbar />
+    <main className="pt-16">
+      {children}
+    </main>
+    <Footer />
+  </>
+);
+
 const AppRoutes = () => {
   return (
     <Routes>
       {/* Public routes with Navbar and Footer */}
-      <Route path="/" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <Index />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/uber-uns" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <UberUns />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/kontakt" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <Kontakt />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/vor-ort" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <VorOrt />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/fragebogen" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <Fragebogen />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/video-call" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <VideoCall />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/login" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <Login />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/test-users" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <TestUsers />
-          </main>
-          <Footer />
-        </>
-      } />
+      <Route path="/" element={<MainLayout><Index /></MainLayout>} />
+      <Route path="/uber-uns" element={<MainLayout><UberUns /></MainLayout>} />
+      <Route path="/kontakt" element={<MainLayout><Kontakt /></MainLayout>} />
+      <Route path="/vor-ort" element={<MainLayout><VorOrt /></MainLayout>} />
+      <Route path="/fragebogen" element={<MainLayout><Fragebogen /></MainLayout>} />
+      <Route path="/video-call" element={<MainLayout><VideoCall /></MainLayout>} />
+      <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+      <Route path="/test-users" element={<MainLayout><TestUsers /></MainLayout>} />
       
       {/* Legal Pages */}
-      <Route path="/agb" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <AGB />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/datenschutz" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <Datenschutz />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/impressum" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <Impressum />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/cookie-policy" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <CookiePolicy />
-          </main>
-          <Footer />
-        </>
-      } />
-      <Route path="/faq" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <FAQ />
-          </main>
-          <Footer />
-        </>
-      } />
+      <Route path="/agb" element={<MainLayout><AGB /></MainLayout>} />
+      <Route path="/datenschutz" element={<MainLayout><Datenschutz /></MainLayout>} />
+      <Route path="/impressum" element={<MainLayout><Impressum /></MainLayout>} />
+      <Route path="/cookie-policy" element={<MainLayout><CookiePolicy /></MainLayout>} />
+      <Route path="/faq" element={<MainLayout><FAQ /></MainLayout>} />
 
       {/* Dashboard Routes - Now directly accessible without authentication */}
       <Route element={<DashboardLayout />}>
@@ -203,15 +110,7 @@ const AppRoutes = () => {
       </Route>
 
       {/* Catch-all route */}
-      <Route path="*" element={
-        <>
-          <Navbar />
-          <main className="pt-16">
-            <NotFound />
-          </main>
-          <Footer />
-        </>
-      } />
+      <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
     </Routes>
   );
 };

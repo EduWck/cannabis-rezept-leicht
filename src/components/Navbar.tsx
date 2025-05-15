@@ -1,11 +1,10 @@
 
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Leaf, Menu, LogOut } from "lucide-react";
+import { Leaf, Menu, LogOut, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { ThemeToggle } from "@/components/ThemeProvider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -90,6 +89,11 @@ export default function Navbar() {
         variant: "destructive"
       });
     }
+  };
+
+  // Weiterleitung zur Fragebogen-Seite
+  const handleStartConsultation = () => {
+    navigate("/fragebogen");
   };
 
   // User-Anzeigename für Avatar
@@ -183,13 +187,16 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Link to="/login">
-              <Button variant="outline" size="sm">
-                Anmelden
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleStartConsultation}
+              className="flex items-center gap-2"
+            >
+              <User size={16} />
+              Starte Konsultation
+            </Button>
           )}
-          <ThemeToggle />
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
@@ -237,9 +244,17 @@ export default function Navbar() {
                     </button>
                   </>
                 ) : (
-                  <Link to="/login" onClick={() => setIsOpen(false)}>
-                    Anmelden
-                  </Link>
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2"
+                    onClick={() => {
+                      navigate("/fragebogen");
+                      setIsOpen(false);
+                    }}
+                  >
+                    <User size={16} />
+                    Starte Konsultation
+                  </Button>
                 )}
               </div>
             </SheetContent>

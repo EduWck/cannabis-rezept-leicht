@@ -15,7 +15,7 @@ const Hero = () => {
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
-            <Link to="#fragebogen" className="group">
+            <Link to="/fragebogen" className="group">
               <div className="bg-white hover:bg-cannabis-green-50 border border-gray-200 rounded-xl p-6 shadow-md transition-all duration-300 hover:shadow-xl h-full flex flex-col items-center justify-center text-center">
                 <div className="w-16 h-16 rounded-full bg-cannabis-green-100 flex items-center justify-center mb-4">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -33,7 +33,7 @@ const Hero = () => {
               </div>
             </Link>
 
-            <Link to="#video-call" className="group">
+            <Link to="/video-call" className="group">
               <div className="bg-white hover:bg-cannabis-green-50 border border-gray-200 rounded-xl p-6 shadow-md transition-all duration-300 hover:shadow-xl h-full flex flex-col items-center justify-center text-center">
                 <div className="w-16 h-16 rounded-full bg-cannabis-green-100 flex items-center justify-center mb-4">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -49,7 +49,7 @@ const Hero = () => {
               </div>
             </Link>
 
-            <Link to="#vor-ort" className="group">
+            <Link to="/vor-ort" className="group">
               <div className="bg-white hover:bg-cannabis-green-50 border border-gray-200 rounded-xl p-6 shadow-md transition-all duration-300 hover:shadow-xl h-full flex flex-col items-center justify-center text-center">
                 <div className="w-16 h-16 rounded-full bg-cannabis-green-100 flex items-center justify-center mb-4">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

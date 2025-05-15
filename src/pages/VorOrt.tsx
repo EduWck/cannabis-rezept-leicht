@@ -1,7 +1,5 @@
 
 import { useEffect, useState } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -115,19 +113,15 @@ const VorOrt = () => {
   if (isComplete) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
         <main className="page-container pt-24">
           <CompletionStep treatmentType="vor-ort" />
         </main>
-        <Footer />
       </div>
     );
   }
   
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
       <main className="page-container">
         <div className="max-w-4xl mx-auto">
           <h1 className="section-title text-center">Vor-Ort-Termin</h1>
@@ -298,8 +292,6 @@ const VorOrt = () => {
           </div>
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };

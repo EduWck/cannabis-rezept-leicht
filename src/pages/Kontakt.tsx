@@ -1,7 +1,5 @@
 
 import { useEffect } from 'react';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,8 +14,6 @@ const Kontakt = () => {
   
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      
       <main className="page-container">
         <div className="max-w-5xl mx-auto">
           <h1 className="section-title text-center">Kontakt</h1>
@@ -169,8 +165,6 @@ const Kontakt = () => {
           </div>
         </div>
       </main>
-      
-      <Footer />
     </div>
   );
 };

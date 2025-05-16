@@ -51,9 +51,9 @@ const UserMenu = ({ user, userRole, signOut }: UserMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar>
-            <AvatarFallback>
+        <Button variant="ghost" className="relative h-7 w-7 sm:h-8 sm:w-8 rounded-full">
+          <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
+            <AvatarFallback className="text-xs sm:text-sm">
               {getUserInitial()}
             </AvatarFallback>
           </Avatar>
@@ -71,7 +71,7 @@ const UserMenu = ({ user, userRole, signOut }: UserMenuProps) => {
         <DropdownMenuSeparator />
         {userLinks.map((link) => (
           <DropdownMenuItem key={link.href} asChild>
-            <Link to={link.href}>
+            <Link to={link.href} className="cursor-pointer">
               {link.icon && <link.icon className="mr-2 h-4 w-4" />}
               <span>{link.label}</span>
             </Link>

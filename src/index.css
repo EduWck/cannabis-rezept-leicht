@@ -95,7 +95,7 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans transition-colors duration-300;
+    @apply bg-background text-foreground font-sans transition-colors duration-300 min-h-screen;
   }
   
   /* Dynamic background elements */
@@ -158,21 +158,21 @@
     @apply bg-white dark:bg-dark-gray-medium hover:bg-gray-50 dark:hover:bg-dark-gray-light text-dark-gray dark:text-white font-medium py-2.5 px-6 rounded-lg shadow-md border border-gray-200 dark:border-dark-gray-light transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0;
   }
   
-  /* Layout utility classes */
+  /* Layout utility classes - improved for responsiveness */
   .container-padding {
     @apply px-4 sm:px-6 lg:px-8;
   }
 
   .page-container {
-    @apply pt-24 md:pt-28 px-4 md:px-6 container mx-auto min-h-screen pb-20;
+    @apply pt-20 md:pt-24 px-4 md:px-6 container mx-auto min-h-[calc(100vh-4rem)] pb-16 md:pb-20;
   }
 
   .section-title {
-    @apply text-3xl md:text-4xl font-bold mb-2 text-dark-gray dark:text-white;
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold mb-2 text-dark-gray dark:text-white;
   }
 
   .section-subtitle {
-    @apply text-lg text-gray-600 dark:text-gray-300 mb-8;
+    @apply text-base md:text-lg text-gray-600 dark:text-gray-300 mb-6 md:mb-8;
   }
   
   /* Glass morphism effects - improved for dark mode */
@@ -186,7 +186,7 @@
   
   /* Card styles with better dark mode */
   .modern-card {
-    @apply rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 shadow-sm transition-all duration-300 hover:shadow-md;
+    @apply rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-6 shadow-sm transition-all duration-300 hover:shadow-md;
   }
   
   /* Gradient backgrounds */
@@ -220,5 +220,14 @@
   @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: .7; }
+  }
+
+  /* Responsive grid layouts */
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6;
+  }
+
+  .responsive-grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6;
   }
 }

@@ -1,10 +1,16 @@
 
 #root {
-  max-width: 1280px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
   position: relative;
+}
+
+@media (min-width: 768px) {
+  #root {
+    padding: 2rem;
+  }
 }
 
 .logo {
@@ -45,7 +51,7 @@
   color: #888;
 }
 
-/* Background accents */
+/* Background accents - improved for responsiveness */
 .bg-accent {
   position: absolute;
   border-radius: 50%;
@@ -56,8 +62,8 @@
 
 .bg-accent-1 {
   top: 10vh;
-  left: 10vw;
-  width: 40vw;
+  left: 5vw;
+  width: 60vw;
   height: 40vh;
   background: linear-gradient(45deg, var(--cannabis-green-300), var(--cannabis-green-500));
   animation: float 20s ease-in-out infinite alternate;
@@ -66,7 +72,7 @@
 .bg-accent-2 {
   top: 30vh;
   right: 5vw;
-  width: 35vw;
+  width: 50vw;
   height: 35vh;
   background: linear-gradient(120deg, var(--cannabis-green-200), #a5d6a7);
   animation: float 25s ease-in-out infinite alternate-reverse;
@@ -74,8 +80,8 @@
 
 .bg-accent-3 {
   bottom: 15vh;
-  left: 20vw;
-  width: 50vw;
+  left: 10vw;
+  width: 60vw;
   height: 30vh;
   background: linear-gradient(200deg, var(--cannabis-green-100), var(--cannabis-green-300));
   animation: float 30s ease-in-out infinite alternate;
@@ -90,5 +96,33 @@
   }
   100% {
     transform: translate(-3%, 1%) scale(0.95);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bg-accent-1, .bg-accent-2, .bg-accent-3 {
+    opacity: 0.1;
+    filter: blur(60px);
+  }
+}
+
+/* Container adjustments for responsive layouts */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
   }
 }

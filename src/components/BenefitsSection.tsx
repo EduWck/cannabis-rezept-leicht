@@ -46,26 +46,26 @@ const BenefitsSection = () => {
   ];
 
   return (
-    <section className="py-16 bg-white">
+    <section className="py-10 sm:py-16 bg-white">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-dark-gray mb-4">Unsere Vorteile auf einen Blick</h2>
-          <p className="text-lg text-dark-gray-light max-w-2xl mx-auto">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-gray mb-3 sm:mb-4">Unsere Vorteile auf einen Blick</h2>
+          <p className="text-base sm:text-lg text-dark-gray-light max-w-2xl mx-auto">
             Erfahre, warum unsere Plattform die erste Wahl für Patienten ist, die medizinisches Cannabis benötigen.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {benefits.map((benefit, index) => (
             <div 
               key={index} 
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300"
             >
               <div className="flex items-start">
-                <div className="mr-4 mt-1">{benefit.icon}</div>
+                <div className="mr-3 sm:mr-4 mt-1">{benefit.icon}</div>
                 <div>
-                  <h3 className="font-semibold text-lg text-dark-gray mb-2">{benefit.title}</h3>
-                  <p className="text-dark-gray-light text-sm">{benefit.description}</p>
+                  <h3 className="font-semibold text-base sm:text-lg text-dark-gray mb-1 sm:mb-2">{benefit.title}</h3>
+                  <p className="text-dark-gray-light text-xs sm:text-sm">{benefit.description}</p>
                 </div>
               </div>
             </div>

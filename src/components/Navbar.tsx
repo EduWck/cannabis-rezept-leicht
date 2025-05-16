@@ -60,16 +60,16 @@ export default function Navbar() {
   };
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b bg-background">
+    <header className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <Leaf className="h-6 w-6 text-cannabis-green-500" />
-          <span className="hidden font-semibold md:inline-block">
+        <Link to="/" className="flex items-center gap-1 sm:gap-2">
+          <Leaf className="h-5 w-5 sm:h-6 sm:w-6 text-cannabis-green-500" />
+          <span className="text-sm sm:text-base font-semibold">
             Cannabis<span className="text-cannabis-green-500">Med</span>
           </span>
         </Link>
         
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-4 lg:gap-6">
           {navItems.map((item) => (
             <NavLink key={item.href} to={item.href}>
               {({ isActive }) => (
@@ -85,10 +85,10 @@ export default function Navbar() {
           ))}
         </nav>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           {isLoading ? (
             // Zeige Lade-Indikator während Auth-Status geladen wird
-            <Button variant="ghost" size="sm" disabled>
+            <Button variant="ghost" size="sm" disabled className="hidden sm:flex">
               Lädt...
             </Button>
           ) : user ? (
@@ -104,10 +104,10 @@ export default function Navbar() {
               variant="outline" 
               size="sm"
               onClick={handleStartConsultation}
-              className="flex items-center gap-2"
+              className="hidden sm:flex items-center gap-1"
             >
               <User size={16} />
-              Starte Konsultation
+              <span className="hidden sm:inline">Starte Konsultation</span>
             </Button>
           )}
           
@@ -115,11 +115,11 @@ export default function Navbar() {
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
-                <Menu className="h-6 w-6" />
+                <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
+            <SheetContent side="right" className="w-[280px] sm:w-[350px]">
               <MobileMenu 
                 navItems={navItems} 
                 user={user} 

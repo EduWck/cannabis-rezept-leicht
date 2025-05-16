@@ -34,32 +34,41 @@ const MobileMenu = ({
   onStartConsultation 
 }: MobileMenuProps) => {
   return (
-    <>
-      <Link to="/" className="flex items-center gap-2" onClick={onClose}>
+    <div className="flex flex-col h-full py-4">
+      <Link to="/" className="flex items-center gap-2 mb-6" onClick={onClose}>
         <Leaf className="h-6 w-6 text-cannabis-green-500" />
         <span className="font-semibold">
           Cannabis<span className="text-cannabis-green-500">Med</span>
         </span>
       </Link>
-      <div className="mt-8 flex flex-col gap-4">
-        {navItems.map((item) => (
-          <Link 
-            key={item.href} 
-            to={item.href} 
-            onClick={onClose}
-          >
-            <span>{item.label}</span>
-          </Link>
-        ))}
-      </div>
-      <div className="mt-8 flex flex-col gap-4">
+      <nav className="mb-8">
+        <div className="space-y-3">
+          {navItems.map((item) => (
+            <Link 
+              key={item.href} 
+              to={item.href} 
+              onClick={onClose}
+              className="block py-2 text-base font-medium hover:text-cannabis-green-500 transition-colors"
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+      <div className="mt-auto space-y-3">
         {user ? (
           <>
+            <div className="px-3 py-2 mb-4 bg-muted/50 rounded-lg">
+              <p className="text-sm font-medium">{user.email}</p>
+              <p className="text-xs text-muted-foreground">
+                {userRole === 'admin' ? 'Administrator' : userRole === 'doctor' ? 'Arzt' : 'Patient'}
+              </p>
+            </div>
             {userLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="flex items-center"
+                className="flex items-center py-2 text-base font-medium hover:text-cannabis-green-500 transition-colors"
                 onClick={onClose}
               >
                 {link.icon && <link.icon className="mr-2 h-4 w-4" />}
@@ -71,7 +80,7 @@ const MobileMenu = ({
                 signOut();
                 onClose();
               }}
-              className="flex items-center"
+              className="flex items-center w-full py-2 text-base font-medium hover:text-cannabis-green-500 transition-colors"
             >
               <LogOut className="mr-2 h-4 w-4" />
               Abmelden
@@ -79,8 +88,7 @@ const MobileMenu = ({
           </>
         ) : (
           <Button 
-            variant="outline" 
-            className="flex items-center gap-2"
+            className="w-full"
             onClick={() => {
               onStartConsultation();
               onClose();
@@ -90,7 +98,7 @@ const MobileMenu = ({
           </Button>
         )}
       </div>
-    </>
+    </div>
   );
 };
 

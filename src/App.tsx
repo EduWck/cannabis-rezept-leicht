@@ -34,14 +34,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="relative overflow-hidden">
+        <div className="relative min-h-screen w-full overflow-x-hidden">
           {/* Background accents */}
           <div className="bg-accent bg-accent-1"></div>
           <div className="bg-accent bg-accent-2"></div>
           <div className="bg-accent bg-accent-3"></div>
           
           <BrowserRouter>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Wird geladen...</div>}>
               <Routes>
                 {AppRoutes}
               </Routes>

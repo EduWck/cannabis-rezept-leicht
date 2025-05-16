@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Leaf, LogOut } from "lucide-react";
+import { Leaf, LogOut, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NavItem {

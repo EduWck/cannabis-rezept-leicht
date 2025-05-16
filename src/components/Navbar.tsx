@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Leaf, Menu, LogOut, User } from "lucide-react";
+import { Leaf, Menu, LogOut, User, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,10 @@ import UserMenu from "@/components/navigation/UserMenu";
 import MobileMenu from "@/components/navigation/MobileMenu";
 
 const navItems = [
+  {
+    label: "Home",
+    href: "/",
+  },
   {
     label: "Über Uns",
     href: "/uber-uns",
@@ -22,10 +26,6 @@ const navItems = [
   {
     label: "Kontakt",
     href: "/kontakt",
-  },
-  {
-    label: "Vor Ort",
-    href: "/vor-ort",
   },
 ];
 

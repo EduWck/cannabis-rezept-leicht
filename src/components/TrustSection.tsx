@@ -1,5 +1,4 @@
-
-import { Shield, Check } from 'lucide-react';
+import { Shield, Check, CreditCard } from 'lucide-react';
 
 const TrustSection = () => {
   // Placeholder testimonials
@@ -65,8 +64,7 @@ const TrustSection = () => {
           
           <div className="bg-gray-50 p-6 rounded-xl flex flex-col items-center text-center">
             <div className="flex mb-4">
-              <img src="https://placeholder.com/wp-content/uploads/2018/10/placeholder.com-logo1.png" alt="Stripe" className="h-8 mx-1 opacity-60" />
-              <img src="https://placeholder.com/wp-content/uploads/2018/10/placeholder.com-logo1.png" alt="PayPal" className="h-8 mx-1 opacity-60" />
+              <CreditCard className="text-cannabis-green-500" size={32} />
             </div>
             <h3 className="font-semibold mb-2">Sichere Zahlungen</h3>
             <p className="text-dark-gray-light text-sm">Zahlungsabwicklung über sichere und verschlüsselte Verfahren</p>

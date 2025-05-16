@@ -2,18 +2,107 @@
 import { Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
+import { 
+  SidebarProvider, 
+  Sidebar, 
+  SidebarContent, 
+  SidebarMenu, 
+  SidebarMenuItem, 
+  SidebarMenuButton, 
+  SidebarHeader, 
+  SidebarFooter,
+  SidebarTrigger,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel
+} from "@/components/ui/sidebar";
+import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const DashboardLayout = () => {
+  const { user, userRole, signOut } = useAuth();
+
+  // Different menu items based on user role
+  const getMenuItems = () => {
+    if (userRole === "admin") {
+      return [
+        { icon: Home, title: "Dashboard", path: "/dashboard" },
+        { icon: Users, title: "Benutzer", path: "/dashboard/users" },
+        { icon: FileText, title: "Rezepte", path: "/dashboard/all-prescriptions" },
+        { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/all-orders" },
+        { icon: Settings, title: "Einstellungen", path: "/dashboard/settings" },
+      ];
+    } else if (userRole === "doctor") {
+      return [
+        { icon: Home, title: "Dashboard", path: "/dashboard" },
+        { icon: Users, title: "Patienten", path: "/dashboard/patients" },
+        { icon: FileText, title: "Rezepte", path: "/dashboard/doctor-prescriptions" },
+        { icon: Calendar, title: "Termine", path: "/dashboard/calendar" },
+      ];
+    } else {
+      // Patient or default
+      return [
+        { icon: Home, title: "Dashboard", path: "/dashboard" },
+        { icon: User, title: "Profil", path: "/dashboard/profile" },
+        { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
+        { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
+        { icon: Calendar, title: "Termine", path: "/dashboard/appointments" },
+      ];
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navbar />
-      <div className="flex-1 pt-16 md:pt-16 pb-6 md:pb-10">
-        <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
-          <Outlet />
+    <SidebarProvider>
+      <div className="min-h-screen flex flex-col bg-background w-full">
+        <Navbar />
+        <div className="flex-1 pt-16 flex">
+          <Sidebar variant="sidebar" collapsible="icon">
+            <SidebarHeader className="p-2">
+              <SidebarTrigger />
+            </SidebarHeader>
+            <SidebarContent>
+              <SidebarGroup>
+                <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {getMenuItems().map((item, index) => (
+                      <SidebarMenuItem key={index}>
+                        <SidebarMenuButton asChild tooltip={item.title}>
+                          <a href={item.path}>
+                            <item.icon className="size-4 md:size-5" />
+                            <span>{item.title}</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </SidebarContent>
+            <SidebarFooter className="p-4">
+              {user && (
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start" 
+                  onClick={signOut}
+                >
+                  <LogOut className="mr-2 size-4" />
+                  <span>Abmelden</span>
+                </Button>
+              )}
+            </SidebarFooter>
+          </Sidebar>
+          
+          <div className="flex-1">
+            <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
+              <Outlet />
+            </div>
+          </div>
         </div>
+        <Toaster />
       </div>
-      <Toaster />
-    </div>
+    </SidebarProvider>
   );
 };
 

@@ -28,7 +28,7 @@ const BenefitsSection = () => {
     },
     {
       icon: <Stethoscope className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
-      title: 'Erfahrene Ärzteteam',
+      title: 'Erfahrenes Ärzteteam',
       description: 'Professionelle medizinische Betreuung'
     },
     {
@@ -58,23 +58,21 @@ const BenefitsSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {benefits.map((benefit, index) => (
             <div 
               key={index} 
-              className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 flex flex-col h-full"
+              className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 flex flex-col h-full"
             >
               <div className="flex items-start">
-                <div className="flex-shrink-0 mt-0.5">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
-                    {benefit.icon}
-                  </div>
+                <div className="flex-shrink-0 mr-3">
+                  {benefit.icon}
                 </div>
-                <div className="ml-3 overflow-hidden">
-                  <h3 className="font-semibold text-sm sm:text-base lg:text-lg text-dark-gray mb-1">
+                <div>
+                  <h3 className="font-semibold text-base lg:text-lg text-dark-gray mb-2 hyphens-auto">
                     {benefit.title}
                   </h3>
-                  <p className="text-dark-gray-light text-xs sm:text-sm break-words">
+                  <p className="text-dark-gray-light text-sm break-words">
                     {benefit.description}
                   </p>
                 </div>

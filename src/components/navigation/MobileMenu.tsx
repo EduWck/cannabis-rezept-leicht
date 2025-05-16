@@ -1,6 +1,5 @@
 
 import { Link } from "react-router-dom";
-import { User } from "@supabase/supabase-js";
 import { Leaf, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,7 +10,7 @@ interface NavItem {
 
 interface MobileMenuProps {
   navItems: NavItem[];
-  user: User | null;
+  user: any | null;
   userRole: string | null;
   signOut: () => Promise<void>;
   onClose: () => void;

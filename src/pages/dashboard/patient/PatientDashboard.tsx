@@ -1,40 +1,26 @@
 
-import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, User, FileText, ShoppingBag, Calendar } from "lucide-react";
+import { User, FileText, ShoppingBag, Calendar, FileCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
+import MedicalFindings from "@/components/dashboard/MedicalFindings";
 
 const PatientDashboard = () => {
-  const { user, profile, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  const handleBookAppointment = () => {
-    toast({
-      title: "Termin angefragt",
-      description: "Ihre Terminanfrage wurde erfolgreich übermittelt."
-    });
-    // In a real app, we would navigate to the appointments page
-    setTimeout(() => navigate("/dashboard/appointments"), 1500);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500" />
-        <span className="ml-2">Lade Patientendaten...</span>
-      </div>
-    );
-  }
-
-  // Testdaten für Dashboard-Anzeige wenn kein Benutzer angemeldet ist
+  // Test profile data
   const testProfile = {
     first_name: "Max",
     last_name: "Mustermann",
+    email: "patient@example.com",
     street_address: "Musterstraße 123",
     postal_code: "12345",
     city: "Musterstadt"
+  };
+
+  const handleBookAppointment = () => {
+    navigate("/dashboard/appointments");
   };
 
   return (
@@ -51,9 +37,9 @@ const PatientDashboard = () => {
           </CardHeader>
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p><strong>Name:</strong> {profile?.first_name || testProfile.first_name} {profile?.last_name || testProfile.last_name}</p>
-              <p><strong>Email:</strong> {user?.email || "patient@example.com"}</p>
-              <p><strong>Adresse:</strong> {profile?.street_address || testProfile.street_address}, {profile?.postal_code || testProfile.postal_code} {profile?.city || testProfile.city}</p>
+              <p><strong>Name:</strong> {testProfile.first_name} {testProfile.last_name}</p>
+              <p><strong>Email:</strong> {testProfile.email}</p>
+              <p><strong>Adresse:</strong> {testProfile.street_address}, {testProfile.postal_code} {testProfile.city}</p>
             </div>
             <div className="mt-4">
               <Link to="/dashboard/profile">
@@ -103,6 +89,23 @@ const PatientDashboard = () => {
             <Link to="/dashboard/orders">
               <Button variant="outline" size="sm">Bestellungen anzeigen</Button>
             </Link>
+          </CardContent>
+        </Card>
+
+        <Card className="md:col-span-2">
+          <CardHeader className="bg-cannabis-green-50 dark:bg-cannabis-green-900/20">
+            <CardTitle className="text-cannabis-green-700 dark:text-cannabis-green-400">
+              <FileCheck className="h-5 w-5 inline-block mr-2" /> Medizinische Befunde
+            </CardTitle>
+            <CardDescription>Ihre ärztlichen Befunde und Diagnosen</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-4">
+              <p className="mb-4">Sie haben 2 medizinische Befunde.</p>
+              <Link to="/dashboard/medical-findings">
+                <Button variant="outline" size="sm">Alle Befunde anzeigen</Button>
+              </Link>
+            </div>
           </CardContent>
         </Card>
       </div>

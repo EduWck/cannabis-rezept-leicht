@@ -16,16 +16,16 @@ const navItems = [
     href: "/uber-uns",
   },
   {
+    label: "Therapiemöglichkeiten",
+    href: "/therapiemoeglichkeiten",
+  },
+  {
     label: "Kontakt",
     href: "/kontakt",
   },
   {
     label: "Vor Ort",
     href: "/vor-ort",
-  },
-  {
-    label: "Fragebogen",
-    href: "/fragebogen",
   },
 ];
 

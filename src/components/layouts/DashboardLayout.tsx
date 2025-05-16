@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/AuthContext";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -20,7 +19,6 @@ import {
   MessageSquare,
   PackageOpen,
   FileCheck,
-  Bell,
   ChevronDown,
   ChevronUp
 } from "lucide-react";
@@ -33,6 +31,7 @@ const patientRoutes = [
   { name: "Meine Rezepte", href: "/dashboard/prescriptions", icon: FileText },
   { name: "Bestellungen", href: "/dashboard/orders", icon: ShoppingCart },
   { name: "Termine", href: "/dashboard/appointments", icon: Calendar },
+  { name: "Medizinische Befunde", href: "/dashboard/medical-findings", icon: FileCheck },
   { name: "Profil", href: "/dashboard/profile", icon: User },
 ];
 
@@ -55,7 +54,6 @@ const adminRoutes = [
 ];
 
 const DashboardLayout = () => {
-  const { signOut, userRole, profile, user } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -75,6 +73,7 @@ const DashboardLayout = () => {
                pathname.includes('/dashboard/profile') || 
                pathname.includes('/dashboard/prescriptions') || 
                pathname.includes('/dashboard/orders') || 
+               pathname.includes('/dashboard/medical-findings') ||
                pathname.includes('/dashboard/appointments')) {
       setCurrentRole("patient");
     }

@@ -1,59 +1,37 @@
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { PostgrestResponse } from "@supabase/supabase-js";
 
-interface UseDbQueryOptions<T> {
-  errorTitle?: string;
-  errorMessage?: string;
-  onSuccess?: (data: T[]) => void;
-}
-
+// Simplified mock version that doesn't use Supabase
 export function useDbQuery<T>() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<T[]>([]);
 
+  // Mock function that simulates a database query
   const executeQuery = async (
-    queryFn: () => Promise<PostgrestResponse<T>>,
-    options: UseDbQueryOptions<T> = {}
+    mockData: T[] = [],
+    delay: number = 500,
+    shouldSucceed: boolean = true
   ) => {
-    const { 
-      errorTitle = "Fehler", 
-      errorMessage = "Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.", 
-      onSuccess 
-    } = options;
-    
     setLoading(true);
     
-    try {
-      const { data: queryData, error } = await queryFn();
-      
-      if (error) {
-        console.error(`Database query error:`, error);
-        throw error;
-      }
-      
-      const resultData = queryData || [];
-      setData(resultData);
-      
-      if (onSuccess) {
-        onSuccess(resultData);
-      }
-      
-      return resultData;
-    } catch (error: any) {
-      console.error("Error executing query:", error);
-      
-      toast({
-        title: errorTitle,
-        description: errorMessage,
-        variant: "destructive",
-      });
-      
-      return [];
-    } finally {
-      setLoading(false);
-    }
+    return new Promise<T[]>((resolve) => {
+      setTimeout(() => {
+        if (shouldSucceed) {
+          setData(mockData);
+          setLoading(false);
+          resolve(mockData);
+        } else {
+          toast({
+            title: "Fehler",
+            description: "Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          resolve([]);
+        }
+      }, delay);
+    });
   };
 
   return { loading, data, executeQuery };

@@ -9,6 +9,7 @@ import UberUns from "@/pages/UberUns";
 import Kontakt from "@/pages/Kontakt";
 import VorOrt from "@/pages/VorOrt";
 import Fragebogen from "@/pages/Fragebogen";
+import Therapiemoeglichkeiten from "@/pages/Therapiemoeglichkeiten";
 import NotFound from "@/pages/NotFound";
 import VideoCall from "@/pages/VideoCall";
 import Login from "@/pages/auth/Login";
@@ -22,7 +23,6 @@ import CookiePolicy from "@/pages/legal/CookiePolicy";
 import FAQ from "@/pages/FAQ";
 
 // Dashboard
-import RouteGuard from "@/components/RouteGuard";
 import DashboardLayout from "@/components/layouts/DashboardLayout";
 import Dashboard from "@/pages/dashboard/Dashboard";
 import AdminDashboard from "@/pages/dashboard/admin/AdminDashboard";
@@ -32,6 +32,7 @@ import PatientProfile from "@/pages/dashboard/patient/PatientProfile";
 import PrescriptionsPage from "@/pages/dashboard/patient/PrescriptionsPage";
 import OrdersPage from "@/pages/dashboard/patient/OrdersPage";
 import AppointmentsPage from "@/pages/dashboard/patient/AppointmentsPage";
+import MedicalFindingsPage from "@/pages/dashboard/patient/MedicalFindingsPage";
 
 // Admin pages
 import UsersManagementPage from "@/pages/dashboard/admin/UsersManagementPage";
@@ -67,6 +68,7 @@ const AppRoutes = () => {
       <Route path="/kontakt" element={<MainLayout><Kontakt /></MainLayout>} />
       <Route path="/vor-ort" element={<MainLayout><VorOrt /></MainLayout>} />
       <Route path="/fragebogen" element={<MainLayout><Fragebogen /></MainLayout>} />
+      <Route path="/therapiemoeglichkeiten" element={<MainLayout><Therapiemoeglichkeiten /></MainLayout>} />
       <Route path="/video-call" element={<MainLayout><VideoCall /></MainLayout>} />
       <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
       <Route path="/test-users" element={<MainLayout><TestUsers /></MainLayout>} />
@@ -78,7 +80,7 @@ const AppRoutes = () => {
       <Route path="/cookie-policy" element={<MainLayout><CookiePolicy /></MainLayout>} />
       <Route path="/faq" element={<MainLayout><FAQ /></MainLayout>} />
 
-      {/* Dashboard Routes - Now directly accessible without authentication */}
+      {/* Dashboard Routes */}
       <Route element={<DashboardLayout />}>
         {/* Main dashboard route - handles role-based routing */}
         <Route path="/dashboard" element={<Dashboard />} />
@@ -93,6 +95,7 @@ const AppRoutes = () => {
         <Route path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
         <Route path="/dashboard/orders" element={<OrdersPage />} />
         <Route path="/dashboard/appointments" element={<AppointmentsPage />} />
+        <Route path="/dashboard/medical-findings" element={<MedicalFindingsPage />} />
         
         {/* Admin routes */}
         <Route path="/dashboard/users" element={<UsersManagementPage />} />

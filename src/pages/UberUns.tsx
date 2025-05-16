@@ -10,8 +10,8 @@ const UberUns = () => {
   }, []);
   
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background pt-24 pb-16">
+      <div className="max-w-5xl mx-auto px-4 md:px-6">
         <h1 className="section-title text-center">Über uns</h1>
         <p className="section-subtitle text-center">
           Erfahre mehr über MediCannabis, unsere Mission und das Team hinter der Plattform

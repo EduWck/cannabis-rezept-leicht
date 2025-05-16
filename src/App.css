@@ -1,8 +1,10 @@
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  position: relative;
 }
 
 .logo {
@@ -11,9 +13,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -39,4 +43,52 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Background accents */
+.bg-accent {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.15;
+  z-index: -1;
+}
+
+.bg-accent-1 {
+  top: 10vh;
+  left: 10vw;
+  width: 40vw;
+  height: 40vh;
+  background: linear-gradient(45deg, var(--cannabis-green-300), var(--cannabis-green-500));
+  animation: float 20s ease-in-out infinite alternate;
+}
+
+.bg-accent-2 {
+  top: 30vh;
+  right: 5vw;
+  width: 35vw;
+  height: 35vh;
+  background: linear-gradient(120deg, var(--cannabis-green-200), #a5d6a7);
+  animation: float 25s ease-in-out infinite alternate-reverse;
+}
+
+.bg-accent-3 {
+  bottom: 15vh;
+  left: 20vw;
+  width: 50vw;
+  height: 30vh;
+  background: linear-gradient(200deg, var(--cannabis-green-100), var(--cannabis-green-300));
+  animation: float 30s ease-in-out infinite alternate;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(5%, 3%) scale(1.05);
+  }
+  100% {
+    transform: translate(-3%, 1%) scale(0.95);
+  }
 }

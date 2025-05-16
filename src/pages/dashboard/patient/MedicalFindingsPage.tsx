@@ -36,7 +36,7 @@ const MedicalFindingsPage = () => {
             onClick={handleUploadFile}
           >
             <Upload className="h-4 w-4" />
-            Befund hochladen
+            <span className="whitespace-nowrap">Befund hochladen</span>
           </Button>
           <Button 
             size={isMobile ? "default" : "sm"}
@@ -44,7 +44,7 @@ const MedicalFindingsPage = () => {
             onClick={handleRequestNewFinding}
           >
             <Plus className="h-4 w-4" />
-            Befund anfordern
+            <span className="whitespace-nowrap">Befund anfordern</span>
           </Button>
         </div>
       </div>
@@ -55,8 +55,8 @@ const MedicalFindingsPage = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center text-lg sm:text-xl">
-              <FileText className="h-5 w-5 mr-2" />
-              Informationen zu Befunden
+              <FileText className="h-5 w-5 mr-2 flex-shrink-0" />
+              <span>Informationen zu Befunden</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm sm:text-base">

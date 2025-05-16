@@ -2,15 +2,9 @@
 #root {
   max-width: 100%;
   margin: 0 auto;
-  padding: 1rem;
-  text-align: center;
+  padding: 0;
   position: relative;
-}
-
-@media (min-width: 768px) {
-  #root {
-    padding: 2rem;
-  }
+  overflow-x: hidden;
 }
 
 .logo {
@@ -63,7 +57,7 @@
 .bg-accent-1 {
   top: 10vh;
   left: 5vw;
-  width: 60vw;
+  width: 50vw;
   height: 40vh;
   background: linear-gradient(45deg, var(--cannabis-green-300), var(--cannabis-green-500));
   animation: float 20s ease-in-out infinite alternate;
@@ -72,7 +66,7 @@
 .bg-accent-2 {
   top: 30vh;
   right: 5vw;
-  width: 50vw;
+  width: 40vw;
   height: 35vh;
   background: linear-gradient(120deg, var(--cannabis-green-200), #a5d6a7);
   animation: float 25s ease-in-out infinite alternate-reverse;
@@ -81,7 +75,7 @@
 .bg-accent-3 {
   bottom: 15vh;
   left: 10vw;
-  width: 60vw;
+  width: 50vw;
   height: 30vh;
   background: linear-gradient(200deg, var(--cannabis-green-100), var(--cannabis-green-300));
   animation: float 30s ease-in-out infinite alternate;
@@ -102,8 +96,9 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .bg-accent-1, .bg-accent-2, .bg-accent-3 {
-    opacity: 0.1;
+    opacity: 0.07;
     filter: blur(60px);
+    width: 60vw;
   }
 }
 
@@ -112,17 +107,66 @@
   width: 100%;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 0 1rem;
 }
 
-@media (min-width: 640px) {
-  .container {
-    padding: 0 1.5rem;
+/* Text truncation utility */
+.truncate-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Word break for emails and long text */
+.break-words {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+
+/* Fix for flex content alignment */
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Scrollable container that doesn't overflow page */
+.scrollable-content {
+  max-height: 80vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive icon sizing */
+.icon-sm {
+  width: 16px;
+  height: 16px;
+}
+
+.icon-md {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-lg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 640px) {
+  .icon-md {
+    width: 18px;
+    height: 18px;
   }
-}
-
-@media (min-width: 1024px) {
-  .container {
-    padding: 0 2rem;
+  
+  .icon-lg {
+    width: 20px;
+    height: 20px;
   }
 }

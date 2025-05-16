@@ -20,16 +20,16 @@ const Footer = () => {
             </p>
             <div className="flex space-x-4">
               <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
-                <Facebook size={18} className="md:size-20" />
+                <Facebook size={18} />
               </a>
               <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
-                <Instagram size={18} className="md:size-20" />
+                <Instagram size={18} />
               </a>
               <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
-                <Twitter size={18} className="md:size-20" />
+                <Twitter size={18} />
               </a>
               <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
-                <Linkedin size={18} className="md:size-20" />
+                <Linkedin size={18} />
               </a>
             </div>
           </div>
@@ -64,7 +64,7 @@ const Footer = () => {
             <ul className="space-y-2 md:space-y-3 text-sm md:text-base">
               <li className="flex items-start">
                 <Mail className="text-cannabis-green-500 mr-2 mt-0.5 flex-shrink-0" size={16} />
-                <a href="mailto:kontakt@medicannabis.de" className="text-gray-400 hover:text-white transition-colors">kontakt@medicannabis.de</a>
+                <a href="mailto:kontakt@medicannabis.de" className="text-gray-400 hover:text-white transition-colors break-words">kontakt@medicannabis.de</a>
               </li>
               <li className="flex items-start">
                 <Phone className="text-cannabis-green-500 mr-2 mt-0.5 flex-shrink-0" size={16} />

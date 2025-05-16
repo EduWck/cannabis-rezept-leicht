@@ -31,11 +31,10 @@ export const getDeviceType = (): 'mobile' | 'tablet' | 'desktop' => {
 
 // Truncate text to a specific length for mobile devices
 export const truncateForMobile = (text: string, maxLength = 100): string => {
-  if (typeof window === 'undefined' || window.innerWidth >= 640) {
-    return text;
-  }
+  if (typeof window === 'undefined') return text;
   
-  if (text.length <= maxLength) return text;
+  const isMobile = window.innerWidth < 640;
+  if (!isMobile || text.length <= maxLength) return text;
   
   return text.substring(0, maxLength) + '...';
 };
@@ -58,7 +57,7 @@ export const getResponsiveImageSize = (
   }
 };
 
-// Get responsive padding values
+// Get responsive padding values based on device type
 export const getResponsivePadding = (): {
   x: string;
   y: string;
@@ -67,10 +66,69 @@ export const getResponsivePadding = (): {
   
   switch (deviceType) {
     case 'mobile':
-      return { x: 'px-4', y: 'py-6' };
+      return { x: 'px-4', y: 'py-4' };
     case 'tablet':
-      return { x: 'px-6', y: 'py-8' };
+      return { x: 'px-6', y: 'py-6' };
     default:
-      return { x: 'px-8', y: 'py-10' };
+      return { x: 'px-8', y: 'py-8' };
   }
+};
+
+// Get responsive font size classes based on device type
+export const getResponsiveFontSize = (
+  base: string,
+  mobile: string,
+  tablet: string
+): string => {
+  const deviceType = getDeviceType();
+  
+  switch (deviceType) {
+    case 'mobile':
+      return mobile;
+    case 'tablet':
+      return tablet;
+    default:
+      return base;
+  }
+};
+
+// Check if element is overflowing its container
+export const isElementOverflowing = (element: HTMLElement): boolean => {
+  if (!element) return false;
+  
+  return element.scrollHeight > element.clientHeight || 
+         element.scrollWidth > element.clientWidth;
+};
+
+// Calculate optimal font size to prevent overflow (for dynamic text sizing)
+export const calculateOptimalFontSize = (
+  element: HTMLElement,
+  text: string,
+  maxSize: number,
+  minSize: number,
+  step: number = 1
+): number => {
+  if (!element) return minSize;
+  
+  const testElement = document.createElement('span');
+  testElement.style.visibility = 'hidden';
+  testElement.style.position = 'absolute';
+  testElement.style.whiteSpace = 'nowrap';
+  testElement.innerText = text;
+  
+  document.body.appendChild(testElement);
+  
+  let fontSize = maxSize;
+  const containerWidth = element.offsetWidth;
+  
+  while (fontSize > minSize) {
+    testElement.style.fontSize = `${fontSize}px`;
+    if (testElement.offsetWidth <= containerWidth) {
+      break;
+    }
+    fontSize -= step;
+  }
+  
+  document.body.removeChild(testElement);
+  return fontSize;
 };

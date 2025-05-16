@@ -61,7 +61,7 @@ export default function Navbar() {
 
   return (
     <header className="fixed top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container mx-auto px-4 flex h-16 items-center justify-between">
         <Link to="/" className="flex items-center gap-1 sm:gap-2">
           <Leaf className="h-5 w-5 sm:h-6 sm:w-6 text-cannabis-green-500" />
           <span className="text-sm sm:text-base font-semibold">
@@ -119,7 +119,7 @@ export default function Navbar() {
                 <span className="sr-only">Toggle menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] sm:w-[350px]">
+            <SheetContent side="right" className="w-[280px] sm:w-[350px] pr-0">
               <MobileMenu 
                 navItems={navItems} 
                 user={user} 

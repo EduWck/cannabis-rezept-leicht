@@ -18,9 +18,15 @@ export const useIsMobile = (breakpoint: BreakpointType = "md") => {
   };
 
   const breakpointWidth = getBreakpointWidth(breakpoint);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < breakpointWidth);
+  const [isMobile, setIsMobile] = useState(() => {
+    // Safe check for window object - for SSR
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < breakpointWidth;
+  });
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     // Function to check if the screen width is mobile-sized
     const checkIsMobile = () => {
       setIsMobile(window.innerWidth < breakpointWidth);

@@ -38,11 +38,11 @@ const FAQSection = () => {
   };
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-12 sm:py-16 bg-gray-50">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-dark-gray mb-4">Häufig gestellte Fragen</h2>
-          <p className="text-lg text-dark-gray-light max-w-2xl mx-auto">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-dark-gray mb-3 sm:mb-4">Häufig gestellte Fragen</h2>
+          <p className="text-base sm:text-lg text-dark-gray-light max-w-2xl mx-auto">
             Hier findest du Antworten auf die häufigsten Fragen zu unserem Service.
           </p>
         </div>
@@ -54,21 +54,22 @@ const FAQSection = () => {
               className="mb-4 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100"
             >
               <button
-                className="w-full text-left p-6 focus:outline-none flex justify-between items-center"
+                className="w-full text-left p-4 sm:p-6 focus:outline-none flex justify-between items-center"
                 onClick={() => toggleFAQ(index)}
+                aria-expanded={openIndex === index}
               >
-                <h3 className="font-semibold text-dark-gray">{faq.question}</h3>
+                <h3 className="font-semibold text-dark-gray text-sm sm:text-base pr-4">{faq.question}</h3>
                 {openIndex === index ? 
                   <ChevronUp className="text-cannabis-green-500 flex-shrink-0" size={20} /> : 
                   <ChevronDown className="text-cannabis-green-500 flex-shrink-0" size={20} />
                 }
               </button>
               <div 
-                className={`px-6 overflow-hidden transition-all duration-300 ease-in-out ${
-                  openIndex === index ? 'max-h-96 pb-6' : 'max-h-0'
+                className={`px-4 sm:px-6 overflow-hidden transition-all duration-300 ease-in-out ${
+                  openIndex === index ? 'max-h-[500px] pb-4 sm:pb-6' : 'max-h-0'
                 }`}
               >
-                <p className="text-dark-gray-light">{faq.answer}</p>
+                <p className="text-dark-gray-light text-sm">{faq.answer}</p>
               </div>
             </div>
           ))}

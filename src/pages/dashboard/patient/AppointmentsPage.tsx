@@ -13,44 +13,57 @@ const AppointmentsPage = () => {
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Meine Termine</h1>
-        <Button onClick={handleBookAppointment}>
+    <div>
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 sm:gap-0">
+        <h1 className="text-xl sm:text-2xl font-bold">Meine Termine</h1>
+        <Button onClick={handleBookAppointment} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Neuen Termin vereinbaren
         </Button>
       </div>
 
       <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Anstehende Termine</CardTitle>
+        <CardHeader className="px-4 sm:px-6 py-4">
+          <CardTitle className="text-lg sm:text-xl">Anstehende Termine</CardTitle>
           <CardDescription>Ihre bestätigten Arzttermine</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <div className="divide-y">
             <div className="py-4">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                 <div>
-                  <h3 className="font-medium">Dr. Schmidt - Erstgespräch</h3>
-                  <div className="flex items-center text-sm text-muted-foreground mt-1">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>15. Juni 2025</span>
-                    <Clock className="h-4 w-4 ml-3 mr-1" />
-                    <span>14:30 - 15:00 Uhr</span>
+                  <h3 className="font-medium text-sm sm:text-base">Dr. Schmidt - Erstgespräch</h3>
+                  <div className="flex flex-wrap items-center text-xs sm:text-sm text-muted-foreground mt-1 gap-x-3">
+                    <div className="flex items-center">
+                      <Calendar className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                      <span>15. Juni 2025</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                      <span>14:30 - 15:00 Uhr</span>
+                    </div>
                   </div>
                 </div>
-                <div className="space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => toast({
-                    title: "Termin abgesagt",
-                    description: "Ihr Termin wurde storniert."
-                  })}>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="flex-1 sm:flex-initial"
+                    onClick={() => toast({
+                      title: "Termin abgesagt",
+                      description: "Ihr Termin wurde storniert."
+                    })}
+                  >
                     Absagen
                   </Button>
-                  <Button size="sm" onClick={() => toast({
-                    title: "Termin verschoben",
-                    description: "Sie können nun einen neuen Termin wählen."
-                  })}>
+                  <Button 
+                    size="sm"
+                    className="flex-1 sm:flex-initial"
+                    onClick={() => toast({
+                      title: "Termin verschoben",
+                      description: "Sie können nun einen neuen Termin wählen."
+                    })}
+                  >
                     Verschieben
                   </Button>
                 </div>
@@ -58,27 +71,40 @@ const AppointmentsPage = () => {
             </div>
             
             <div className="py-4">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                 <div>
-                  <h3 className="font-medium">Dr. Müller - Folgeuntersuchung</h3>
-                  <div className="flex items-center text-sm text-muted-foreground mt-1">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>22. Juli 2025</span>
-                    <Clock className="h-4 w-4 ml-3 mr-1" />
-                    <span>10:00 - 10:30 Uhr</span>
+                  <h3 className="font-medium text-sm sm:text-base">Dr. Müller - Folgeuntersuchung</h3>
+                  <div className="flex flex-wrap items-center text-xs sm:text-sm text-muted-foreground mt-1 gap-x-3">
+                    <div className="flex items-center">
+                      <Calendar className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                      <span>22. Juli 2025</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                      <span>10:00 - 10:30 Uhr</span>
+                    </div>
                   </div>
                 </div>
-                <div className="space-x-2">
-                  <Button size="sm" variant="outline" onClick={() => toast({
-                    title: "Termin abgesagt",
-                    description: "Ihr Termin wurde storniert."
-                  })}>
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="flex-1 sm:flex-initial" 
+                    onClick={() => toast({
+                      title: "Termin abgesagt",
+                      description: "Ihr Termin wurde storniert."
+                    })}
+                  >
                     Absagen
                   </Button>
-                  <Button size="sm" onClick={() => toast({
-                    title: "Termin verschoben",
-                    description: "Sie können nun einen neuen Termin wählen."
-                  })}>
+                  <Button 
+                    size="sm"
+                    className="flex-1 sm:flex-initial" 
+                    onClick={() => toast({
+                      title: "Termin verschoben",
+                      description: "Sie können nun einen neuen Termin wählen."
+                    })}
+                  >
                     Verschieben
                   </Button>
                 </div>
@@ -89,27 +115,36 @@ const AppointmentsPage = () => {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Vergangene Termine</CardTitle>
+        <CardHeader className="px-4 sm:px-6 py-4">
+          <CardTitle className="text-lg sm:text-xl">Vergangene Termine</CardTitle>
           <CardDescription>Ihre bisherigen Arzttermine</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 sm:px-6">
           <div className="divide-y">
             <div className="py-4">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                 <div>
-                  <h3 className="font-medium">Dr. Schmidt - Erstberatung</h3>
-                  <div className="flex items-center text-sm text-muted-foreground mt-1">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>10. April 2025</span>
-                    <Clock className="h-4 w-4 ml-3 mr-1" />
-                    <span>11:00 - 11:30 Uhr</span>
+                  <h3 className="font-medium text-sm sm:text-base">Dr. Schmidt - Erstberatung</h3>
+                  <div className="flex flex-wrap items-center text-xs sm:text-sm text-muted-foreground mt-1 gap-x-3">
+                    <div className="flex items-center">
+                      <Calendar className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                      <span>10. April 2025</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Clock className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                      <span>11:00 - 11:30 Uhr</span>
+                    </div>
                   </div>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => toast({
-                  title: "Termin angefragt",
-                  description: "Ihre Terminanfrage wurde übermittelt."
-                })}>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="w-full sm:w-auto mt-2 sm:mt-0" 
+                  onClick={() => toast({
+                    title: "Termin angefragt",
+                    description: "Ihre Terminanfrage wurde übermittelt."
+                  })}
+                >
                   Erneut buchen
                 </Button>
               </div>

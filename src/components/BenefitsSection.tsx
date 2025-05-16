@@ -59,11 +59,13 @@ const BenefitsSection = () => {
           {benefits.map((benefit, index) => (
             <div 
               key={index} 
-              className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300"
+              className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 h-full"
             >
               <div className="flex items-start">
-                <div className="mr-3 sm:mr-4 mt-1">{benefit.icon}</div>
-                <div>
+                <div className="flex-shrink-0 mt-1">
+                  <div className="w-10 h-10 flex items-center justify-center">{benefit.icon}</div>
+                </div>
+                <div className="ml-3 sm:ml-4">
                   <h3 className="font-semibold text-base sm:text-lg text-dark-gray mb-1 sm:mb-2">{benefit.title}</h3>
                   <p className="text-dark-gray-light text-xs sm:text-sm">{benefit.description}</p>
                 </div>

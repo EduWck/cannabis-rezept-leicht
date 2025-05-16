@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,37 +8,94 @@ import { Loader2, ShoppingCart, PackageOpen, Truck, Check, AlertCircle, FileText
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { TableHead, TableHeader } from "@/components/ui/table";
 import { useDbQuery } from "@/hooks/use-database";
 
+// Extended type with prescription
+type OrderWithPrescription = Order & {
+  prescription?: {
+    id: string;
+    symptoms: string[] | null;
+  };
+};
+
 const OrdersPage = () => {
   const { user } = useAuth();
-  const { loading, data: orders, executeQuery } = useDbQuery<Order & { prescription?: { id: string; symptoms: string[] | null } }>();
+  const { loading, data: orders, executeQuery } = useDbQuery<OrderWithPrescription>();
 
   useEffect(() => {
     const fetchOrders = async () => {
       if (!user?.id) return;
       
-      await executeQuery(
-        async () => {
-          return await supabase
-            .from("orders")
-            .select(`
-              *,
-              prescription:prescription_id (
-                id,
-                symptoms
-              )
-            `)
-            .eq("patient_id", user.id)
-            .order("created_at", { ascending: false });
+      // Mock data for orders when user exists
+      const mockData: OrderWithPrescription[] = [
+        {
+          id: "order1",
+          patient_id: user.id,
+          prescription_id: "1",
+          status: "pending",
+          total_amount: 49.99,
+          shipping_address: {
+            street: "Hauptstr. 123",
+            postal_code: "10115",
+            city: "Berlin",
+            country: "Germany"
+          },
+          invoice_url: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          prescription: {
+            id: "1",
+            symptoms: ["Chronic Pain", "Insomnia"]
+          }
         },
         {
-          errorTitle: "Fehler",
-          errorMessage: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+          id: "order2",
+          patient_id: user.id,
+          prescription_id: "2",
+          status: "shipped",
+          total_amount: 89.99,
+          shipping_address: {
+            street: "Friedrichstr. 45",
+            postal_code: "10117",
+            city: "Berlin",
+            country: "Germany"
+          },
+          invoice_url: "https://example.com/invoice/order2.pdf",
+          created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+          prescription: {
+            id: "2",
+            symptoms: ["Anxiety", "Stress"]
+          }
+        },
+        {
+          id: "order3",
+          patient_id: user.id,
+          prescription_id: "3",
+          status: "delivered",
+          total_amount: 69.99,
+          shipping_address: {
+            street: "Alexanderplatz 1",
+            postal_code: "10178",
+            city: "Berlin",
+            country: "Germany"
+          },
+          invoice_url: "https://example.com/invoice/order3.pdf",
+          created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+          prescription: {
+            id: "3",
+            symptoms: ["Depression"]
+          }
         }
-      );
+      ];
+      
+      await executeQuery(mockData, {
+        errorTitle: "Fehler",
+        errorMessage: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      });
     };
     
     if (user?.id) {

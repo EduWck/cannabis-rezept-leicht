@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,7 @@ import { Prescription } from "@/types";
 import { Loader2, FileText, Download, AlertTriangle, CheckCircle, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useDbQuery } from "@/hooks/use-database";
 
 const PrescriptionsPage = () => {
@@ -19,18 +18,50 @@ const PrescriptionsPage = () => {
     const fetchPrescriptions = async () => {
       if (!user?.id) return;
       
-      await executeQuery(
-        async () => {
-          return await supabase
-            .from("prescriptions")
-            .select("*")
-            .eq("patient_id", user.id);
+      // Mock data for prescriptions when user exists
+      const mockData: Prescription[] = [
+        {
+          id: "1",
+          patient_id: user.id,
+          doctor_id: "doctor-123",
+          status: "in_review",
+          rejection_reason: null,
+          symptoms: ["Chronic Pain", "Insomnia"],
+          questionnaire_data: null,
+          internal_notes: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         },
         {
-          errorTitle: "Fehler",
-          errorMessage: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+          id: "2",
+          patient_id: user.id,
+          doctor_id: "doctor-456",
+          status: "approved",
+          rejection_reason: null,
+          symptoms: ["Anxiety", "Stress"],
+          questionnaire_data: null,
+          internal_notes: null,
+          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        },
+        {
+          id: "3",
+          patient_id: user.id,
+          doctor_id: "doctor-789",
+          status: "rejected",
+          rejection_reason: "Insufficient medical history documentation.",
+          symptoms: ["Depression"],
+          questionnaire_data: null,
+          internal_notes: null,
+          created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
         }
-      );
+      ];
+      
+      await executeQuery(mockData, {
+        errorTitle: "Fehler",
+        errorMessage: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut."
+      });
     };
     
     if (user?.id) {

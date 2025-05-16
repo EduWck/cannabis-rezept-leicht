@@ -10,37 +10,3 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
-
-// Helper function for running the test users edge function
-export async function createTestUsers() {
-  try {
-    const { data, error } = await supabase.functions.invoke('create-test-users');
-    
-    if (error) {
-      throw error;
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Error creating test users:', error);
-    throw error;
-  }
-}
-
-// Helper function for creating test data
-export async function createTestData() {
-  try {
-    // Wir verwenden hier die Edge-Function, die bereits vorhanden ist
-    // Diese Funktion wird die Berechtigungsprobleme umgehen können
-    const { data, error } = await supabase.functions.invoke('create-test-data');
-    
-    if (error) {
-      throw error;
-    }
-    
-    return data;
-  } catch (error) {
-    console.error('Error creating test data:', error);
-    throw error;
-  }
-}

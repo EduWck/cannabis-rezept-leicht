@@ -13,7 +13,6 @@ import Therapiemoeglichkeiten from "@/pages/Therapiemoeglichkeiten";
 import NotFound from "@/pages/NotFound";
 import VideoCall from "@/pages/VideoCall";
 import Login from "@/pages/auth/Login";
-import TestUsers from "@/pages/auth/TestUsers";
 
 // Legal pages
 import AGB from "@/pages/legal/AGB";
@@ -70,7 +69,6 @@ const AppRoutes = [
   <Route key="therapiemoeglichkeiten" path="/therapiemoeglichkeiten" element={<MainLayout><Therapiemoeglichkeiten /></MainLayout>} />,
   <Route key="video-call" path="/video-call" element={<MainLayout><VideoCall /></MainLayout>} />,
   <Route key="login" path="/login" element={<MainLayout><Login /></MainLayout>} />,
-  <Route key="test-users" path="/test-users" element={<MainLayout><TestUsers /></MainLayout>} />,
   
   // Legal Pages
   <Route key="agb" path="/agb" element={<MainLayout><AGB /></MainLayout>} />,

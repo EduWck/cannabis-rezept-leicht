@@ -1,6 +1,6 @@
+
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Order } from "@/types";
@@ -8,7 +8,6 @@ import { Loader2, ShoppingCart, PackageOpen, Truck, Check, AlertCircle, FileText
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
-import { toast } from "@/hooks/use-toast";
 import { TableHead, TableHeader } from "@/components/ui/table";
 import { useDbQuery } from "@/hooks/use-database";
 
@@ -92,6 +91,7 @@ const OrdersPage = () => {
         }
       ];
       
+      // Pass mock data directly (the hook now accepts arrays directly)
       await executeQuery(mockData, {
         errorTitle: "Fehler",
         errorMessage: "Bestellungen konnten nicht geladen werden. Bitte versuchen Sie es später erneut."

@@ -14,7 +14,7 @@ export function useDbQuery<T>() {
 
   // Mock function that simulates a database query
   const executeQuery = async (
-    fetchDataFn: () => Promise<any> | T[],
+    fetchDataFn: (() => Promise<any> | T[]) | T[],
     options?: QueryOptions
   ) => {
     setLoading(true);
@@ -25,7 +25,7 @@ export function useDbQuery<T>() {
       
       if (typeof fetchDataFn === 'function') {
         try {
-          const response = await fetchDataFn();
+          const response = await (fetchDataFn as () => Promise<any> | T[])();
           
           // Handle Supabase response format
           if (response && response.data !== undefined) {

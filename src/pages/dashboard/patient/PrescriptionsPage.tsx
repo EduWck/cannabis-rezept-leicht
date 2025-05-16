@@ -1,13 +1,12 @@
+
 import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Prescription } from "@/types";
 import { Loader2, FileText, Download, AlertTriangle, CheckCircle, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { toast } from "@/hooks/use-toast";
 import { useDbQuery } from "@/hooks/use-database";
 
 const PrescriptionsPage = () => {
@@ -58,6 +57,7 @@ const PrescriptionsPage = () => {
         }
       ];
       
+      // Pass mock data directly (the hook now accepts arrays directly)
       await executeQuery(mockData, {
         errorTitle: "Fehler",
         errorMessage: "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es später erneut."

@@ -1,3 +1,4 @@
+
 #root {
   max-width: 100%;
   margin: 0 auto;
@@ -120,6 +121,11 @@
   overflow-wrap: break-word;
   word-wrap: break-word;
   word-break: break-word;
+}
+
+/* Added utility for keeping words together when possible */
+.word-break-keep-all {
+  word-break: keep-all;
 }
 
 /* Fix for flex content alignment */

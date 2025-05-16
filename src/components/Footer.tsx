@@ -64,7 +64,10 @@ const Footer = () => {
             <ul className="space-y-2 md:space-y-3 text-sm md:text-base">
               <li className="flex items-start">
                 <Mail className="text-cannabis-green-500 mr-2 mt-0.5 flex-shrink-0" size={16} />
-                <a href="mailto:kontakt@medicannabis.de" className="text-gray-400 hover:text-white transition-colors break-words">kontakt@medicannabis.de</a>
+                <a href="mailto:kontakt@medicannabis.de" 
+                   className="text-gray-400 hover:text-white transition-colors break-all">
+                   kontakt@medicannabis.de
+                </a>
               </li>
               <li className="flex items-start">
                 <Phone className="text-cannabis-green-500 mr-2 mt-0.5 flex-shrink-0" size={16} />

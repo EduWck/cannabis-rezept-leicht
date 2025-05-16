@@ -56,8 +56,9 @@ const DashboardLayout = () => {
     <SidebarProvider>
       <div className="min-h-screen flex flex-col bg-background w-full">
         <Navbar />
-        <div className="flex-1 pt-16 flex">
-          <Sidebar variant="sidebar" collapsible="icon">
+        <div className="flex-1 flex">
+          {/* Added pt-16 to create space between navbar and sidebar content */}
+          <Sidebar variant="sidebar" collapsible="icon" className="pt-16">
             <SidebarHeader className="p-2">
               <SidebarTrigger />
             </SidebarHeader>
@@ -69,9 +70,9 @@ const DashboardLayout = () => {
                     {getMenuItems().map((item, index) => (
                       <SidebarMenuItem key={index}>
                         <SidebarMenuButton asChild tooltip={item.title}>
-                          <a href={item.path}>
-                            <item.icon className="size-4 md:size-5" />
-                            <span>{item.title}</span>
+                          <a href={item.path} className="flex items-center gap-2">
+                            <item.icon className="size-4" />
+                            <span className="truncate">{item.title}</span>
                           </a>
                         </SidebarMenuButton>
                       </SidebarMenuItem>
@@ -94,7 +95,7 @@ const DashboardLayout = () => {
             </SidebarFooter>
           </Sidebar>
           
-          <div className="flex-1">
+          <div className="flex-1 pt-16">
             <div className="container mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8">
               <Outlet />
             </div>

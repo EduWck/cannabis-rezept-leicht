@@ -1,4 +1,3 @@
-
 import { Clock, Shield, Truck, Euro, Stethoscope, Check, Lock, Star } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 
@@ -58,7 +57,8 @@ const BenefitsSection = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Changed to grid-cols-3 for lg screens to have only 3 cards per row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {benefits.map((benefit, index) => (
             <div 
               key={index} 
@@ -69,7 +69,8 @@ const BenefitsSection = () => {
                   {benefit.icon}
                 </div>
                 <div>
-                  <h3 className="font-semibold text-base lg:text-lg text-dark-gray mb-2 hyphens-auto">
+                  {/* Added word-break-keep-all to prevent unnatural word breaks */}
+                  <h3 className="font-semibold text-base lg:text-lg text-dark-gray mb-2 hyphens-auto word-break-keep-all">
                     {benefit.title}
                   </h3>
                   <p className="text-dark-gray-light text-sm break-words">

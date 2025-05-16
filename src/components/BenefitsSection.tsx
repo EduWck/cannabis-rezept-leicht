@@ -1,45 +1,48 @@
 
 import { Clock, Shield, Truck, Euro, Stethoscope, Check, Lock, Star } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-is-mobile';
 
 const BenefitsSection = () => {
+  const isMobile = useIsMobile('md');
+  
   const benefits = [
     {
-      icon: <Clock className="text-cannabis-green-500" size={24} />,
+      icon: <Clock className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Schneller Zugang',
       description: 'Zu medizinischem Cannabis in nur wenigen Schritten'
     },
     {
-      icon: <Shield className="text-cannabis-green-500" size={24} />,
+      icon: <Shield className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Legal und diskret',
       description: 'Vollständig legaler und vertraulicher Service'
     },
     {
-      icon: <Truck className="text-cannabis-green-500" size={24} />,
+      icon: <Truck className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Deutschlandweiter Versand',
       description: 'Schnelle Lieferung in 1-3 Werktagen'
     },
     {
-      icon: <Euro className="text-cannabis-green-500" size={24} />,
+      icon: <Euro className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Kostenfreier Versand',
       description: 'Ab 100€ Bestellwert versandkostenfrei'
     },
     {
-      icon: <Stethoscope className="text-cannabis-green-500" size={24} />,
+      icon: <Stethoscope className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Erfahrene Ärzteteam',
       description: 'Professionelle medizinische Betreuung'
     },
     {
-      icon: <Check className="text-cannabis-green-500" size={24} />,
+      icon: <Check className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Digitale Rezeptausstellung',
       description: 'Bei medizinischer Eignung schnell und unkompliziert'
     },
     {
-      icon: <Lock className="text-cannabis-green-500" size={24} />,
+      icon: <Lock className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Datenschutzkonform',
       description: 'DSGVO-konforme sichere Datenverarbeitung'
     },
     {
-      icon: <Star className="text-cannabis-green-500" size={24} />,
+      icon: <Star className="text-cannabis-green-500" size={isMobile ? 20 : 24} />,
       title: 'Qualitätsgeprüft',
       description: 'Pharmazeutisch geprüfte Cannabis-Blüten'
     },
@@ -59,15 +62,21 @@ const BenefitsSection = () => {
           {benefits.map((benefit, index) => (
             <div 
               key={index} 
-              className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 h-full"
+              className="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-300 flex flex-col h-full"
             >
               <div className="flex items-start">
-                <div className="flex-shrink-0 mt-1">
-                  <div className="w-10 h-10 flex items-center justify-center">{benefit.icon}</div>
+                <div className="flex-shrink-0 mt-0.5">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                    {benefit.icon}
+                  </div>
                 </div>
-                <div className="ml-3 sm:ml-4">
-                  <h3 className="font-semibold text-base sm:text-lg text-dark-gray mb-1 sm:mb-2">{benefit.title}</h3>
-                  <p className="text-dark-gray-light text-xs sm:text-sm">{benefit.description}</p>
+                <div className="ml-3 overflow-hidden">
+                  <h3 className="font-semibold text-sm sm:text-base lg:text-lg text-dark-gray mb-1">
+                    {benefit.title}
+                  </h3>
+                  <p className="text-dark-gray-light text-xs sm:text-sm break-words">
+                    {benefit.description}
+                  </p>
                 </div>
               </div>
             </div>

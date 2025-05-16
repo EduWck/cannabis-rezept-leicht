@@ -1,5 +1,5 @@
 
-import { Routes, Route } from "react-router-dom";
+import { Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -59,63 +59,60 @@ const MainLayout = ({ children }: { children: React.ReactNode }) => (
   </>
 );
 
-const AppRoutes = () => {
-  return (
-    <Routes>
-      {/* Public routes with Navbar and Footer */}
-      <Route path="/" element={<MainLayout><Index /></MainLayout>} />
-      <Route path="/uber-uns" element={<MainLayout><UberUns /></MainLayout>} />
-      <Route path="/kontakt" element={<MainLayout><Kontakt /></MainLayout>} />
-      <Route path="/vor-ort" element={<MainLayout><VorOrt /></MainLayout>} />
-      <Route path="/fragebogen" element={<MainLayout><Fragebogen /></MainLayout>} />
-      <Route path="/therapiemoeglichkeiten" element={<MainLayout><Therapiemoeglichkeiten /></MainLayout>} />
-      <Route path="/video-call" element={<MainLayout><VideoCall /></MainLayout>} />
-      <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
-      <Route path="/test-users" element={<MainLayout><TestUsers /></MainLayout>} />
-      
-      {/* Legal Pages */}
-      <Route path="/agb" element={<MainLayout><AGB /></MainLayout>} />
-      <Route path="/datenschutz" element={<MainLayout><Datenschutz /></MainLayout>} />
-      <Route path="/impressum" element={<MainLayout><Impressum /></MainLayout>} />
-      <Route path="/cookie-policy" element={<MainLayout><CookiePolicy /></MainLayout>} />
-      <Route path="/faq" element={<MainLayout><FAQ /></MainLayout>} />
+// Export the routes as an array of Route elements
+const AppRoutes = [
+  // Public routes with Navbar and Footer
+  <Route key="home" path="/" element={<MainLayout><Index /></MainLayout>} />,
+  <Route key="uber-uns" path="/uber-uns" element={<MainLayout><UberUns /></MainLayout>} />,
+  <Route key="kontakt" path="/kontakt" element={<MainLayout><Kontakt /></MainLayout>} />,
+  <Route key="vor-ort" path="/vor-ort" element={<MainLayout><VorOrt /></MainLayout>} />,
+  <Route key="fragebogen" path="/fragebogen" element={<MainLayout><Fragebogen /></MainLayout>} />,
+  <Route key="therapiemoeglichkeiten" path="/therapiemoeglichkeiten" element={<MainLayout><Therapiemoeglichkeiten /></MainLayout>} />,
+  <Route key="video-call" path="/video-call" element={<MainLayout><VideoCall /></MainLayout>} />,
+  <Route key="login" path="/login" element={<MainLayout><Login /></MainLayout>} />,
+  <Route key="test-users" path="/test-users" element={<MainLayout><TestUsers /></MainLayout>} />,
+  
+  // Legal Pages
+  <Route key="agb" path="/agb" element={<MainLayout><AGB /></MainLayout>} />,
+  <Route key="datenschutz" path="/datenschutz" element={<MainLayout><Datenschutz /></MainLayout>} />,
+  <Route key="impressum" path="/impressum" element={<MainLayout><Impressum /></MainLayout>} />,
+  <Route key="cookie-policy" path="/cookie-policy" element={<MainLayout><CookiePolicy /></MainLayout>} />,
+  <Route key="faq" path="/faq" element={<MainLayout><FAQ /></MainLayout>} />,
 
-      {/* Dashboard Routes */}
-      <Route element={<DashboardLayout />}>
-        {/* Main dashboard route - handles role-based routing */}
-        <Route path="/dashboard" element={<Dashboard />} />
-        
-        {/* Direct access routes for specific dashboards */}
-        <Route path="/dashboard/admin" element={<AdminDashboard />} />
-        <Route path="/dashboard/doctor" element={<DoctorDashboard />} />
-        <Route path="/dashboard/patient" element={<PatientDashboard />} />
-        
-        {/* Patient routes */}
-        <Route path="/dashboard/profile" element={<PatientProfile />} />
-        <Route path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
-        <Route path="/dashboard/orders" element={<OrdersPage />} />
-        <Route path="/dashboard/appointments" element={<AppointmentsPage />} />
-        <Route path="/dashboard/medical-findings" element={<MedicalFindingsPage />} />
-        
-        {/* Admin routes */}
-        <Route path="/dashboard/users" element={<UsersManagementPage />} />
-        <Route path="/dashboard/all-prescriptions" element={<AllPrescriptionsPage />} />
-        <Route path="/dashboard/all-orders" element={<AllOrdersPage />} />
-        <Route path="/dashboard/all-appointments" element={<AllAppointmentsPage />} />
-        <Route path="/dashboard/products" element={<ProductsPage />} />
-        <Route path="/dashboard/settings" element={<SettingsPage />} />
-        
-        {/* Doctor routes */}
-        <Route path="/dashboard/patients" element={<PatientsPage />} />
-        <Route path="/dashboard/calendar" element={<CalendarPage />} />
-        <Route path="/dashboard/requests" element={<RequestsPage />} />
-        <Route path="/dashboard/doctor-prescriptions" element={<DoctorPrescriptionsPage />} />
-      </Route>
+  // Dashboard Routes
+  <Route key="dashboard-layout" element={<DashboardLayout />}>
+    {/* Main dashboard route - handles role-based routing */}
+    <Route key="dashboard" path="/dashboard" element={<Dashboard />} />
+    
+    {/* Direct access routes for specific dashboards */}
+    <Route key="admin-dashboard" path="/dashboard/admin" element={<AdminDashboard />} />
+    <Route key="doctor-dashboard" path="/dashboard/doctor" element={<DoctorDashboard />} />
+    <Route key="patient-dashboard" path="/dashboard/patient" element={<PatientDashboard />} />
+    
+    {/* Patient routes */}
+    <Route key="profile" path="/dashboard/profile" element={<PatientProfile />} />
+    <Route key="prescriptions" path="/dashboard/prescriptions" element={<PrescriptionsPage />} />
+    <Route key="orders" path="/dashboard/orders" element={<OrdersPage />} />
+    <Route key="appointments" path="/dashboard/appointments" element={<AppointmentsPage />} />
+    <Route key="medical-findings" path="/dashboard/medical-findings" element={<MedicalFindingsPage />} />
+    
+    {/* Admin routes */}
+    <Route key="users" path="/dashboard/users" element={<UsersManagementPage />} />
+    <Route key="all-prescriptions" path="/dashboard/all-prescriptions" element={<AllPrescriptionsPage />} />
+    <Route key="all-orders" path="/dashboard/all-orders" element={<AllOrdersPage />} />
+    <Route key="all-appointments" path="/dashboard/all-appointments" element={<AllAppointmentsPage />} />
+    <Route key="products" path="/dashboard/products" element={<ProductsPage />} />
+    <Route key="settings" path="/dashboard/settings" element={<SettingsPage />} />
+    
+    {/* Doctor routes */}
+    <Route key="patients" path="/dashboard/patients" element={<PatientsPage />} />
+    <Route key="calendar" path="/dashboard/calendar" element={<CalendarPage />} />
+    <Route key="requests" path="/dashboard/requests" element={<RequestsPage />} />
+    <Route key="doctor-prescriptions" path="/dashboard/doctor-prescriptions" element={<DoctorPrescriptionsPage />} />
+  </Route>,
 
-      {/* Catch-all route */}
-      <Route path="*" element={<MainLayout><NotFound /></MainLayout>} />
-    </Routes>
-  );
-};
+  // Catch-all route
+  <Route key="not-found" path="*" element={<MainLayout><NotFound /></MainLayout>} />
+];
 
 export default AppRoutes;

@@ -32,7 +32,6 @@ const DashboardLayout = () => {
         { icon: FileText, title: "Rezepte", path: "/dashboard/all-prescriptions" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/all-orders" },
         { icon: Package, title: "Produkte", path: "/dashboard/products" },
-        { icon: Settings, title: "Einstellungen", path: "/dashboard/settings" },
       ];
     } else if (userRole === "doctor") {
       return [
@@ -45,17 +44,17 @@ const DashboardLayout = () => {
       return [
         { icon: Home, title: "Dashboard", path: "/dashboard" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
-        { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
+        { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
       ];
     } else {
       // Patient or default
       return [
         { icon: Home, title: "Dashboard", path: "/dashboard" },
         { icon: User, title: "Profil", path: "/dashboard/profile" },
+        { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
-        { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
       ];
     }
   };

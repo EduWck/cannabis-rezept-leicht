@@ -8,23 +8,33 @@ interface PreviousPrescriptionStepProps {
   onSelect: (value: boolean) => void;
   onNext: () => void;
   onBack: () => void;
+  onSkipToFeedback?: () => void; // New prop for skipping to feedback
 }
 
 const PreviousPrescriptionStep = ({ 
   hasPreviousPrescription, 
   onSelect, 
   onNext, 
-  onBack 
+  onBack,
+  onSkipToFeedback
 }: PreviousPrescriptionStepProps) => {
   
   const handleNext = () => {
-    if (hasPreviousPrescription === true) {
+    if (hasPreviousPrescription === true && onSkipToFeedback) {
+      toast({
+        title: "Behandlungsfeedback",
+        description: "Bitte geben Sie uns Feedback zu Ihrer aktuellen Behandlung.",
+      });
+      onSkipToFeedback();
+    } else if (hasPreviousPrescription === true) {
       toast({
         title: "Hinweis",
         description: "Deine Daten werden automatisch geladen, du musst sie nicht erneut eingeben.",
       });
+      onNext();
+    } else {
+      onNext();
     }
-    onNext();
   };
   
   return (

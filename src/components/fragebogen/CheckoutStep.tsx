@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "@/hooks/use-toast";
 
 interface CheckoutStepProps {
   totalAmount: number;
@@ -14,9 +16,77 @@ interface CheckoutStepProps {
 const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) => {
   const [paymentMethod, setPaymentMethod] = useState<'creditCard' | 'paypal' | 'sepa'>('creditCard');
   const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Contact information
+  const [contactInfo, setContactInfo] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    street: "",
+    houseNumber: "",
+    postalCode: "",
+    city: "",
+    country: "Deutschland", // Default value
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setContactInfo(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Basic validation
+    const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'street', 'houseNumber', 'postalCode', 'city'];
+    const missingFields = requiredFields.filter(field => !contactInfo[field as keyof typeof contactInfo]);
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Fehlende Angaben",
+        description: "Bitte füllen Sie alle erforderlichen Felder aus.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Simple email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(contactInfo.email)) {
+      toast({
+        title: "Ungültige E-Mail",
+        description: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Phone number validation (simple format check)
+    const phoneRegex = /^[+\d\s()-]{8,20}$/;
+    if (!phoneRegex.test(contactInfo.phone)) {
+      toast({
+        title: "Ungültige Telefonnummer",
+        description: "Bitte geben Sie eine gültige Telefonnummer ein.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Postal code validation for Germany (5 digits)
+    const postalCodeRegex = /^\d{5}$/;
+    if (!postalCodeRegex.test(contactInfo.postalCode)) {
+      toast({
+        title: "Ungültige Postleitzahl",
+        description: "Bitte geben Sie eine gültige Postleitzahl ein (5 Ziffern).",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsProcessing(true);
     
     // Simulate payment processing
@@ -28,33 +98,146 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-center">Bezahlung</h2>
+      <h2 className="text-2xl font-bold text-center">Bestellung abschließen</h2>
       
-      <Card>
-        <CardContent className="p-6">
-          <div className="mb-6 border-b dark:border-gray-700 pb-4">
-            <h3 className="font-medium text-lg mb-2">Zahlungsübersicht</h3>
-            <div className="flex justify-between text-sm mb-1">
-              <span>Produkte:</span>
-              <span>{(totalAmount - 14.99 - (totalAmount < 114.99 ? 10 : 0)).toFixed(2)} €</span>
-            </div>
-            <div className="flex justify-between text-sm mb-1">
-              <span>Rezeptgebühr:</span>
-              <span>14,99 €</span>
-            </div>
-            {totalAmount < 114.99 && (
-              <div className="flex justify-between text-sm mb-1">
-                <span>Versandkosten:</span>
-                <span>10,00 €</span>
+      <form onSubmit={handleSubmit}>
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <h3 className="font-medium text-lg mb-4">Kontakt- und Lieferadresse</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="firstName">Vorname *</Label>
+                <Input 
+                  id="firstName" 
+                  name="firstName" 
+                  value={contactInfo.firstName} 
+                  onChange={handleInputChange}
+                  placeholder="Max"
+                  required
+                />
               </div>
-            )}
-            <div className="flex justify-between font-bold text-lg mt-3">
-              <span>Gesamtbetrag:</span>
-              <span>{totalAmount.toFixed(2)} €</span>
+              <div>
+                <Label htmlFor="lastName">Nachname *</Label>
+                <Input 
+                  id="lastName" 
+                  name="lastName" 
+                  value={contactInfo.lastName} 
+                  onChange={handleInputChange}
+                  placeholder="Mustermann"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="email">E-Mail *</Label>
+                <Input 
+                  id="email" 
+                  name="email" 
+                  type="email" 
+                  value={contactInfo.email} 
+                  onChange={handleInputChange}
+                  placeholder="max.mustermann@example.com"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Telefonnummer *</Label>
+                <Input 
+                  id="phone" 
+                  name="phone" 
+                  value={contactInfo.phone} 
+                  onChange={handleInputChange}
+                  placeholder="+49 123 456789"
+                  required
+                />
+              </div>
+              <div className="md:col-span-2">
+                <Separator className="my-3" />
+                <p className="text-sm text-gray-500 mb-3">Lieferadresse</p>
+              </div>
+              <div>
+                <Label htmlFor="street">Straße *</Label>
+                <Input 
+                  id="street" 
+                  name="street" 
+                  value={contactInfo.street} 
+                  onChange={handleInputChange}
+                  placeholder="Musterstraße"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="houseNumber">Hausnummer *</Label>
+                <Input 
+                  id="houseNumber" 
+                  name="houseNumber" 
+                  value={contactInfo.houseNumber} 
+                  onChange={handleInputChange}
+                  placeholder="123"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="postalCode">Postleitzahl *</Label>
+                <Input 
+                  id="postalCode" 
+                  name="postalCode" 
+                  value={contactInfo.postalCode} 
+                  onChange={handleInputChange}
+                  placeholder="12345"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="city">Stadt *</Label>
+                <Input 
+                  id="city" 
+                  name="city" 
+                  value={contactInfo.city} 
+                  onChange={handleInputChange}
+                  placeholder="Berlin"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="country">Land *</Label>
+                <Input 
+                  id="country" 
+                  name="country" 
+                  value={contactInfo.country} 
+                  onChange={handleInputChange}
+                  readOnly
+                  className="bg-gray-50"
+                />
+              </div>
             </div>
-          </div>
-          
-          <form onSubmit={handleSubmit}>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-6">
+            <div className="mb-6 border-b dark:border-gray-700 pb-4">
+              <h3 className="font-medium text-lg mb-2">Zahlungsübersicht</h3>
+              <div className="flex justify-between text-sm mb-1">
+                <span>Produkte:</span>
+                <span>{(totalAmount - 14.99 - (totalAmount < 114.99 ? 10 : 0)).toFixed(2)} €</span>
+              </div>
+              <div className="flex justify-between text-sm mb-1">
+                <span>Rezeptgebühr:</span>
+                <span>14,99 €</span>
+              </div>
+              {totalAmount < 114.99 && (
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Versandkosten:</span>
+                  <span>10,00 €</span>
+                </div>
+              )}
+              <div className="flex justify-between font-bold text-lg mt-3">
+                <span>Gesamtbetrag:</span>
+                <span>{totalAmount.toFixed(2)} €</span>
+              </div>
+            </div>
+            
             <div className="space-y-6">
               <div>
                 <h3 className="font-medium text-lg mb-4">Zahlungsmethode auswählen</h3>
@@ -177,9 +360,9 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
                 {isProcessing ? "Verarbeitung..." : "Jetzt bezahlen"}
               </Button>
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </form>
     </div>
   );
 };

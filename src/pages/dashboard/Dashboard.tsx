@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Loader2, User, Users, Stethoscope } from "lucide-react";
+import { Loader2, User, Users, Stethoscope, Package } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -19,7 +19,7 @@ const Dashboard = () => {
         Willkommen im MediCannabis-Portal. Bitte wählen Sie einen Dashboard-Typ aus:
       </p>
       
-      <div className="grid gap-4 sm:gap-8 md:grid-cols-3 max-w-4xl mx-auto">
+      <div className="grid gap-4 sm:gap-8 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
         <Card className="p-4 sm:p-6 hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate("/dashboard/admin")}>
           <div className="flex flex-col items-center text-center">
             <div className="w-12 h-12 sm:w-16 sm:h-16 bg-cannabis-green-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
@@ -61,6 +61,21 @@ const Dashboard = () => {
             </p>
             <Button variant="outline" className="mt-2 w-full" onClick={() => navigate("/dashboard/patient")}>
               Patienten Dashboard öffnen
+            </Button>
+          </div>
+        </Card>
+        
+        <Card className="p-4 sm:p-6 hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate("/dashboard/pharmacy")}>
+          <div className="flex flex-col items-center text-center">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-cannabis-green-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+              <Package className="h-6 w-6 sm:h-8 sm:w-8 text-cannabis-green-600" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-bold mb-2">Apotheke</h3>
+            <p className="text-muted-foreground mb-4 text-sm sm:text-base">
+              Verwalten Sie Bestellungen, Ihren Bestand und Rezeptanfragen.
+            </p>
+            <Button variant="outline" className="mt-2 w-full" onClick={() => navigate("/dashboard/pharmacy")}>
+              Apotheken Dashboard öffnen
             </Button>
           </div>
         </Card>

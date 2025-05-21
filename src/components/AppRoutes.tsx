@@ -47,6 +47,12 @@ import CalendarPage from "@/pages/dashboard/doctor/CalendarPage";
 import RequestsPage from "@/pages/dashboard/doctor/RequestsPage";
 import DoctorPrescriptionsPage from "@/pages/dashboard/doctor/DoctorPrescriptionsPage";
 
+// Pharmacy pages
+import PharmacyDashboard from "@/pages/dashboard/pharmacy/PharmacyDashboard";
+import PharmacyOrdersPage from "@/pages/dashboard/pharmacy/PharmacyOrdersPage";
+import PharmacyInventoryPage from "@/pages/dashboard/pharmacy/PharmacyInventoryPage";
+import PharmacyPrescriptionsPage from "@/pages/dashboard/pharmacy/PharmacyPrescriptionsPage";
+
 // Create a layout component to avoid repetition
 const MainLayout = ({ children }: { children: React.ReactNode }) => (
   <>
@@ -86,6 +92,7 @@ const AppRoutes = [
     <Route key="admin-dashboard" path="/dashboard/admin" element={<AdminDashboard />} />
     <Route key="doctor-dashboard" path="/dashboard/doctor" element={<DoctorDashboard />} />
     <Route key="patient-dashboard" path="/dashboard/patient" element={<PatientDashboard />} />
+    <Route key="pharmacy-dashboard" path="/dashboard/pharmacy" element={<PharmacyDashboard />} />
     
     {/* Patient routes */}
     <Route key="profile" path="/dashboard/profile" element={<PatientProfile />} />
@@ -107,6 +114,11 @@ const AppRoutes = [
     <Route key="calendar" path="/dashboard/calendar" element={<CalendarPage />} />
     <Route key="requests" path="/dashboard/requests" element={<RequestsPage />} />
     <Route key="doctor-prescriptions" path="/dashboard/doctor-prescriptions" element={<DoctorPrescriptionsPage />} />
+
+    {/* Pharmacy routes */}
+    <Route key="pharmacy-orders" path="/dashboard/pharmacy-orders" element={<PharmacyOrdersPage />} />
+    <Route key="pharmacy-inventory" path="/dashboard/pharmacy-inventory" element={<PharmacyInventoryPage />} />
+    <Route key="pharmacy-prescriptions" path="/dashboard/pharmacy-prescriptions" element={<PharmacyPrescriptionsPage />} />
   </Route>,
 
   // Catch-all route

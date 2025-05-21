@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
@@ -15,6 +16,7 @@ import CannabisExperienceStep from "@/components/fragebogen/CannabisExperienceSt
 import ProductSelectionStep from "@/components/fragebogen/ProductSelectionStep";
 import CheckoutStep from "@/components/fragebogen/CheckoutStep";
 import CompletionStep from "@/components/fragebogen/CompletionStep";
+import FeedbackForm from "@/components/fragebogen/FeedbackForm";
 
 import {
   AlertDialog,
@@ -24,13 +26,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11; // Added one for the feedback step
 
 const Fragebogen = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [progress, setProgress] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [skipQuestionnaire, setSkipQuestionnaire] = useState(false); // For returning patients
   
   // Form data state
   const [treatmentType, setTreatmentType] = useState<string>("");
@@ -244,6 +247,12 @@ const Fragebogen = () => {
     }));
   };
 
+  // Handle skip to feedback form for returning patients
+  const skipToFeedbackForm = () => {
+    setSkipQuestionnaire(true);
+    setStep(8); // Skip directly to feedback form which is step 8
+  };
+
   // Calculate total amount based on selected products
   const calculateTotalAmount = () => {
     // In a real application, this would sum up the prices of all selected products
@@ -278,6 +287,7 @@ const Fragebogen = () => {
             onSelect={setHasPreviousPrescription}
             onNext={nextStep}
             onBack={prevStep}
+            onSkipToFeedback={skipToFeedbackForm}
           />
         );
       case 4:
@@ -337,18 +347,28 @@ const Fragebogen = () => {
           />
         );
       case 8:
-        return (
-          <CannabisExperienceStep
-            hasCannabisExperience={cannabisExperience.hasCannabisExperience}
-            onHasCannabisExperienceChange={handleCannabisExperienceChange}
-            hadSideEffects={cannabisExperience.hadSideEffects}
-            onHadSideEffectsChange={handleSideEffectsChange}
-            treatmentGoals={cannabisExperience.treatmentGoals}
-            onTreatmentGoalChange={handleTreatmentGoalChange}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
+        // Show feedback form if user has previous prescription and we're skipping questionnaire
+        if (skipQuestionnaire) {
+          return (
+            <FeedbackForm
+              onComplete={nextStep}
+              onBack={prevStep}
+            />
+          );
+        } else {
+          return (
+            <CannabisExperienceStep
+              hasCannabisExperience={cannabisExperience.hasCannabisExperience}
+              onHasCannabisExperienceChange={handleCannabisExperienceChange}
+              hadSideEffects={cannabisExperience.hadSideEffects}
+              onHadSideEffectsChange={handleSideEffectsChange}
+              treatmentGoals={cannabisExperience.treatmentGoals}
+              onTreatmentGoalChange={handleTreatmentGoalChange}
+              onNext={nextStep}
+              onBack={prevStep}
+            />
+          );
+        }
       case 9:
         return (
           <ProductSelectionStep
@@ -389,7 +409,7 @@ const Fragebogen = () => {
         <Progress value={progress} className="mb-2" />
         {step <= 10 && (
           <div className="flex justify-between text-muted-foreground text-sm">
-            <span>Schritt {step} von {TOTAL_STEPS}</span>
+            <span>Schritt {step} von {skipQuestionnaire ? 5 : TOTAL_STEPS}</span>
             <span>{progress}% abgeschlossen</span>
           </div>
         )}

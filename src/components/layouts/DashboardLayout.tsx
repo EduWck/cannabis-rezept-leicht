@@ -17,7 +17,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel
 } from "@/components/ui/sidebar";
-import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users } from "lucide-react";
+import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DashboardLayout = () => {
@@ -31,14 +31,22 @@ const DashboardLayout = () => {
         { icon: Users, title: "Benutzer", path: "/dashboard/users" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/all-prescriptions" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/all-orders" },
+        { icon: Package, title: "Produkte", path: "/dashboard/products" },
         { icon: Settings, title: "Einstellungen", path: "/dashboard/settings" },
       ];
     } else if (userRole === "doctor") {
       return [
         { icon: Home, title: "Dashboard", path: "/dashboard" },
         { icon: Users, title: "Patienten", path: "/dashboard/patients" },
-        { icon: FileText, title: "Rezepte", path: "/dashboard/doctor-prescriptions" },
         { icon: Calendar, title: "Termine", path: "/dashboard/calendar" },
+        { icon: Clipboard, title: "Anfragen", path: "/dashboard/requests" },
+      ];
+    } else if (userRole === "pharmacy") {
+      return [
+        { icon: Home, title: "Dashboard", path: "/dashboard" },
+        { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
+        { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
+        { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
       ];
     } else {
       // Patient or default
@@ -47,7 +55,7 @@ const DashboardLayout = () => {
         { icon: User, title: "Profil", path: "/dashboard/profile" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
-        { icon: Calendar, title: "Termine", path: "/dashboard/appointments" },
+        { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
       ];
     }
   };

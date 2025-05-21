@@ -25,6 +25,9 @@ export function useRoleDetection() {
       } else if (email.includes('doctor') || email.includes('arzt')) {
         detectedRole = 'doctor';
         console.log("⭐ HIGHEST PRIORITY: Role detected from email: doctor");
+      } else if (email.includes('pharmacy') || email.includes('apothek')) {
+        detectedRole = 'pharmacy';
+        console.log("⭐ HIGHEST PRIORITY: Role detected from email: pharmacy");
       } else if (email.includes('patient') || email.includes('patien')) {
         detectedRole = 'patient';
         console.log("⭐ HIGHEST PRIORITY: Role detected from email: patient");
@@ -34,8 +37,14 @@ export function useRoleDetection() {
       
       // PRIORITY 2: Check user metadata
       if (!detectedRole && currentUser.user_metadata?.role) {
-        detectedRole = currentUser.user_metadata.role as UserRole;
-        console.log("Role from user metadata:", detectedRole);
+        // Cast the role from metadata to our UserRole type for type safety
+        const metadataRole = currentUser.user_metadata.role as string;
+        // Only assign if it's a valid UserRole
+        if (metadataRole === 'admin' || metadataRole === 'doctor' || 
+            metadataRole === 'patient' || metadataRole === 'pharmacy') {
+          detectedRole = metadataRole as UserRole;
+          console.log("Role from user metadata:", detectedRole);
+        }
       }
       
       // PRIORITY 3: Check profile in database
@@ -55,7 +64,16 @@ export function useRoleDetection() {
 
         if (data) {
           console.log("Profile found in database:", data);
-          userProfile = data as Profile;
+          // Convert database role to UI role if needed
+          if (data.role === 'admin' || data.role === 'doctor' || data.role === 'patient') {
+            userProfile = data as Profile;
+          } else {
+            // If the database has an unrecognized role, convert it to our UI model
+            userProfile = {
+              ...data,
+              role: data.role as UserRole // Cast to our UI role type
+            };
+          }
           
           // If we still don't have a role, use the one from the profile
           if (!detectedRole && userProfile.role) {
@@ -98,6 +116,8 @@ export function useRoleDetection() {
           detectedRole = 'admin';
         } else if (email.includes('doctor') || email.includes('arzt')) {
           detectedRole = 'doctor';
+        } else if (email.includes('pharmacy') || email.includes('apothek')) {
+          detectedRole = 'pharmacy';
         } else if (email.includes('patient') || email.includes('patien')) {
           detectedRole = 'patient';
         } else {
@@ -118,10 +138,13 @@ export function useRoleDetection() {
       if (!userProfile || userProfile.role !== detectedRole) {
         console.log("Creating/updating profile with detected role:", detectedRole);
         
+        // Convert our UI role to a database-compatible role
+        const databaseRole = detectedRole === 'pharmacy' ? 'admin' : detectedRole;
+        
         const profileData = {
           id: currentUser.id,
           email: currentUser.email || "",
-          role: detectedRole,
+          role: databaseRole as 'patient' | 'doctor' | 'admin', // Cast to database role type
           first_name: currentUser.user_metadata?.first_name as string || null,
           last_name: currentUser.user_metadata?.last_name as string || null,
           created_at: new Date().toISOString(),
@@ -143,11 +166,11 @@ export function useRoleDetection() {
             .maybeSingle();
             
           if (existingProfile) {
-            console.log("Updating existing profile with role:", detectedRole);
+            console.log("Updating existing profile with role:", databaseRole);
             
             // If role is different, show notification
-            if (existingProfile.role !== detectedRole) {
-              console.log(`⚠️ Role conflict: Changing from ${existingProfile.role} to ${detectedRole} (higher priority)`);
+            if (existingProfile.role !== databaseRole) {
+              console.log(`⚠️ Role conflict: Changing from ${existingProfile.role} to ${databaseRole} (higher priority)`);
               toast({
                 title: "Role correction",
                 description: `Your role has been corrected from ${existingProfile.role} to ${detectedRole}.`
@@ -158,7 +181,7 @@ export function useRoleDetection() {
             const { error: updateError } = await supabase
               .from("profiles")
               .update({
-                role: detectedRole, // IMPORTANT: Always use detected role with higher priority
+                role: databaseRole, // IMPORTANT: Using database-compatible role
                 email: currentUser.email || "",
                 updated_at: new Date().toISOString()
               })
@@ -168,11 +191,11 @@ export function useRoleDetection() {
               console.error("Error updating profile:", updateError);
               throw updateError;
             } else {
-              console.log("Profile successfully updated with role:", detectedRole);
+              console.log("Profile successfully updated with role:", databaseRole);
             }
           } else {
             // Create new profile
-            console.log("Creating new profile with role:", detectedRole);
+            console.log("Creating new profile with role:", databaseRole);
             const { error: insertError } = await supabase
               .from("profiles")
               .insert(profileData);
@@ -181,7 +204,7 @@ export function useRoleDetection() {
               console.error("Error creating profile:", insertError);
               throw insertError;
             } else {
-              console.log("Profile successfully created with role:", detectedRole);
+              console.log("Profile successfully created with role:", databaseRole);
               toast({
                 title: "Profile created",
                 description: "Your profile has been successfully created."
@@ -189,8 +212,12 @@ export function useRoleDetection() {
             }
           }
           
-          // Set userProfile with our new data to ensure consistency
-          userProfile = profileData;
+          // Set userProfile with our new data to ensure consistency, but convert database role to UI role
+          const uiProfileData: Profile = {
+            ...profileData,
+            role: detectedRole // Use the UI role
+          };
+          userProfile = uiProfileData;
         } catch (profileWriteError) {
           console.error("Error writing profile to database:", profileWriteError);
           toast({

@@ -1,3 +1,4 @@
+
 // If this file already exists, we need to add these types to it
 import { Json } from '@/integrations/supabase/types';
 
@@ -36,7 +37,7 @@ export interface Order {
 
 export interface Profile {
   id: string;
-  role: 'patient' | 'doctor' | 'admin';
+  role: UserRole; // Updated to use UserRole which includes 'pharmacy'
   first_name: string | null;
   last_name: string | null;
   date_of_birth: string | null;

@@ -20,9 +20,9 @@ import {
 import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-// Static sidebar configurations for each role
+// Role-specific sidebar configurations
 const ADMIN_MENU_ITEMS = [
-  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: Home, title: "Dashboard", path: "/dashboard/admin" },
   { icon: Users, title: "Benutzer", path: "/dashboard/users" },
   { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/all-orders" },
   { icon: Package, title: "Produkte", path: "/dashboard/products" },
@@ -30,7 +30,7 @@ const ADMIN_MENU_ITEMS = [
 ];
 
 const DOCTOR_MENU_ITEMS = [
-  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: Home, title: "Dashboard", path: "/dashboard/doctor" },
   { icon: Users, title: "Patienten", path: "/dashboard/patients" },
   { icon: Calendar, title: "Termine", path: "/dashboard/calendar" },
   { icon: Clipboard, title: "Anfragen", path: "/dashboard/requests" },
@@ -38,14 +38,14 @@ const DOCTOR_MENU_ITEMS = [
 ];
 
 const PHARMACY_MENU_ITEMS = [
-  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: Home, title: "Dashboard", path: "/dashboard/pharmacy" },
   { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
   { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
   { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
 ];
 
 const PATIENT_MENU_ITEMS = [
-  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: Home, title: "Dashboard", path: "/dashboard/patient" },
   { icon: User, title: "Profil", path: "/dashboard/profile" },
   { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
   { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
@@ -54,30 +54,35 @@ const PATIENT_MENU_ITEMS = [
 ];
 
 const DashboardLayout = () => {
-  const { user, userRole, signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
-  // Get menu items based on current URL for demonstration
+  // Get menu items based on current URL path
   const getCurrentMenuItems = () => {
     const currentPath = window.location.pathname;
     console.log("Current path:", currentPath);
-    console.log("Current userRole:", userRole);
 
-    // For demonstration: determine role based on URL or userRole
-    if (currentPath.includes('/admin') || userRole === 'admin') {
+    // URL-based role detection
+    if (currentPath.includes('/admin') || currentPath.includes('/users') || currentPath.includes('/all-orders') || currentPath.includes('/products') || currentPath.includes('/settings')) {
       console.log("Using ADMIN sidebar");
       return ADMIN_MENU_ITEMS;
     }
     
-    if (currentPath.includes('/doctor') || userRole === 'doctor') {
+    if (currentPath.includes('/doctor') || currentPath.includes('/patients') || currentPath.includes('/calendar') || currentPath.includes('/requests')) {
       console.log("Using DOCTOR sidebar");
       return DOCTOR_MENU_ITEMS;
     }
     
-    if (currentPath.includes('/pharmacy') || userRole === 'pharmacy') {
+    if (currentPath.includes('/pharmacy')) {
       console.log("Using PHARMACY sidebar");
       return PHARMACY_MENU_ITEMS;
     }
     
+    if (currentPath.includes('/patient') || currentPath.includes('/profile') || currentPath.includes('/medical-findings') || currentPath.includes('/orders') || currentPath.includes('/appointments')) {
+      console.log("Using PATIENT sidebar");
+      return PATIENT_MENU_ITEMS;
+    }
+    
+    // Default fallback
     console.log("Using PATIENT sidebar (default)");
     return PATIENT_MENU_ITEMS;
   };
@@ -89,7 +94,6 @@ const DashboardLayout = () => {
       <div className="min-h-screen flex flex-col bg-background w-full">
         <Navbar />
         <div className="flex-1 flex">
-          {/* Added pt-16 to create space between navbar and sidebar content */}
           <Sidebar variant="sidebar" collapsible="icon" className="pt-16">
             <SidebarHeader className="p-2">
               <SidebarTrigger />

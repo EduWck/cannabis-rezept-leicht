@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -59,20 +58,38 @@ const ProductEditPage = () => {
 
   useEffect(() => {
     if (id && id !== "new") {
-      // Mock product data
-      const mockProduct: ProductData = {
-        name: "Cannabisblüte THC18",
-        category: "flower",
-        packageVariants: [
-          { size: "10g", quantity: 20, minStock: 5 },
-          { size: "50g", quantity: 5, minStock: 2 }
-        ],
-        pricePerGram: 12.99,
-        supplier: "CannaGrow GmbH",
-        description: "Hochwertige Cannabisblüte mit 18% THC-Gehalt",
-        thcContent: 18,
-        cbdContent: 1,
-      };
+      // Mock product data - updated for extract example
+      let mockProduct: ProductData;
+      
+      if (id === "PROD-005") {
+        mockProduct = {
+          name: "THC/CBD Extrakt 1:1",
+          category: "extract",
+          packageVariants: [
+            { size: "10ml", quantity: 0, minStock: 3 }
+          ],
+          pricePerBottle: 199.99,
+          supplier: "ExtractMed GmbH",
+          description: "Hochwertiger THC/CBD Extrakt im Verhältnis 1:1 mit 25% THC und 25% CBD",
+          thcContent: 25,
+          cbdContent: 25,
+        };
+      } else {
+        mockProduct = {
+          name: "Cannabisblüte THC18",
+          category: "flower",
+          packageVariants: [
+            { size: "10g", quantity: 20, minStock: 5 },
+            { size: "50g", quantity: 5, minStock: 2 }
+          ],
+          pricePerGram: 12.99,
+          supplier: "CannaGrow GmbH",
+          description: "Hochwertige Cannabisblüte mit 18% THC-Gehalt",
+          thcContent: 18,
+          cbdContent: 1,
+        };
+      }
+      
       setProductData(mockProduct);
     }
   }, [id]);
@@ -169,6 +186,10 @@ const ProductEditPage = () => {
         return total + (variant.quantity * ml);
       }, 0);
     }
+  };
+  
+  const calculateTotalBottles = () => {
+    return productData.packageVariants.reduce((total, variant) => total + variant.quantity, 0);
   };
 
   const validateForm = (): boolean => {
@@ -451,9 +472,20 @@ const ProductEditPage = () => {
               
               <div className="mt-4 p-3 bg-muted rounded-lg">
                 <div className="text-sm font-medium">Gesamtbestand</div>
-                <div className="text-2xl font-bold text-green-600">
-                  {calculateTotalStock()}{productData.category === "flower" ? "g" : "ml"}
-                </div>
+                {productData.category === "flower" ? (
+                  <div className="text-2xl font-bold text-green-600">
+                    {calculateTotalStock()}g
+                  </div>
+                ) : (
+                  <div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {calculateTotalBottles()} Flaschen
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      ({calculateTotalStock()}ml gesamt)
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

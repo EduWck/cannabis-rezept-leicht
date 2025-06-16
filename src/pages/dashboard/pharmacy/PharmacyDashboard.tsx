@@ -92,7 +92,7 @@ const PharmacyDashboard = () => {
       status: "shipped",
       total: 234.75,
       items: [
-        { name: "CBD Extrakt 15%", quantity: "2 Flaschen à 15ml", type: "extract" }
+        { name: "THC/CBD Extrakt 1:1", quantity: "2 Flaschen à 10ml", type: "extract" }
       ],
       trackingId: "DHL123456789",
       priority: "normal"
@@ -116,12 +116,12 @@ const PharmacyDashboard = () => {
       type: "flower"
     },
     { 
-      name: "CBD Extrakt 15%", 
-      currentStock: 1, 
-      minStock: 8, 
-      unit: "Flaschen à 15ml",
+      name: "THC/CBD Extrakt 1:1", 
+      currentStock: 0, 
+      minStock: 3, 
+      unit: "Flaschen à 10ml",
       type: "extract",
-      bottleSize: 15
+      bottleSize: 10
     }
   ];
 
@@ -139,7 +139,7 @@ const PharmacyDashboard = () => {
       patientName: "Maria Gonzalez",
       doctorName: "Dr. Michael Weber",
       submittedAt: "2023-12-15T09:15:00",
-      products: ["CBD Extrakt 10%"],
+      products: ["THC/CBD Extrakt 1:1"],
       urgency: "high"
     }
   ];
@@ -463,9 +463,14 @@ const PharmacyDashboard = () => {
                     <p className="text-xs text-red-600">
                       Mindestbestand: {product.minStock} {product.unit}
                     </p>
-                    {product.type === "extract" && product.bottleSize && (
+                    {product.type === "extract" && product.bottleSize && product.currentStock > 0 && (
                       <p className="text-xs text-blue-600">
                         Gesamt: {product.currentStock * product.bottleSize}ml verfügbar
+                      </p>
+                    )}
+                    {product.type === "extract" && product.currentStock === 0 && (
+                      <p className="text-xs text-red-600 font-medium">
+                        Ausverkauft
                       </p>
                     )}
                   </div>

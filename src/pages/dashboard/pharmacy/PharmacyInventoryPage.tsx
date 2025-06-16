@@ -38,8 +38,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 
 interface PackageVariant {
-  size: string; // z.B. "10g", "50g"
-  quantity: number; // Anzahl verfügbarer Packungen
+  size: string; // z.B. "10g" für Blüten, "10ml" für Extrakte
+  quantity: number; // Anzahl verfügbarer Packungen/Flaschen
   minStock: number; // Mindestbestand für diese Packungseinheit
 }
 
@@ -48,7 +48,8 @@ interface Product {
   name: string;
   category: string;
   packageVariants: PackageVariant[];
-  pricePerGram: number;
+  pricePerGram?: number; // Nur für Cannabis-Blüten
+  pricePerBottle?: number; // Nur für Extrakte
   supplier: string;
   thcContent?: number;
   cbdContent?: number;
@@ -59,7 +60,7 @@ const PharmacyInventoryPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
-  // Mock data - neue Struktur mit Packungsvarianten
+  // Mock data - aktualisierte Struktur ohne CBD Öle
   const products: Product[] = [
     {
       id: "PROD-001",
@@ -89,35 +90,38 @@ const PharmacyInventoryPage = () => {
     },
     {
       id: "PROD-003",
-      name: "CBD Öl 5%",
-      category: "oil",
+      name: "THC Extrakt 25%",
+      category: "extract",
       packageVariants: [
-        { size: "100g", quantity: 15, minStock: 3 }
+        { size: "5ml", quantity: 8, minStock: 3 },
+        { size: "10ml", quantity: 5, minStock: 2 }
       ],
-      pricePerGram: 19.99,
-      supplier: "NaturoCBD AG",
-      cbdContent: 5,
+      pricePerBottle: 89.99,
+      supplier: "ExtractMed GmbH",
+      thcContent: 25,
+      cbdContent: 1,
     },
     {
       id: "PROD-004",
-      name: "CBD Öl 10%",
-      category: "oil",
+      name: "CBD Extrakt 15%",
+      category: "extract",
       packageVariants: [
-        { size: "100g", quantity: 8, minStock: 3 },
-        { size: "200g", quantity: 2, minStock: 1 }
+        { size: "10ml", quantity: 2, minStock: 5 },
+        { size: "15ml", quantity: 1, minStock: 3 }
       ],
-      pricePerGram: 29.99,
-      supplier: "NaturoCBD AG",
-      cbdContent: 10,
+      pricePerBottle: 149.99,
+      supplier: "ExtractMed GmbH",
+      thcContent: 0,
+      cbdContent: 15,
     },
     {
       id: "PROD-005",
-      name: "Cannabis Extrakt THC/CBD 1:1",
+      name: "THC/CBD Extrakt 1:1",
       category: "extract",
       packageVariants: [
-        { size: "10g", quantity: 0, minStock: 3 }
+        { size: "10ml", quantity: 0, minStock: 3 }
       ],
-      pricePerGram: 49.99,
+      pricePerBottle: 199.99,
       supplier: "ExtractMed GmbH",
       thcContent: 25,
       cbdContent: 25,
@@ -126,16 +130,28 @@ const PharmacyInventoryPage = () => {
   
   const categories = [
     { value: "flower", label: "Cannabis Blüte" },
-    { value: "oil", label: "CBD-Öl" },
     { value: "extract", label: "Extrakt" },
   ];
   
-  // Berechnung der Gesamtgramm für ein Produkt
-  const calculateTotalGrams = (packageVariants: PackageVariant[]) => {
-    return packageVariants.reduce((total, variant) => {
-      const grams = parseInt(variant.size.replace('g', ''));
-      return total + (variant.quantity * grams);
-    }, 0);
+  // Berechnung für Blüten (Gramm) und Extrakte (ml)
+  const calculateTotalAmount = (product: Product) => {
+    if (product.category === "flower") {
+      return product.packageVariants.reduce((total, variant) => {
+        const grams = parseInt(variant.size.replace('g', ''));
+        return total + (variant.quantity * grams);
+      }, 0);
+    } else {
+      // Für Extrakte: Gesamte ml-Menge
+      return product.packageVariants.reduce((total, variant) => {
+        const ml = parseInt(variant.size.replace('ml', ''));
+        return total + (variant.quantity * ml);
+      }, 0);
+    }
+  };
+  
+  // Berechnung der Gesamtanzahl Flaschen für Extrakte
+  const calculateTotalBottles = (packageVariants: PackageVariant[]) => {
+    return packageVariants.reduce((total, variant) => total + variant.quantity, 0);
   };
   
   // Berechnung ob Produkt unter Mindestbestand ist
@@ -241,7 +257,7 @@ const PharmacyInventoryPage = () => {
                   <TableHead>Gesamtbestand</TableHead>
                   <TableHead>Packungseinheiten</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Preis/g</TableHead>
+                  <TableHead>Preis</TableHead>
                   <TableHead>Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
@@ -265,9 +281,20 @@ const PharmacyInventoryPage = () => {
                       {categories.find(c => c.value === product.category)?.label || product.category}
                     </TableCell>
                     <TableCell>
-                      <div className={`text-lg font-bold ${isLowStock(product.packageVariants) ? "text-red-500" : "text-green-600"}`}>
-                        {calculateTotalGrams(product.packageVariants)}g
-                      </div>
+                      {product.category === "flower" ? (
+                        <div className={`text-lg font-bold ${isLowStock(product.packageVariants) ? "text-red-500" : "text-green-600"}`}>
+                          {calculateTotalAmount(product)}g
+                        </div>
+                      ) : (
+                        <div className={`${isLowStock(product.packageVariants) ? "text-red-500" : "text-green-600"}`}>
+                          <div className="text-lg font-bold">
+                            {calculateTotalBottles(product.packageVariants)} Flaschen
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            ({calculateTotalAmount(product)}ml gesamt)
+                          </div>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
@@ -276,6 +303,7 @@ const PharmacyInventoryPage = () => {
                             <Package className="h-3 w-3 text-muted-foreground" />
                             <span className={`text-sm ${variant.quantity < variant.minStock ? "text-red-500 font-medium" : ""}`}>
                               {variant.quantity}x {variant.size}
+                              {product.category === "extract" ? " Flaschen" : " Packungen"}
                             </span>
                             {variant.quantity < variant.minStock && (
                               <Badge variant="outline" className="text-xs px-1 py-0">
@@ -287,7 +315,17 @@ const PharmacyInventoryPage = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getStockStatus(product.packageVariants)}</TableCell>
-                    <TableCell>{product.pricePerGram.toFixed(2)} €</TableCell>
+                    <TableCell>
+                      {product.category === "flower" ? (
+                        <div>
+                          <div className="font-medium">{product.pricePerGram?.toFixed(2)} €/g</div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="font-medium">{product.pricePerBottle?.toFixed(2)} €/Flasche</div>
+                        </div>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Button 
                         size="sm" 

@@ -1,5 +1,3 @@
-
-
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -59,7 +57,9 @@ const useFormField = () => {
     throw new Error("useFormField should be used within <FormField>")
   }
 
-  const { id } = itemContext || { id: React.useId() }
+  // Safely handle itemContext destructuring
+  const safeItemContext = itemContext || { id: React.useId() }
+  const { id } = safeItemContext
 
   return {
     id,
@@ -183,4 +183,3 @@ export {
   FormMessage,
   FormField,
 }
-

@@ -7,10 +7,12 @@ import { Input } from "@/components/ui/input";
 interface Product {
   id: string;
   name: string;
-  type: string;
+  type: "flower" | "extract";
   thcPercentage: number;
   cbdPercentage: number;
-  pricePerGram: number;
+  pricePerGram?: number; // Nur für Cannabis-Blüten
+  pricePerBottle?: number; // Nur für Extrakte
+  bottleSize?: number; // ml pro Flasche für Extrakte
   description: string;
   image: string;
 }
@@ -28,12 +30,12 @@ const ProductSelectionStep = ({
   onNext,
   onBack
 }: ProductSelectionStepProps) => {
-  // Sample products data
+  // Aktualisierte Produktdaten ohne CBD Öle
   const products: Product[] = [
     {
       id: "p1",
       name: "Bedrocan",
-      type: "Sativa",
+      type: "flower",
       thcPercentage: 22,
       cbdPercentage: 0.1,
       pricePerGram: 12.5,
@@ -43,7 +45,7 @@ const ProductSelectionStep = ({
     {
       id: "p2",
       name: "Bediol",
-      type: "Hybrid",
+      type: "flower",
       thcPercentage: 6.3,
       cbdPercentage: 8,
       pricePerGram: 10.25,
@@ -53,7 +55,7 @@ const ProductSelectionStep = ({
     {
       id: "p3",
       name: "Pedanios 22/1",
-      type: "Indica",
+      type: "flower",
       thcPercentage: 22,
       cbdPercentage: 1,
       pricePerGram: 13.75,
@@ -63,7 +65,7 @@ const ProductSelectionStep = ({
     {
       id: "p4",
       name: "Aurora 20/1",
-      type: "Sativa",
+      type: "flower",
       thcPercentage: 20,
       cbdPercentage: 1,
       pricePerGram: 11.90,
@@ -72,12 +74,24 @@ const ProductSelectionStep = ({
     },
     {
       id: "p5",
-      name: "Tilray 10:10",
-      type: "Hybrid",
-      thcPercentage: 10,
-      cbdPercentage: 10,
-      pricePerGram: 9.95,
-      description: "Perfekt ausgewogenes THC-CBD Verhältnis für Einsteiger.",
+      name: "THC Extrakt 25%",
+      type: "extract",
+      thcPercentage: 25,
+      cbdPercentage: 0.5,
+      pricePerBottle: 89.95,
+      bottleSize: 10,
+      description: "Hochkonzentrierter THC-Extrakt für erfahrene Anwender (10ml Flasche).",
+      image: "https://via.placeholder.com/150"
+    },
+    {
+      id: "p6",
+      name: "CBD Extrakt 15%",
+      type: "extract",
+      thcPercentage: 0.2,
+      cbdPercentage: 15,
+      pricePerBottle: 65.50,
+      bottleSize: 15,
+      description: "CBD-reicher Extrakt zur Entspannung und Schmerzlinderung (15ml Flasche).",
       image: "https://via.placeholder.com/150"
     }
   ];
@@ -85,7 +99,12 @@ const ProductSelectionStep = ({
   const getTotalPrice = () => {
     return products.reduce((total, product) => {
       const quantity = selectedProducts[product.id]?.quantity || 0;
-      return total + (product.pricePerGram * quantity);
+      if (product.type === "flower" && product.pricePerGram) {
+        return total + (product.pricePerGram * quantity);
+      } else if (product.type === "extract" && product.pricePerBottle) {
+        return total + (product.pricePerBottle * quantity);
+      }
+      return total;
     }, 0);
   };
   
@@ -93,17 +112,40 @@ const ProductSelectionStep = ({
   const totalQuantity = Object.values(selectedProducts).reduce((sum, item) => sum + item.quantity, 0);
   const canProceed = totalQuantity > 0;
 
+  const getQuantityStep = (productType: "flower" | "extract") => {
+    return productType === "flower" ? 5 : 1; // Gramm für Blüten, Flaschen für Extrakte
+  };
+
+  const getMaxQuantity = (productType: "flower" | "extract") => {
+    return productType === "flower" ? 100 : 10; // 100g max für Blüten, 10 Flaschen max für Extrakte
+  };
+
+  const getQuantityLabel = (product: Product, quantity: number) => {
+    if (product.type === "flower") {
+      return `${quantity}g`;
+    } else {
+      return `${quantity} Flasche${quantity !== 1 ? 'n' : ''} à ${product.bottleSize}ml`;
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center">Produktauswahl</h2>
       <p className="text-center text-muted-foreground">
-        Wähle aus unseren verfügbaren Cannabis-Blüten. Du kannst zwischen 5g und 100g pro Sorte wählen.
+        Wähle aus unseren verfügbaren Cannabis-Produkten. Für Blüten zwischen 5g und 100g, für Extrakte einzelne Flaschen.
       </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {products.map((product) => {
           const quantity = selectedProducts[product.id]?.quantity || 0;
-          const subtotal = product.pricePerGram * quantity;
+          const subtotal = product.type === "flower" && product.pricePerGram 
+            ? product.pricePerGram * quantity 
+            : product.type === "extract" && product.pricePerBottle 
+            ? product.pricePerBottle * quantity 
+            : 0;
+          
+          const step = getQuantityStep(product.type);
+          const maxQty = getMaxQuantity(product.type);
           
           return (
             <Card key={product.id} className="overflow-hidden">
@@ -115,7 +157,7 @@ const ProductSelectionStep = ({
                     className="object-cover w-full h-full"
                   />
                   <div className="absolute top-2 right-2 px-2 py-1 bg-cannabis-green-500 text-white text-xs rounded-full">
-                    {product.type}
+                    {product.type === "flower" ? "Blüte" : "Extrakt"}
                   </div>
                 </div>
                 
@@ -123,7 +165,8 @@ const ProductSelectionStep = ({
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-semibold text-lg">{product.name}</h3>
                     <div className="text-cannabis-green-600 dark:text-cannabis-green-400 font-bold">
-                      {product.pricePerGram.toFixed(2)} €/g
+                      {product.type === "flower" && product.pricePerGram && `${product.pricePerGram.toFixed(2)} €/g`}
+                      {product.type === "extract" && product.pricePerBottle && `${product.pricePerBottle.toFixed(2)} €/Fl.`}
                     </div>
                   </div>
                   
@@ -136,6 +179,12 @@ const ProductSelectionStep = ({
                     </div>
                   </div>
                   
+                  {product.type === "extract" && product.bottleSize && (
+                    <div className="text-sm text-purple-600 dark:text-purple-400 mb-2">
+                      <span className="font-medium">Flaschengröße:</span> {product.bottleSize}ml
+                    </div>
+                  )}
+                  
                   <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 flex-1">
                     {product.description}
                   </p>
@@ -146,7 +195,7 @@ const ProductSelectionStep = ({
                         variant="outline"
                         size="sm"
                         className="px-3"
-                        onClick={() => onProductSelectChange(product.id, Math.max(0, quantity - 5))}
+                        onClick={() => onProductSelectChange(product.id, Math.max(0, quantity - step))}
                         disabled={quantity === 0}
                       >
                         -
@@ -155,13 +204,15 @@ const ProductSelectionStep = ({
                       <Input
                         type="number"
                         min={0}
-                        max={100}
-                        step={5}
+                        max={maxQty}
+                        step={step}
                         value={quantity}
                         onChange={(e) => {
-                          const newValue = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                          // Round to nearest 5
-                          const roundedValue = Math.round(newValue / 5) * 5;
+                          const newValue = Math.min(maxQty, Math.max(0, parseInt(e.target.value) || 0));
+                          // Für Blüten auf 5er-Schritte runden
+                          const roundedValue = product.type === "flower" 
+                            ? Math.round(newValue / step) * step 
+                            : newValue;
                           onProductSelectChange(product.id, roundedValue);
                         }}
                         className="mx-2 text-center w-20"
@@ -171,8 +222,8 @@ const ProductSelectionStep = ({
                         variant="outline"
                         size="sm"
                         className="px-3"
-                        onClick={() => onProductSelectChange(product.id, Math.min(100, quantity + 5))}
-                        disabled={quantity >= 100}
+                        onClick={() => onProductSelectChange(product.id, Math.min(maxQty, quantity + step))}
+                        disabled={quantity >= maxQty}
                       >
                         +
                       </Button>
@@ -181,6 +232,12 @@ const ProductSelectionStep = ({
                         {subtotal.toFixed(2)} €
                       </div>
                     </div>
+                    
+                    {quantity > 0 && (
+                      <div className="text-xs text-muted-foreground mt-1 text-center">
+                        {getQuantityLabel(product, quantity)}
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </div>
@@ -191,7 +248,7 @@ const ProductSelectionStep = ({
       
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg mt-6">
         <div className="flex justify-between text-lg font-medium">
-          <span>Gesamt ({totalQuantity}g):</span>
+          <span>Gesamt:</span>
           <span>{totalPrice.toFixed(2)} €</span>
         </div>
         

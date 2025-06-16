@@ -61,8 +61,12 @@ import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface OrderItem {
   name: string;
-  orderedGrams: number;
-  totalStockGrams: number;
+  type: "flower" | "extract";
+  orderedGrams?: number; // Nur für Cannabis-Blüten
+  totalStockGrams?: number; // Nur für Cannabis-Blüten
+  orderedBottles?: number; // Nur für Extrakte
+  bottleSize?: number; // ml pro Flasche für Extrakte
+  totalStockBottles?: number; // Anzahl Flaschen im Lager für Extrakte
 }
 
 interface Order {
@@ -93,7 +97,7 @@ const PharmacyOrdersPage = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   
-  // Vereinfachte Mock-Daten mit nur Gramm-Angaben
+  // Mock-Daten mit Cannabis-Blüten und Extrakten (ohne CBD Öle)
   const orders: Order[] = [
     {
       id: "ORD-2023-001",
@@ -103,13 +107,16 @@ const PharmacyOrdersPage = () => {
       items: [
         { 
           name: "Cannabisblüte THC18", 
+          type: "flower",
           orderedGrams: 20, 
           totalStockGrams: 250
         },
         { 
-          name: "CBD Öl 10%", 
-          orderedGrams: 0, // Öl wird nicht in Gramm gemessen
-          totalStockGrams: 0
+          name: "THC Extrakt 25%", 
+          type: "extract",
+          orderedBottles: 2,
+          bottleSize: 10,
+          totalStockBottles: 15
         },
       ],
       shippingMethod: "dhl",
@@ -126,6 +133,7 @@ const PharmacyOrdersPage = () => {
       items: [
         { 
           name: "Cannabisblüte THC22", 
+          type: "flower",
           orderedGrams: 25, 
           totalStockGrams: 125
         },
@@ -145,13 +153,16 @@ const PharmacyOrdersPage = () => {
       items: [
         { 
           name: "Cannabisblüte THC18", 
+          type: "flower",
           orderedGrams: 10, 
           totalStockGrams: 250
         },
         { 
-          name: "CBD Öl 5%", 
-          orderedGrams: 0, 
-          totalStockGrams: 0
+          name: "CBD Extrakt 15%", 
+          type: "extract",
+          orderedBottles: 1,
+          bottleSize: 15,
+          totalStockBottles: 8
         },
       ],
       shippingMethod: "dhl",
@@ -169,9 +180,11 @@ const PharmacyOrdersPage = () => {
       patientAddress: "Lindenallee 12, 50667 Köln",
       items: [
         { 
-          name: "CBD Öl 15%", 
-          orderedGrams: 0, 
-          totalStockGrams: 0
+          name: "THC/CBD Extrakt 1:1", 
+          type: "extract",
+          orderedBottles: 3,
+          bottleSize: 5,
+          totalStockBottles: 20
         },
       ],
       shippingMethod: "abholung",
@@ -269,12 +282,27 @@ const PharmacyOrdersPage = () => {
   };
 
   const calculateTotalOrderedGrams = (items: OrderItem[]) => {
-    return items.reduce((total, item) => total + item.orderedGrams, 0);
+    return items.reduce((total, item) => {
+      if (item.type === "flower" && item.orderedGrams) {
+        return total + item.orderedGrams;
+      }
+      return total;
+    }, 0);
   };
 
-  // Mobile Card Component mit vereinfachter Produktanzeige
+  const calculateTotalOrderedMl = (items: OrderItem[]) => {
+    return items.reduce((total, item) => {
+      if (item.type === "extract" && item.orderedBottles && item.bottleSize) {
+        return total + (item.orderedBottles * item.bottleSize);
+      }
+      return total;
+    }, 0);
+  };
+
+  // Mobile Card Component mit angepasster Produktanzeige
   const OrderCard = ({ order }: { order: Order }) => {
     const totalOrderedGrams = calculateTotalOrderedGrams(order.items);
+    const totalOrderedMl = calculateTotalOrderedMl(order.items);
     
     return (
       <Card className="mb-4">
@@ -300,9 +328,11 @@ const PharmacyOrdersPage = () => {
               <Package className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs">
                 {order.items.length} Produkt{order.items.length !== 1 ? 'e' : ''}
-                {totalOrderedGrams > 0 && (
+                {(totalOrderedGrams > 0 || totalOrderedMl > 0) && (
                   <span className="ml-1 font-medium text-green-600">
-                    ({totalOrderedGrams}g bestellt)
+                    {totalOrderedGrams > 0 && `(${totalOrderedGrams}g Cannabis)`}
+                    {totalOrderedGrams > 0 && totalOrderedMl > 0 && " + "}
+                    {totalOrderedMl > 0 && `(${totalOrderedMl}ml Extrakt)`}
                   </span>
                 )}
               </span>
@@ -443,7 +473,7 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
       
-      {/* Vereinfachte Bestellungen Tabelle */}
+      {/* Angepasste Bestellungen Tabelle */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -490,6 +520,7 @@ const PharmacyOrdersPage = () => {
                 <TableBody>
                   {filteredOrders.map((order) => {
                     const totalOrderedGrams = calculateTotalOrderedGrams(order.items);
+                    const totalOrderedMl = calculateTotalOrderedMl(order.items);
                     return (
                       <TableRow key={order.id}>
                         <TableCell>
@@ -519,13 +550,13 @@ const PharmacyOrdersPage = () => {
                                 <div className="flex justify-between items-start">
                                   <div className="flex-1">
                                     <p className="font-medium text-sm">{item.name}</p>
-                                    {item.orderedGrams > 0 ? (
+                                    {item.type === "flower" ? (
                                       <div className="flex items-center gap-2 mt-1">
                                         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
                                           {item.orderedGrams}g bestellt
                                         </span>
                                         <span className={`text-xs px-2 py-1 rounded ${
-                                          item.totalStockGrams < 50 
+                                          (item.totalStockGrams || 0) < 50 
                                             ? 'bg-red-100 text-red-700' 
                                             : 'bg-blue-100 text-blue-700'
                                         }`}>
@@ -533,19 +564,37 @@ const PharmacyOrdersPage = () => {
                                         </span>
                                       </div>
                                     ) : (
-                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded mt-1 inline-block">
-                                        Nicht-Cannabis
-                                      </span>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                                          {item.orderedBottles} × {item.bottleSize}ml Flasche{(item.orderedBottles || 0) > 1 ? 'n' : ''}
+                                        </span>
+                                        <span className={`text-xs px-2 py-1 rounded ${
+                                          (item.totalStockBottles || 0) < 5 
+                                            ? 'bg-red-100 text-red-700' 
+                                            : 'bg-blue-100 text-blue-700'
+                                        }`}>
+                                          Lager: {item.totalStockBottles} Flaschen
+                                        </span>
+                                      </div>
                                     )}
                                   </div>
                                 </div>
                               </div>
                             ))}
-                            {totalOrderedGrams > 0 && (
-                              <div className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200">
-                                Gesamt Cannabis: {totalOrderedGrams}g
-                              </div>
-                            )}
+                            
+                            {/* Zusammenfassung nach Produkttyp */}
+                            <div className="space-y-1">
+                              {totalOrderedGrams > 0 && (
+                                <div className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200">
+                                  Gesamt Cannabis: {totalOrderedGrams}g
+                                </div>
+                              )}
+                              {totalOrderedMl > 0 && (
+                                <div className="text-xs font-medium text-purple-700 bg-purple-50 px-2 py-1 rounded border border-purple-200">
+                                  Gesamt Extrakt: {totalOrderedMl}ml
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -613,7 +662,7 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
 
-      {/* Vereinfachter Detail Dialog */}
+      {/* Angepasster Detail Dialog */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -644,31 +693,46 @@ const PharmacyOrdersPage = () => {
                     <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
                       <div>
                         <p className="font-medium">{item.name}</p>
-                        {item.orderedGrams > 0 ? (
+                        {item.type === "flower" ? (
                           <p className="text-sm text-muted-foreground">
                             <span className="text-green-600 font-medium">
                               {item.orderedGrams}g bestellt
                             </span>
-                            <span className={`ml-2 ${item.totalStockGrams < 50 ? 'text-red-500' : 'text-green-600'}`}>
+                            <span className={`ml-2 ${(item.totalStockGrams || 0) < 50 ? 'text-red-500' : 'text-green-600'}`}>
                               Lagerbestand: {item.totalStockGrams}g
                             </span>
                           </p>
                         ) : (
-                          <p className="text-sm text-blue-600">
-                            Nicht-Cannabis Produkt
+                          <p className="text-sm text-muted-foreground">
+                            <span className="text-purple-600 font-medium">
+                              {item.orderedBottles} × {item.bottleSize}ml Flasche{(item.orderedBottles || 0) > 1 ? 'n' : ''} bestellt
+                            </span>
+                            <span className={`ml-2 ${(item.totalStockBottles || 0) < 5 ? 'text-red-500' : 'text-green-600'}`}>
+                              Lagerbestand: {item.totalStockBottles} Flaschen
+                            </span>
                           </p>
                         )}
                       </div>
                     </div>
                   ))}
                   
-                  {calculateTotalOrderedGrams(selectedOrder.items) > 0 && (
-                    <div className="p-2 bg-green-50 border border-green-200 rounded">
-                      <p className="text-sm font-medium text-green-700">
-                        Gesamtmenge bestellt: {calculateTotalOrderedGrams(selectedOrder.items)}g Cannabis
-                      </p>
-                    </div>
-                  )}
+                  {/* Zusammenfassung */}
+                  <div className="space-y-2">
+                    {calculateTotalOrderedGrams(selectedOrder.items) > 0 && (
+                      <div className="p-2 bg-green-50 border border-green-200 rounded">
+                        <p className="text-sm font-medium text-green-700">
+                          Gesamtmenge Cannabis: {calculateTotalOrderedGrams(selectedOrder.items)}g
+                        </p>
+                      </div>
+                    )}
+                    {calculateTotalOrderedMl(selectedOrder.items) > 0 && (
+                      <div className="p-2 bg-purple-50 border border-purple-200 rounded">
+                        <p className="text-sm font-medium text-purple-700">
+                          Gesamtmenge Extrakt: {calculateTotalOrderedMl(selectedOrder.items)}ml
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               

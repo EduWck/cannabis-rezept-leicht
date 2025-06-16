@@ -29,9 +29,10 @@ interface PackageVariant {
 
 interface ProductData {
   name: string;
-  category: string;
+  category: "flower" | "extract";
   packageVariants: PackageVariant[];
-  pricePerGram: number;
+  pricePerGram?: number; // Nur für Cannabis-Blüten
+  pricePerBottle?: number; // Nur für Extrakte
   supplier: string;
   description: string;
   thcContent: number;
@@ -43,7 +44,6 @@ const ProductEditPage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
-  // Simple state management instead of React Hook Form
   const [productData, setProductData] = useState<ProductData>({
     name: "",
     category: "flower",
@@ -57,10 +57,9 @@ const ProductEditPage = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Hardcoded fallback data to ensure stability
   useEffect(() => {
     if (id && id !== "new") {
-      // Mock product data with fallbacks
+      // Mock product data
       const mockProduct: ProductData = {
         name: "Cannabisblüte THC18",
         category: "flower",
@@ -80,21 +79,52 @@ const ProductEditPage = () => {
 
   const categories = [
     { value: "flower", label: "Cannabis Blüte" },
-    { value: "oil", label: "CBD-Öl" },
     { value: "extract", label: "Extrakt" },
   ];
 
-  const packageSizeOptions = [
-    { value: "10g", label: "10g" },
-    { value: "25g", label: "25g" },
-    { value: "50g", label: "50g" },
-    { value: "100g", label: "100g" },
-    { value: "200g", label: "200g" },
-  ];
+  const getPackageSizeOptions = (category: "flower" | "extract") => {
+    if (category === "flower") {
+      return [
+        { value: "10g", label: "10g" },
+        { value: "25g", label: "25g" },
+        { value: "50g", label: "50g" },
+        { value: "100g", label: "100g" },
+        { value: "200g", label: "200g" },
+      ];
+    } else {
+      return [
+        { value: "5ml", label: "5ml Flasche" },
+        { value: "10ml", label: "10ml Flasche" },
+        { value: "15ml", label: "15ml Flasche" },
+        { value: "20ml", label: "20ml Flasche" },
+        { value: "30ml", label: "30ml Flasche" },
+        { value: "50ml", label: "50ml Flasche" },
+      ];
+    }
+  };
 
   const updateField = (field: keyof ProductData, value: any) => {
-    setProductData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+    setProductData(prev => {
+      const updated = { ...prev, [field]: value };
+      
+      // Beim Kategoriewechsel Packungsgrößen zurücksetzen
+      if (field === "category") {
+        const defaultSize = value === "flower" ? "10g" : "5ml";
+        updated.packageVariants = [{ size: defaultSize, quantity: 0, minStock: 5 }];
+        
+        // Preisfelder entsprechend anpassen
+        if (value === "flower") {
+          updated.pricePerBottle = undefined;
+          if (!updated.pricePerGram) updated.pricePerGram = 0;
+        } else {
+          updated.pricePerGram = undefined;
+          if (!updated.pricePerBottle) updated.pricePerBottle = 0;
+        }
+      }
+      
+      return updated;
+    });
+    
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: "" }));
     }
@@ -110,9 +140,10 @@ const ProductEditPage = () => {
   };
 
   const addPackageVariant = () => {
+    const defaultSize = productData.category === "flower" ? "10g" : "5ml";
     setProductData(prev => ({
       ...prev,
-      packageVariants: [...prev.packageVariants, { size: "10g", quantity: 0, minStock: 5 }]
+      packageVariants: [...prev.packageVariants, { size: defaultSize, quantity: 0, minStock: 5 }]
     }));
   };
 
@@ -125,11 +156,19 @@ const ProductEditPage = () => {
     }
   };
 
-  const calculateTotalGrams = () => {
-    return productData.packageVariants.reduce((total, variant) => {
-      const grams = parseInt(variant.size.replace('g', '')) || 0;
-      return total + (variant.quantity * grams);
-    }, 0);
+  const calculateTotalStock = () => {
+    if (productData.category === "flower") {
+      return productData.packageVariants.reduce((total, variant) => {
+        const grams = parseInt(variant.size.replace('g', '')) || 0;
+        return total + (variant.quantity * grams);
+      }, 0);
+    } else {
+      // Für Extrakte: Gesamte ml-Menge
+      return productData.packageVariants.reduce((total, variant) => {
+        const ml = parseInt(variant.size.replace('ml', '')) || 0;
+        return total + (variant.quantity * ml);
+      }, 0);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -141,8 +180,13 @@ const ProductEditPage = () => {
     if (!productData.supplier.trim()) {
       newErrors.supplier = "Lieferant ist erforderlich";
     }
-    if (productData.pricePerGram <= 0) {
-      newErrors.pricePerGram = "Preis muss größer als 0 sein";
+    
+    if (productData.category === "flower" && (productData.pricePerGram || 0) <= 0) {
+      newErrors.pricePerGram = "Preis pro Gramm muss größer als 0 sein";
+    }
+    
+    if (productData.category === "extract" && (productData.pricePerBottle || 0) <= 0) {
+      newErrors.pricePerBottle = "Preis pro Flasche muss größer als 0 sein";
     }
 
     setErrors(newErrors);
@@ -161,10 +205,8 @@ const ProductEditPage = () => {
 
     setIsLoading(true);
     try {
-      // Simulate API call
       console.log("Saving product:", productData);
       
-      // Add delay to simulate network request
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
@@ -222,7 +264,7 @@ const ProductEditPage = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="category">Kategorie *</Label>
-                    <Select value={productData.category} onValueChange={(value) => updateField('category', value)}>
+                    <Select value={productData.category} onValueChange={(value: "flower" | "extract") => updateField('category', value)}>
                       <SelectTrigger>
                         <SelectValue placeholder="Kategorie wählen" />
                       </SelectTrigger>
@@ -236,20 +278,39 @@ const ProductEditPage = () => {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="pricePerGram">Preis pro Gramm (€) *</Label>
-                    <Input
-                      id="pricePerGram"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={productData.pricePerGram}
-                      onChange={(e) => updateField('pricePerGram', parseFloat(e.target.value) || 0)}
-                      className={errors.pricePerGram ? "border-red-500" : ""}
-                    />
-                    {errors.pricePerGram && <p className="text-sm text-red-500">{errors.pricePerGram}</p>}
-                  </div>
+                  {productData.category === "flower" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="pricePerGram">Preis pro Gramm (€) *</Label>
+                      <Input
+                        id="pricePerGram"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={productData.pricePerGram || 0}
+                        onChange={(e) => updateField('pricePerGram', parseFloat(e.target.value) || 0)}
+                        className={errors.pricePerGram ? "border-red-500" : ""}
+                      />
+                      {errors.pricePerGram && <p className="text-sm text-red-500">{errors.pricePerGram}</p>}
+                    </div>
+                  )}
+
+                  {productData.category === "extract" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="pricePerBottle">Preis pro Flasche (€) *</Label>
+                      <Input
+                        id="pricePerBottle"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={productData.pricePerBottle || 0}
+                        onChange={(e) => updateField('pricePerBottle', parseFloat(e.target.value) || 0)}
+                        className={errors.pricePerBottle ? "border-red-500" : ""}
+                      />
+                      {errors.pricePerBottle && <p className="text-sm text-red-500">{errors.pricePerBottle}</p>}
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="supplier">Lieferant *</Label>
@@ -311,7 +372,9 @@ const ProductEditPage = () => {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Packungseinheiten</CardTitle>
+                <CardTitle>
+                  {productData.category === "flower" ? "Packungseinheiten" : "Flaschengrößen"}
+                </CardTitle>
                 <Button
                   type="button"
                   variant="outline"
@@ -326,7 +389,9 @@ const ProductEditPage = () => {
               {productData.packageVariants.map((variant, index) => (
                 <div key={index} className="p-4 border rounded-lg space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Packung {index + 1}</Label>
+                    <Label className="text-sm font-medium">
+                      {productData.category === "flower" ? `Packung ${index + 1}` : `Flasche ${index + 1}`}
+                    </Label>
                     {productData.packageVariants.length > 1 && (
                       <Button
                         type="button"
@@ -340,7 +405,9 @@ const ProductEditPage = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Packungsgröße</Label>
+                    <Label>
+                      {productData.category === "flower" ? "Packungsgröße" : "Flaschengröße"}
+                    </Label>
                     <Select 
                       value={variant.size} 
                       onValueChange={(value) => updatePackageVariant(index, 'size', value)}
@@ -349,7 +416,7 @@ const ProductEditPage = () => {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {packageSizeOptions.map((size) => (
+                        {getPackageSizeOptions(productData.category).map((size) => (
                           <SelectItem key={size.value} value={size.value}>
                             {size.label}
                           </SelectItem>
@@ -359,7 +426,9 @@ const ProductEditPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Bestand (Stück)</Label>
+                    <Label>
+                      Bestand ({productData.category === "flower" ? "Packungen" : "Flaschen"})
+                    </Label>
                     <Input
                       type="number"
                       min="0"
@@ -383,7 +452,7 @@ const ProductEditPage = () => {
               <div className="mt-4 p-3 bg-muted rounded-lg">
                 <div className="text-sm font-medium">Gesamtbestand</div>
                 <div className="text-2xl font-bold text-green-600">
-                  {calculateTotalGrams()}g
+                  {calculateTotalStock()}{productData.category === "flower" ? "g" : "ml"}
                 </div>
               </div>
             </CardContent>

@@ -34,13 +34,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { 
   Users, 
-  FileText, 
   ShoppingBag,
   Package,
   TrendingUp,
@@ -48,13 +46,8 @@ import {
   UserCheck,
   UserX,
   Edit,
-  Trash2,
   Download,
   Search,
-  Filter,
-  AlertCircle,
-  CheckCircle,
-  Clock,
   Euro
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -63,20 +56,18 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
   const [actionComment, setActionComment] = useState("");
   const [isUserActionDialogOpen, setIsUserActionDialogOpen] = useState(false);
-  const [isPrescriptionActionDialogOpen, setIsPrescriptionActionDialogOpen] = useState(false);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | 'suspend' | 'activate'>('approve');
+  const [actionType, setActionType] = useState<'suspend' | 'activate'>('activate');
   
   // Mock data - in real app would come from API
   const kpiData = {
     totalUsers: 2847,
     newRegistrations: 156,
     totalRevenue: 125840.50,
-    pendingPrescriptions: 23,
     activeOrders: 89,
-    lowStockItems: 7
+    lowStockItems: 7,
+    totalProducts: 245
   };
 
   const recentUsers = [
@@ -109,29 +100,6 @@ const AdminDashboard = () => {
     }
   ];
 
-  const pendingPrescriptions = [
-    {
-      id: "RX-2023-008",
-      patientName: "Anna Weber",
-      doctorName: "Dr. Thomas Meyer", 
-      submittedAt: "2023-12-15T11:30:00",
-      status: "pending_admin_review",
-      products: ["Cannabisblüte THC20", "CBD Öl 15%"],
-      total: 234.50,
-      priority: "high"
-    },
-    {
-      id: "RX-2023-009",
-      patientName: "Thomas Fischer",
-      doctorName: "Dr. Sarah Schmidt",
-      submittedAt: "2023-12-15T10:15:00", 
-      status: "pending_admin_review",
-      products: ["CBD Öl 10%"],
-      total: 89.95,
-      priority: "normal"
-    }
-  ];
-
   const recentOrders = [
     {
       id: "ORD-2023-105",
@@ -156,15 +124,13 @@ const AdminDashboard = () => {
       case 'active':
         return <Badge className="bg-green-500"><UserCheck className="w-3 h-3 mr-1" />Aktiv</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-500"><Clock className="w-3 h-3 mr-1" />Wartend</Badge>;
+        return <Badge className="bg-yellow-500">Wartend</Badge>;
       case 'suspended':
         return <Badge className="bg-red-500"><UserX className="w-3 h-3 mr-1" />Gesperrt</Badge>;
       case 'shipped':
         return <Badge className="bg-blue-500">Versendet</Badge>;
       case 'delivered':
         return <Badge className="bg-green-500">Zugestellt</Badge>;
-      case 'pending_admin_review':
-        return <Badge className="bg-orange-500"><AlertCircle className="w-3 h-3 mr-1" />Admin Prüfung</Badge>;
       default:
         return <Badge>Unbekannt</Badge>;
     }
@@ -191,12 +157,6 @@ const AdminDashboard = () => {
     setIsUserActionDialogOpen(true);
   };
 
-  const handlePrescriptionAction = (prescription: any, action: 'approve' | 'reject') => {
-    setSelectedPrescription(prescription);
-    setActionType(action);
-    setIsPrescriptionActionDialogOpen(true);
-  };
-
   const confirmUserAction = () => {
     const actionText = actionType === 'suspend' ? 'gesperrt' : 'aktiviert';
     toast({
@@ -205,17 +165,6 @@ const AdminDashboard = () => {
     });
     setIsUserActionDialogOpen(false);
     setSelectedUser(null);
-    setActionComment("");
-  };
-
-  const confirmPrescriptionAction = () => {
-    const actionText = actionType === 'approve' ? 'freigegeben' : 'abgelehnt';
-    toast({
-      title: `Rezept ${actionText}`,
-      description: `Rezept ${selectedPrescription?.id} wurde ${actionText}.`,
-    });
-    setIsPrescriptionActionDialogOpen(false);
-    setSelectedPrescription(null);
     setActionComment("");
   };
 
@@ -279,19 +228,6 @@ const AdminDashboard = () => {
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Wartende Rezepte</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">{kpiData.pendingPrescriptions}</div>
-                <FileText className="h-5 w-5 text-orange-500" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Benötigen Überprüfung</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Aktive Bestellungen</CardTitle>
             </CardHeader>
             <CardContent>
@@ -305,12 +241,25 @@ const AdminDashboard = () => {
           
           <Card>
             <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Produkte gesamt</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="text-2xl font-bold">{kpiData.totalProducts}</div>
+                <Package className="h-5 w-5 text-indigo-500" />
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">Verfügbare Produkte</p>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Niedriger Bestand</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
                 <div className="text-2xl font-bold">{kpiData.lowStockItems}</div>
-                <AlertCircle className="h-5 w-5 text-red-500" />
+                <Package className="h-5 w-5 text-red-500" />
               </div>
               <p className="text-xs text-muted-foreground mt-1">Produkte</p>
             </CardContent>
@@ -437,92 +386,6 @@ const AdminDashboard = () => {
               </Button>
             </CardContent>
           </Card>
-
-          {/* Wartende Rezepte für Admin-Überprüfung */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="w-5 h-5 mr-2" />
-                Rezepte zur Admin-Überprüfung
-              </CardTitle>
-              <CardDescription>Rezepte, die eine zusätzliche Admin-Freigabe benötigen</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {pendingPrescriptions.map((prescription) => (
-                  <div key={prescription.id} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{prescription.id}</p>
-                          {prescription.priority === 'high' && (
-                            <Badge variant="destructive">Dringend</Badge>
-                          )}
-                          {getStatusBadge(prescription.status)}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Patient: {prescription.patientName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Arzt: {prescription.doctorName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Eingereicht: {new Date(prescription.submittedAt).toLocaleDateString('de-DE')}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{prescription.total.toFixed(2)} €</p>
-                      </div>
-                    </div>
-
-                    <div className="mb-3">
-                      <p className="text-sm font-medium mb-1">Verschriebene Produkte:</p>
-                      <p className="text-sm text-muted-foreground">
-                        {prescription.products.join(", ")}
-                      </p>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        size="sm" 
-                        onClick={() => handlePrescriptionAction(prescription, 'approve')}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Freigeben
-                      </Button>
-                      
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        className="border-red-200 text-red-600 hover:bg-red-50"
-                        onClick={() => handlePrescriptionAction(prescription, 'reject')}
-                      >
-                        <AlertCircle className="w-3 h-3 mr-1" />
-                        Ablehnen
-                      </Button>
-                      
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => navigate(`/dashboard/all-prescriptions/${prescription.id}`)}
-                      >
-                        Details
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full mt-4" 
-                onClick={() => navigate("/dashboard/all-prescriptions")}
-              >
-                Alle Rezepte anzeigen
-              </Button>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Sidebar */}
@@ -597,19 +460,19 @@ const AdminDashboard = () => {
                 <Button 
                   variant="outline" 
                   className="w-full justify-start" 
-                  onClick={() => navigate("/dashboard/all-prescriptions")}
+                  onClick={() => navigate("/dashboard/all-orders")}
                 >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Alle Rezepte
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  Alle Bestellungen
                 </Button>
                 
                 <Button 
                   variant="outline" 
                   className="w-full justify-start" 
-                  onClick={() => navigate("/dashboard/all-orders")}
+                  onClick={() => navigate("/dashboard/billing")}
                 >
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  Alle Bestellungen
+                  <Euro className="mr-2 h-4 w-4" />
+                  Rechnungen
                 </Button>
                 
                 <Button 
@@ -660,47 +523,6 @@ const AdminDashboard = () => {
               variant={actionType === 'suspend' ? 'destructive' : 'default'}
             >
               {actionType === 'suspend' ? 'Sperren' : 'Aktivieren'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Prescription Action Dialog */}
-      <Dialog open={isPrescriptionActionDialogOpen} onOpenChange={setIsPrescriptionActionDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Rezept {actionType === 'approve' ? 'freigeben' : 'ablehnen'}
-            </DialogTitle>
-            <DialogDescription>
-              Möchten Sie das Rezept {selectedPrescription?.id} wirklich {actionType === 'approve' ? 'freigeben' : 'ablehnen'}?
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <Label htmlFor="prescriptionComment" className="block mb-2">
-              {actionType === 'approve' ? 'Kommentar (optional)' : 'Ablehnungsgrund *'}
-            </Label>
-            <Textarea
-              id="prescriptionComment"
-              value={actionComment}
-              onChange={(e) => setActionComment(e.target.value)}
-              placeholder={actionType === 'approve' ? 'Zusätzliche Hinweise...' : 'Grund für die Ablehnung...'}
-              rows={4}
-              required={actionType === 'reject'}
-            />
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPrescriptionActionDialogOpen(false)}>
-              Abbrechen
-            </Button>
-            <Button 
-              onClick={confirmPrescriptionAction}
-              variant={actionType === 'reject' ? 'destructive' : 'default'}
-              className={actionType === 'approve' ? 'bg-green-600 hover:bg-green-700' : ''}
-            >
-              {actionType === 'approve' ? 'Freigeben' : 'Ablehnen'}
             </Button>
           </DialogFooter>
         </DialogContent>

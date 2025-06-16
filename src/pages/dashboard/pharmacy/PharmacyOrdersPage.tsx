@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import {
   Card,
@@ -62,9 +61,10 @@ import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface OrderItem {
   name: string;
+  packageSize: string;
   quantity: number;
-  unit: string;
   stock?: number;
+  totalGrams?: number;
 }
 
 interface Order {
@@ -95,7 +95,7 @@ const PharmacyOrdersPage = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   
-  // Mock data - erweitert für bessere Demonstration
+  // Erweiterte Mock-Daten mit Packungsgrößen und Beständen
   const orders: Order[] = [
     {
       id: "ORD-2023-001",
@@ -103,8 +103,20 @@ const PharmacyOrdersPage = () => {
       patientName: "Max Mustermann",
       patientAddress: "Hauptstr. 123, 10115 Berlin",
       items: [
-        { name: "Cannabisblüte THC18", quantity: 10, unit: "g", stock: 25 },
-        { name: "CBD Öl 10%", quantity: 1, unit: "Flasche", stock: 8 },
+        { 
+          name: "Cannabisblüte THC18", 
+          packageSize: "10g", 
+          quantity: 2, 
+          stock: 25,
+          totalGrams: 20
+        },
+        { 
+          name: "CBD Öl 10%", 
+          packageSize: "10ml", 
+          quantity: 1, 
+          stock: 8,
+          totalGrams: 0
+        },
       ],
       shippingMethod: "dhl",
       totalAmount: 159.89,
@@ -118,7 +130,13 @@ const PharmacyOrdersPage = () => {
       patientName: "Anna Schmidt",
       patientAddress: "Musterweg 45, 20095 Hamburg",
       items: [
-        { name: "Cannabisblüte THC22", quantity: 5, unit: "g", stock: 5 },
+        { 
+          name: "Cannabisblüte THC22", 
+          packageSize: "25g", 
+          quantity: 1, 
+          stock: 5,
+          totalGrams: 25
+        },
       ],
       shippingMethod: "kurier",
       totalAmount: 74.95,
@@ -133,8 +151,20 @@ const PharmacyOrdersPage = () => {
       patientName: "Julia Weber",
       patientAddress: "Gartenstr. 78, 80331 München",
       items: [
-        { name: "Cannabisblüte THC18", quantity: 5, unit: "g", stock: 25 },
-        { name: "CBD Öl 5%", quantity: 2, unit: "Flasche", stock: 15 },
+        { 
+          name: "Cannabisblüte THC18", 
+          packageSize: "10g", 
+          quantity: 1, 
+          stock: 25,
+          totalGrams: 10
+        },
+        { 
+          name: "CBD Öl 5%", 
+          packageSize: "30ml", 
+          quantity: 2, 
+          stock: 15,
+          totalGrams: 0
+        },
       ],
       shippingMethod: "dhl",
       totalAmount: 104.93,
@@ -150,7 +180,13 @@ const PharmacyOrdersPage = () => {
       patientName: "Thomas Becker",
       patientAddress: "Lindenallee 12, 50667 Köln",
       items: [
-        { name: "CBD Öl 15%", quantity: 1, unit: "Flasche", stock: 12 },
+        { 
+          name: "CBD Öl 15%", 
+          packageSize: "10ml", 
+          quantity: 1, 
+          stock: 12,
+          totalGrams: 0
+        },
       ],
       shippingMethod: "abholung",
       totalAmount: 39.99,
@@ -246,75 +282,88 @@ const PharmacyOrdersPage = () => {
     );
   };
 
-  // Mobile Card Component
-  const OrderCard = ({ order }: { order: Order }) => (
-    <Card className="mb-4">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-sm font-medium">{order.id}</CardTitle>
-            <p className="text-sm text-muted-foreground">{order.patientName}</p>
+  const calculateTotalGramsForOrder = (items: OrderItem[]) => {
+    return items.reduce((total, item) => total + (item.totalGrams || 0), 0);
+  };
+
+  // Mobile Card Component mit verbesserter Produktanzeige
+  const OrderCard = ({ order }: { order: Order }) => {
+    const totalGrams = calculateTotalGramsForOrder(order.items);
+    
+    return (
+      <Card className="mb-4">
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-sm font-medium">{order.id}</CardTitle>
+              <p className="text-sm text-muted-foreground">{order.patientName}</p>
+            </div>
+            {getStatusBadge(order.status)}
           </div>
-          {getStatusBadge(order.status)}
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <MapPin className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground truncate">
-              {order.patientAddress.split(',')[0]}...
-            </span>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="space-y-2 text-sm">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground truncate">
+                {order.patientAddress.split(',')[0]}...
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Package className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs">
+                {order.items.length} Produkt{order.items.length !== 1 ? 'e' : ''}
+                {totalGrams > 0 && (
+                  <span className="ml-1 font-medium text-green-600">
+                    ({totalGrams}g gesamt)
+                  </span>
+                )}
+              </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Truck className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs">{getShippingMethodLabel(order.shippingMethod)}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Clock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {new Date(order.createdAt).toLocaleDateString('de-DE')}
+              </span>
+            </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Package className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs">
-              {order.items.length} Produkt{order.items.length !== 1 ? 'e' : ''}
-            </span>
+          <div className="flex justify-between items-center mt-4 pt-3 border-t">
+            <span className="font-medium">{order.totalAmount.toFixed(2)} €</span>
+            <div className="flex gap-2">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  setSelectedOrder(order);
+                  setShowDetailDialog(true);
+                }}
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  setEditingOrder(order);
+                  setShowEditDialog(true);
+                }}
+              >
+                <Edit3 className="h-3 w-3" />
+              </Button>
+            </div>
           </div>
-          
-          <div className="flex items-center gap-2">
-            <Truck className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs">{getShippingMethodLabel(order.shippingMethod)}</span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Clock className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">
-              {new Date(order.createdAt).toLocaleDateString('de-DE')}
-            </span>
-          </div>
-        </div>
-        
-        <div className="flex justify-between items-center mt-4 pt-3 border-t">
-          <span className="font-medium">{order.totalAmount.toFixed(2)} €</span>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => {
-                setSelectedOrder(order);
-                setShowDetailDialog(true);
-              }}
-            >
-              <Eye className="h-3 w-3" />
-            </Button>
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => {
-                setEditingOrder(order);
-                setShowEditDialog(true);
-              }}
-            >
-              <Edit3 className="h-3 w-3" />
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
+        </CardContent>
+      </Card>
+    );
+  };
   
   return (
     <div className="space-y-6">
@@ -408,7 +457,7 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
       
-      {/* Bestellungen - Desktop Tabelle / Mobile Karten */}
+      {/* Bestellungen - Desktop Tabelle / Mobile Karten mit verbesserter Produktdarstellung */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -453,95 +502,108 @@ const PharmacyOrdersPage = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.map((order) => (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedOrders.includes(order.id)}
-                          onCheckedChange={() => toggleOrderSelection(order.id)}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        <div>
-                          <p className="font-mono text-sm">{order.id}</p>
-                          <p className="text-xs text-muted-foreground">{order.prescriptionId}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{order.patientName}</p>
-                          <p className="text-xs text-muted-foreground truncate max-w-32">
-                            {order.patientAddress.split(',')[0]}...
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {order.items.map((item, index) => (
-                            <div key={index} className="text-xs">
-                              <span className="font-medium">{item.name}</span>
-                              <br />
-                              <span className="text-muted-foreground">
-                                {item.quantity} {item.unit}
-                                {item.stock !== undefined && (
-                                  <span className={`ml-1 ${item.stock < 10 ? 'text-red-500' : 'text-green-600'}`}>
-                                    (Lager: {item.stock})
-                                  </span>
-                                )}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          <Truck className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-sm">{getShippingMethodLabel(order.shippingMethod)}</span>
-                        </div>
-                        {order.trackingId && (
-                          <p className="text-xs text-muted-foreground font-mono mt-1">
-                            {order.trackingId}
-                          </p>
-                        )}
-                      </TableCell>
-                      <TableCell>{getStatusBadge(order.status)}</TableCell>
-                      <TableCell>
-                        <div className="text-sm">
-                          <p>{new Date(order.createdAt).toLocaleDateString('de-DE')}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Upd: {new Date(order.lastUpdated).toLocaleDateString('de-DE')}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {order.totalAmount.toFixed(2)} €
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-1">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedOrder(order);
-                              setShowDetailDialog(true);
-                            }}
-                          >
-                            <Eye className="h-3 w-3" />
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => {
-                              setEditingOrder(order);
-                              setShowEditDialog(true);
-                            }}
-                          >
-                            <Edit3 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {filteredOrders.map((order) => {
+                    const totalGrams = calculateTotalGramsForOrder(order.items);
+                    return (
+                      <TableRow key={order.id}>
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedOrders.includes(order.id)}
+                            onCheckedChange={() => toggleOrderSelection(order.id)}
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          <div>
+                            <p className="font-mono text-sm">{order.id}</p>
+                            <p className="text-xs text-muted-foreground">{order.prescriptionId}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{order.patientName}</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-32">
+                              {order.patientAddress.split(',')[0]}...
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="text-xs">
+                                <span className="font-medium">{item.name}</span>
+                                <br />
+                                <span className="text-muted-foreground">
+                                  {item.quantity}x {item.packageSize}
+                                  {item.totalGrams && item.totalGrams > 0 && (
+                                    <span className="ml-1 text-green-600 font-medium">
+                                      ({item.totalGrams}g)
+                                    </span>
+                                  )}
+                                  {item.stock !== undefined && (
+                                    <span className={`ml-1 ${item.stock < 10 ? 'text-red-500' : 'text-green-600'}`}>
+                                      (Lager: {item.stock})
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                            {totalGrams > 0 && (
+                              <div className="text-xs font-medium text-green-600 mt-1">
+                                Gesamt: {totalGrams}g
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1">
+                            <Truck className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-sm">{getShippingMethodLabel(order.shippingMethod)}</span>
+                          </div>
+                          {order.trackingId && (
+                            <p className="text-xs text-muted-foreground font-mono mt-1">
+                              {order.trackingId}
+                            </p>
+                          )}
+                        </TableCell>
+                        <TableCell>{getStatusBadge(order.status)}</TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <p>{new Date(order.createdAt).toLocaleDateString('de-DE')}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Upd: {new Date(order.lastUpdated).toLocaleDateString('de-DE')}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {order.totalAmount.toFixed(2)} €
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-1">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedOrder(order);
+                                setShowDetailDialog(true);
+                              }}
+                            >
+                              <Eye className="h-3 w-3" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => {
+                                setEditingOrder(order);
+                                setShowEditDialog(true);
+                              }}
+                            >
+                              <Edit3 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                   
                   {filteredOrders.length === 0 && (
                     <TableRow>
@@ -557,7 +619,7 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
+      {/* Detail Dialog mit verbesserter Produktanzeige */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -589,7 +651,12 @@ const PharmacyOrdersPage = () => {
                       <div>
                         <p className="font-medium">{item.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {item.quantity} {item.unit}
+                          {item.quantity}x {item.packageSize}
+                          {item.totalGrams && item.totalGrams > 0 && (
+                            <span className="ml-2 text-green-600 font-medium">
+                              ({item.totalGrams}g)
+                            </span>
+                          )}
                           {item.stock !== undefined && (
                             <span className={`ml-2 ${item.stock < 10 ? 'text-red-500' : 'text-green-600'}`}>
                               Lagerbestand: {item.stock}
@@ -599,6 +666,14 @@ const PharmacyOrdersPage = () => {
                       </div>
                     </div>
                   ))}
+                  
+                  {calculateTotalGramsForOrder(selectedOrder.items) > 0 && (
+                    <div className="p-2 bg-green-50 border border-green-200 rounded">
+                      <p className="text-sm font-medium text-green-700">
+                        Gesamtmenge: {calculateTotalGramsForOrder(selectedOrder.items)}g Cannabis
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
               

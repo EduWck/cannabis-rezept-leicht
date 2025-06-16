@@ -20,15 +20,6 @@ import {
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Plus, Trash2 } from "lucide-react";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm, useFieldArray } from "react-hook-form";
 
 interface PackageVariant {
   size: string;
@@ -36,15 +27,15 @@ interface PackageVariant {
   minStock: number;
 }
 
-interface ProductFormData {
+interface ProductData {
   name: string;
   category: string;
   packageVariants: PackageVariant[];
   pricePerGram: number;
   supplier: string;
   description: string;
-  thcContent?: number;
-  cbdContent?: number;
+  thcContent: number;
+  cbdContent: number;
 }
 
 const ProductEditPage = () => {
@@ -52,29 +43,25 @@ const ProductEditPage = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
-  const form = useForm<ProductFormData>({
-    defaultValues: {
-      name: "",
-      category: "flower",
-      packageVariants: [{ size: "10g", quantity: 0, minStock: 5 }],
-      pricePerGram: 0,
-      supplier: "",
-      description: "",
-      thcContent: 0,
-      cbdContent: 0,
-    },
+  // Simple state management instead of React Hook Form
+  const [productData, setProductData] = useState<ProductData>({
+    name: "",
+    category: "flower",
+    packageVariants: [{ size: "10g", quantity: 0, minStock: 5 }],
+    pricePerGram: 0,
+    supplier: "",
+    description: "",
+    thcContent: 0,
+    cbdContent: 0,
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "packageVariants"
-  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock data - in real app would fetch from API based on id
+  // Hardcoded fallback data to ensure stability
   useEffect(() => {
     if (id && id !== "new") {
-      // Simulate loading existing product data
-      const mockProduct = {
+      // Mock product data with fallbacks
+      const mockProduct: ProductData = {
         name: "Cannabisblüte THC18",
         category: "flower",
         packageVariants: [
@@ -87,9 +74,9 @@ const ProductEditPage = () => {
         thcContent: 18,
         cbdContent: 1,
       };
-      form.reset(mockProduct);
+      setProductData(mockProduct);
     }
-  }, [id, form]);
+  }, [id]);
 
   const categories = [
     { value: "flower", label: "Cannabis Blüte" },
@@ -105,33 +92,84 @@ const ProductEditPage = () => {
     { value: "200g", label: "200g" },
   ];
 
+  const updateField = (field: keyof ProductData, value: any) => {
+    setProductData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const updatePackageVariant = (index: number, field: keyof PackageVariant, value: any) => {
+    setProductData(prev => ({
+      ...prev,
+      packageVariants: prev.packageVariants.map((variant, i) => 
+        i === index ? { ...variant, [field]: value } : variant
+      )
+    }));
+  };
+
   const addPackageVariant = () => {
-    append({ size: "10g", quantity: 0, minStock: 5 });
+    setProductData(prev => ({
+      ...prev,
+      packageVariants: [...prev.packageVariants, { size: "10g", quantity: 0, minStock: 5 }]
+    }));
   };
 
   const removePackageVariant = (index: number) => {
-    if (fields.length > 1) {
-      remove(index);
+    if (productData.packageVariants.length > 1) {
+      setProductData(prev => ({
+        ...prev,
+        packageVariants: prev.packageVariants.filter((_, i) => i !== index)
+      }));
     }
   };
 
   const calculateTotalGrams = () => {
-    const variants = form.watch("packageVariants");
-    return variants.reduce((total, variant) => {
-      const grams = parseInt(variant.size.replace('g', ''));
+    return productData.packageVariants.reduce((total, variant) => {
+      const grams = parseInt(variant.size.replace('g', '')) || 0;
       return total + (variant.quantity * grams);
     }, 0);
   };
 
-  const onSubmit = async (data: ProductFormData) => {
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!productData.name.trim()) {
+      newErrors.name = "Produktname ist erforderlich";
+    }
+    if (!productData.supplier.trim()) {
+      newErrors.supplier = "Lieferant ist erforderlich";
+    }
+    if (productData.pricePerGram <= 0) {
+      newErrors.pricePerGram = "Preis muss größer als 0 sein";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      toast({
+        title: "Fehler",
+        description: "Bitte überprüfen Sie die markierten Felder.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // In a real app, this would make an API call
-      console.log("Saving product:", data);
+      // Simulate API call
+      console.log("Saving product:", productData);
+      
+      // Add delay to simulate network request
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
         title: id === "new" ? "Produkt erstellt" : "Produkt aktualisiert",
-        description: `${data.name} wurde erfolgreich ${id === "new" ? "erstellt" : "aktualisiert"}.`,
+        description: `${productData.name} wurde erfolgreich ${id === "new" ? "erstellt" : "aktualisiert"}.`,
       });
       
       navigate("/dashboard/pharmacy-inventory");
@@ -168,147 +206,103 @@ const ProductEditPage = () => {
               <CardTitle>Produktdetails</CardTitle>
             </CardHeader>
             <CardContent>
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Produktname *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Produktname eingeben" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Produktname *</Label>
+                    <Input
+                      id="name"
+                      placeholder="Produktname eingeben"
+                      value={productData.name}
+                      onChange={(e) => updateField('name', e.target.value)}
+                      className={errors.name ? "border-red-500" : ""}
                     />
+                    {errors.name && <p className="text-sm text-red-500">{errors.name}</p>}
+                  </div>
 
-                    <FormField
-                      control={form.control}
-                      name="category"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Kategorie *</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Kategorie wählen" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {categories.map((category) => (
-                                <SelectItem key={category.value} value={category.value}>
-                                  {category.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Kategorie *</Label>
+                    <Select value={productData.category} onValueChange={(value) => updateField('category', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Kategorie wählen" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.value} value={category.value}>
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="pricePerGram">Preis pro Gramm (€) *</Label>
+                    <Input
+                      id="pricePerGram"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={productData.pricePerGram}
+                      onChange={(e) => updateField('pricePerGram', parseFloat(e.target.value) || 0)}
+                      className={errors.pricePerGram ? "border-red-500" : ""}
                     />
+                    {errors.pricePerGram && <p className="text-sm text-red-500">{errors.pricePerGram}</p>}
+                  </div>
 
-                    <FormField
-                      control={form.control}
-                      name="pricePerGram"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Preis pro Gramm (€) *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              placeholder="0.00"
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  <div className="space-y-2">
+                    <Label htmlFor="supplier">Lieferant *</Label>
+                    <Input
+                      id="supplier"
+                      placeholder="Lieferant eingeben"
+                      value={productData.supplier}
+                      onChange={(e) => updateField('supplier', e.target.value)}
+                      className={errors.supplier ? "border-red-500" : ""}
                     />
+                    {errors.supplier && <p className="text-sm text-red-500">{errors.supplier}</p>}
+                  </div>
 
-                    <FormField
-                      control={form.control}
-                      name="supplier"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Lieferant *</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Lieferant eingeben" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="thcContent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>THC-Gehalt (%)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="0"
-                              max="100"
-                              step="0.1"
-                              placeholder="0.0"
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="cbdContent"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>CBD-Gehalt (%)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              min="0"
-                              max="100"
-                              step="0.1"
-                              placeholder="0.0"
-                              {...field}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  <div className="space-y-2">
+                    <Label htmlFor="thcContent">THC-Gehalt (%)</Label>
+                    <Input
+                      id="thcContent"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      placeholder="0.0"
+                      value={productData.thcContent}
+                      onChange={(e) => updateField('thcContent', parseFloat(e.target.value) || 0)}
                     />
                   </div>
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Beschreibung</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Produktbeschreibung eingeben..."
-                            className="min-h-[100px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                  <div className="space-y-2">
+                    <Label htmlFor="cbdContent">CBD-Gehalt (%)</Label>
+                    <Input
+                      id="cbdContent"
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      placeholder="0.0"
+                      value={productData.cbdContent}
+                      onChange={(e) => updateField('cbdContent', parseFloat(e.target.value) || 0)}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Beschreibung</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Produktbeschreibung eingeben..."
+                    className="min-h-[100px]"
+                    value={productData.description}
+                    onChange={(e) => updateField('description', e.target.value)}
                   />
-                </form>
-              </Form>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -329,11 +323,11 @@ const ProductEditPage = () => {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              {fields.map((field, index) => (
-                <div key={field.id} className="p-4 border rounded-lg space-y-3">
+              {productData.packageVariants.map((variant, index) => (
+                <div key={index} className="p-4 border rounded-lg space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">Packung {index + 1}</Label>
-                    {fields.length > 1 && (
+                    {productData.packageVariants.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
@@ -345,65 +339,44 @@ const ProductEditPage = () => {
                     )}
                   </div>
                   
-                  <FormField
-                    control={form.control}
-                    name={`packageVariants.${index}.size`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Packungsgröße</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {packageSizeOptions.map((size) => (
-                              <SelectItem key={size.value} value={size.value}>
-                                {size.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <Label>Packungsgröße</Label>
+                    <Select 
+                      value={variant.size} 
+                      onValueChange={(value) => updatePackageVariant(index, 'size', value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {packageSizeOptions.map((size) => (
+                          <SelectItem key={size.value} value={size.value}>
+                            {size.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name={`packageVariants.${index}.quantity`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bestand (Stück)</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <Label>Bestand (Stück)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={variant.quantity}
+                      onChange={(e) => updatePackageVariant(index, 'quantity', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name={`packageVariants.${index}.minStock`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Mindestbestand</FormLabel>
-                        <FormControl>
-                          <Input
-                            type="number"
-                            min="0"
-                            {...field}
-                            onChange={(e) => field.onChange(parseInt(e.target.value))}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-2">
+                    <Label>Mindestbestand</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      value={variant.minStock}
+                      onChange={(e) => updatePackageVariant(index, 'minStock', parseInt(e.target.value) || 0)}
+                    />
+                  </div>
                 </div>
               ))}
               
@@ -426,7 +399,7 @@ const ProductEditPage = () => {
               Abbrechen
             </Button>
             <Button 
-              onClick={form.handleSubmit(onSubmit)} 
+              onClick={handleSubmit} 
               disabled={isLoading}
               className="w-full"
             >

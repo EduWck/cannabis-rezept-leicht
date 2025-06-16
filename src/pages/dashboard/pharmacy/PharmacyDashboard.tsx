@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -66,7 +65,7 @@ const PharmacyDashboard = () => {
       status: "pending",
       total: 89.95,
       items: [
-        { name: "Cannabisblüte THC18", quantity: "10g" }
+        { name: "Cannabisblüte THC18", quantity: "10g", type: "flower" }
       ],
       trackingId: null,
       priority: "normal"
@@ -79,8 +78,8 @@ const PharmacyDashboard = () => {
       status: "processing",
       total: 156.50,
       items: [
-        { name: "CBD Öl 10%", quantity: "30ml" },
-        { name: "Cannabisblüte THC15", quantity: "5g" }
+        { name: "THC Extrakt 25%", quantity: "1 Flasche à 10ml", type: "extract" },
+        { name: "Cannabisblüte THC15", quantity: "5g", type: "flower" }
       ],
       trackingId: null,
       priority: "high"
@@ -93,7 +92,7 @@ const PharmacyDashboard = () => {
       status: "shipped",
       total: 234.75,
       items: [
-        { name: "CBD Öl 15%", quantity: "50ml" }
+        { name: "CBD Extrakt 15%", quantity: "2 Flaschen à 15ml", type: "extract" }
       ],
       trackingId: "DHL123456789",
       priority: "normal"
@@ -101,9 +100,29 @@ const PharmacyDashboard = () => {
   ];
 
   const lowStockProducts = [
-    { name: "CBD Öl 10%", currentStock: 3, minStock: 10, unit: "Flaschen" },
-    { name: "Cannabisblüte THC18", currentStock: 2, minStock: 5, unit: "10g Packungen" },
-    { name: "CBD Kapseln 25mg", currentStock: 1, minStock: 8, unit: "Dosen" }
+    { 
+      name: "THC Extrakt 25%", 
+      currentStock: 3, 
+      minStock: 10, 
+      unit: "Flaschen à 10ml",
+      type: "extract",
+      bottleSize: 10
+    },
+    { 
+      name: "Cannabisblüte THC18", 
+      currentStock: 2, 
+      minStock: 5, 
+      unit: "10g Packungen",
+      type: "flower"
+    },
+    { 
+      name: "CBD Extrakt 15%", 
+      currentStock: 1, 
+      minStock: 8, 
+      unit: "Flaschen à 15ml",
+      type: "extract",
+      bottleSize: 15
+    }
   ];
 
   const pendingPrescriptions = [
@@ -112,7 +131,7 @@ const PharmacyDashboard = () => {
       patientName: "Thomas Fischer",
       doctorName: "Dr. Sarah Schmidt",
       submittedAt: "2023-12-15T10:30:00",
-      products: ["Cannabisblüte THC20", "CBD Öl 5%"],
+      products: ["Cannabisblüte THC20", "THC Extrakt 20%"],
       urgency: "normal"
     },
     {
@@ -120,7 +139,7 @@ const PharmacyDashboard = () => {
       patientName: "Maria Gonzalez",
       doctorName: "Dr. Michael Weber",
       submittedAt: "2023-12-15T09:15:00",
-      products: ["CBD Öl 15%"],
+      products: ["CBD Extrakt 10%"],
       urgency: "high"
     }
   ];
@@ -444,6 +463,11 @@ const PharmacyDashboard = () => {
                     <p className="text-xs text-red-600">
                       Mindestbestand: {product.minStock} {product.unit}
                     </p>
+                    {product.type === "extract" && product.bottleSize && (
+                      <p className="text-xs text-blue-600">
+                        Gesamt: {product.currentStock * product.bottleSize}ml verfügbar
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { 
@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { DemoAccountsInfo } from "@/components/auth/DemoAccountsInfo";
 
 const UsersManagementPage = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filter, setFilter] = useState("all");
   
@@ -34,10 +35,7 @@ const UsersManagementPage = () => {
   });
   
   const handleEdit = (id: number, name: string) => {
-    toast({
-      title: "Benutzer bearbeiten",
-      description: `Bearbeitung von ${name} (ID: ${id})`
-    });
+    navigate(`/dashboard/users/${id}`);
   };
   
   const handleDelete = (id: number, name: string) => {
@@ -144,7 +142,14 @@ const UsersManagementPage = () => {
               <tbody>
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="border-b hover:bg-muted/50">
-                    <td className="py-3 px-4">{user.name}</td>
+                    <td className="py-3 px-4">
+                      <button 
+                        onClick={() => handleEdit(user.id, user.name)}
+                        className="text-left hover:text-primary hover:underline"
+                      >
+                        {user.name}
+                      </button>
+                    </td>
                     <td className="py-3 px-4">{user.email}</td>
                     <td className="py-3 px-4">
                       <span className={`px-2 py-1 rounded-full text-xs ${getRoleClass(user.role)}`}>
@@ -160,10 +165,20 @@ const UsersManagementPage = () => {
                     </td>
                     <td className="py-3 px-4">{user.joined}</td>
                     <td className="py-3 px-4 text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(user.id, user.name)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleEdit(user.id, user.name)}
+                        title="Benutzer bearbeiten"
+                      >
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(user.id, user.name)}>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => handleDelete(user.id, user.name)}
+                        title="Benutzer löschen"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </td>

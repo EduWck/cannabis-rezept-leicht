@@ -1,4 +1,3 @@
-
 import { Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -35,6 +34,7 @@ import MedicalFindingsPage from "@/pages/dashboard/patient/MedicalFindingsPage";
 
 // Admin pages
 import UsersManagementPage from "@/pages/dashboard/admin/UsersManagementPage";
+import UserEditPage from "@/pages/dashboard/admin/UserEditPage";
 import AllPrescriptionsPage from "@/pages/dashboard/admin/AllPrescriptionsPage";
 import AllOrdersPage from "@/pages/dashboard/admin/AllOrdersPage";
 import AllAppointmentsPage from "@/pages/dashboard/admin/AllAppointmentsPage";
@@ -111,6 +111,7 @@ const AppRoutes = [
     
     {/* Admin routes */}
     <Route key="users" path="/dashboard/users" element={<UsersManagementPage />} />
+    <Route key="user-edit" path="/dashboard/users/:id" element={<UserEditPage />} />
     <Route key="all-prescriptions" path="/dashboard/all-prescriptions" element={<AllPrescriptionsPage />} />
     <Route key="all-orders" path="/dashboard/all-orders" element={<AllOrdersPage />} />
     <Route key="all-appointments" path="/dashboard/all-appointments" element={<AllAppointmentsPage />} />

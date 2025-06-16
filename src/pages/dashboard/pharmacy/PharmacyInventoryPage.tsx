@@ -31,77 +31,96 @@ import {
   FileEdit,
   CheckCircle,
   AlertTriangle,
-  XCircle
+  XCircle,
+  Package
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
+
+interface PackageVariant {
+  size: string; // z.B. "10g", "50g"
+  quantity: number; // Anzahl verfügbarer Packungen
+  minStock: number; // Mindestbestand für diese Packungseinheit
+}
+
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  packageVariants: PackageVariant[];
+  pricePerGram: number;
+  supplier: string;
+  thcContent?: number;
+  cbdContent?: number;
+}
 
 const PharmacyInventoryPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
-  // Mock data - in real app would come from API
-  const products = [
+  // Mock data - neue Struktur mit Packungsvarianten
+  const products: Product[] = [
     {
       id: "PROD-001",
       name: "Cannabisblüte THC18",
       category: "flower",
-      stock: 25, // Anzahl Packungen
-      minStock: 10,
+      packageVariants: [
+        { size: "10g", quantity: 20, minStock: 5 },
+        { size: "50g", quantity: 5, minStock: 2 }
+      ],
       pricePerGram: 12.99,
-      packageSize: "10g",
       supplier: "CannaGrow GmbH",
+      thcContent: 18,
+      cbdContent: 1,
     },
     {
       id: "PROD-002",
       name: "Cannabisblüte THC22",
       category: "flower",
-      stock: 5, // Anzahl Packungen
-      minStock: 10,
+      packageVariants: [
+        { size: "10g", quantity: 3, minStock: 5 },
+        { size: "25g", quantity: 2, minStock: 3 }
+      ],
       pricePerGram: 14.99,
-      packageSize: "10g",
       supplier: "CannaGrow GmbH",
+      thcContent: 22,
+      cbdContent: 0.5,
     },
     {
       id: "PROD-003",
       name: "CBD Öl 5%",
       category: "oil",
-      stock: 15, // Anzahl Packungen
-      minStock: 5,
+      packageVariants: [
+        { size: "100g", quantity: 15, minStock: 3 }
+      ],
       pricePerGram: 19.99,
-      packageSize: "100g",
       supplier: "NaturoCBD AG",
+      cbdContent: 5,
     },
     {
       id: "PROD-004",
       name: "CBD Öl 10%",
       category: "oil",
-      stock: 8, // Anzahl Packungen
-      minStock: 5,
+      packageVariants: [
+        { size: "100g", quantity: 8, minStock: 3 },
+        { size: "200g", quantity: 2, minStock: 1 }
+      ],
       pricePerGram: 29.99,
-      packageSize: "100g",
       supplier: "NaturoCBD AG",
+      cbdContent: 10,
     },
     {
       id: "PROD-005",
-      name: "CBD Öl 15%",
-      category: "oil",
-      stock: 12, // Anzahl Packungen
-      minStock: 5,
-      pricePerGram: 39.99,
-      packageSize: "10g",
-      supplier: "NaturoCBD AG",
-    },
-    {
-      id: "PROD-006",
       name: "Cannabis Extrakt THC/CBD 1:1",
       category: "extract",
-      stock: 0, // Anzahl Packungen
-      minStock: 3,
+      packageVariants: [
+        { size: "10g", quantity: 0, minStock: 3 }
+      ],
       pricePerGram: 49.99,
-      packageSize: "10g",
       supplier: "ExtractMed GmbH",
+      thcContent: 25,
+      cbdContent: 25,
     },
   ];
   
@@ -111,14 +130,26 @@ const PharmacyInventoryPage = () => {
     { value: "extract", label: "Extrakt" },
   ];
   
-  // Funktion zur Berechnung der Gramm basierend auf Packungen und Packungseinheit
-  const calculateTotalGrams = (stock: number, packageSize: string) => {
-    const grams = parseInt(packageSize.replace('g', ''));
-    return stock * grams;
+  // Berechnung der Gesamtgramm für ein Produkt
+  const calculateTotalGrams = (packageVariants: PackageVariant[]) => {
+    return packageVariants.reduce((total, variant) => {
+      const grams = parseInt(variant.size.replace('g', ''));
+      return total + (variant.quantity * grams);
+    }, 0);
   };
   
-  const getStockStatus = (stock: number, minStock: number) => {
-    if (stock === 0) {
+  // Berechnung ob Produkt unter Mindestbestand ist
+  const isLowStock = (packageVariants: PackageVariant[]) => {
+    return packageVariants.some(variant => variant.quantity < variant.minStock);
+  };
+  
+  // Berechnung ob Produkt ausverkauft ist
+  const isOutOfStock = (packageVariants: PackageVariant[]) => {
+    return packageVariants.every(variant => variant.quantity === 0);
+  };
+  
+  const getStockStatus = (packageVariants: PackageVariant[]) => {
+    if (isOutOfStock(packageVariants)) {
       return (
         <Badge variant="destructive" className="flex items-center gap-1">
           <XCircle className="h-3 w-3" />
@@ -126,7 +157,7 @@ const PharmacyInventoryPage = () => {
         </Badge>
       );
     }
-    if (stock < minStock) {
+    if (isLowStock(packageVariants)) {
       return (
         <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-100 text-yellow-800 border-yellow-300">
           <AlertTriangle className="h-3 w-3" />
@@ -196,7 +227,7 @@ const PharmacyInventoryPage = () => {
         <CardHeader>
           <CardTitle>Produktbestand</CardTitle>
           <CardDescription>
-            Verwalten Sie Ihren Produktbestand und aktualisieren Sie die Mengen.
+            Verwalten Sie Ihren Produktbestand mit verschiedenen Packungseinheiten.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -207,10 +238,10 @@ const PharmacyInventoryPage = () => {
                   <TableHead>Produkt-ID</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>Kategorie</TableHead>
-                  <TableHead>Bestand</TableHead>
+                  <TableHead>Gesamtbestand</TableHead>
+                  <TableHead>Packungseinheiten</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Preis/g</TableHead>
-                  <TableHead>Packungseinheit</TableHead>
                   <TableHead>Aktionen</TableHead>
                 </TableRow>
               </TableHeader>
@@ -218,25 +249,45 @@ const PharmacyInventoryPage = () => {
                 {filteredProducts.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell className="font-mono text-sm">{product.id}</TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell className="font-medium">
+                      <div>
+                        {product.name}
+                        {(product.thcContent || product.cbdContent) && (
+                          <div className="text-sm text-muted-foreground">
+                            {product.thcContent && `THC: ${product.thcContent}%`}
+                            {product.thcContent && product.cbdContent && " | "}
+                            {product.cbdContent && `CBD: ${product.cbdContent}%`}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       {categories.find(c => c.value === product.category)?.label || product.category}
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
-                        <div className={product.stock < product.minStock ? "text-red-500 font-bold" : "font-medium"}>
-                          {product.stock} Stück
-                        </div>
-                        <div className={`text-sm ${product.stock < product.minStock ? "text-red-400" : "text-muted-foreground"}`}>
-                          ({calculateTotalGrams(product.stock, product.packageSize)}g gesamt)
-                        </div>
+                      <div className={`text-lg font-bold ${isLowStock(product.packageVariants) ? "text-red-500" : "text-green-600"}`}>
+                        {calculateTotalGrams(product.packageVariants)}g
                       </div>
                     </TableCell>
-                    <TableCell>{getStockStatus(product.stock, product.minStock)}</TableCell>
-                    <TableCell>{product.pricePerGram.toFixed(2)} €</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{product.packageSize}</Badge>
+                      <div className="space-y-1">
+                        {product.packageVariants.map((variant, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Package className="h-3 w-3 text-muted-foreground" />
+                            <span className={`text-sm ${variant.quantity < variant.minStock ? "text-red-500 font-medium" : ""}`}>
+                              {variant.quantity}x {variant.size}
+                            </span>
+                            {variant.quantity < variant.minStock && (
+                              <Badge variant="outline" className="text-xs px-1 py-0">
+                                Min: {variant.minStock}
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </TableCell>
+                    <TableCell>{getStockStatus(product.packageVariants)}</TableCell>
+                    <TableCell>{product.pricePerGram.toFixed(2)} €</TableCell>
                     <TableCell>
                       <Button 
                         size="sm" 

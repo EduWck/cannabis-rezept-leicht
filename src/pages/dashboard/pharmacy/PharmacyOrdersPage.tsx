@@ -231,11 +231,11 @@ const PharmacyOrdersPage = () => {
     setSelectedOrders([]);
   };
   
-  const handleTrackingUpdate = () => {
+  const handleOrderUpdate = () => {
     if (editingOrder) {
       toast({
-        title: "Tracking-ID gespeichert",
-        description: `Tracking-ID für Bestellung ${editingOrder.id} wurde aktualisiert.`,
+        title: "Bestellung aktualisiert",
+        description: `Bestellung ${editingOrder.id} wurde erfolgreich aktualisiert.`,
       });
       setShowEditDialog(false);
       setEditingOrder(null);
@@ -687,13 +687,13 @@ const PharmacyOrdersPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Dialog */}
+      {/* Enhanced Edit Dialog with shipping method editing */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Bestellung bearbeiten - {editingOrder?.id}</DialogTitle>
             <DialogDescription>
-              Tracking-ID, Status und Versanddatum verwalten
+              Status, Versandart, Tracking-ID und weitere Details verwalten
             </DialogDescription>
           </DialogHeader>
           
@@ -712,6 +712,23 @@ const PharmacyOrdersPage = () => {
                     <SelectItem value="zugestellt">Zugestellt</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="shipping-method">Versandart</Label>
+                <Select defaultValue={editingOrder.shippingMethod}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="dhl">DHL</SelectItem>
+                    <SelectItem value="kurier">Kurier</SelectItem>
+                    <SelectItem value="abholung">Abholung</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Korrigieren Sie die Versandart falls der Kunde falsch ausgewählt hat
+                </p>
               </div>
               
               <div>
@@ -748,7 +765,7 @@ const PharmacyOrdersPage = () => {
             <Button variant="outline" onClick={() => setShowEditDialog(false)}>
               Abbrechen
             </Button>
-            <Button onClick={handleTrackingUpdate}>
+            <Button onClick={handleOrderUpdate}>
               <Check className="mr-2 h-4 w-4" />
               Speichern
             </Button>

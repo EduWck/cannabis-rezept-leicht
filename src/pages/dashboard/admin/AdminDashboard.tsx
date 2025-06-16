@@ -273,31 +273,31 @@ const AdminDashboard = () => {
           {/* Benutzerverwaltung */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center">
-                  <Users className="w-5 h-5 mr-2" />
-                  Benutzerverwaltung
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Benutzer suchen..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-64"
-                    />
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => exportData("Benutzerliste")}
-                  >
-                    <Download className="w-4 h-4 mr-1" />
-                    Export
-                  </Button>
-                </div>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2" />
+                Benutzerverwaltung
               </CardTitle>
+              {/* Suchbereich unter der Überschrift */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 pt-4">
+                <div className="relative flex-1 w-full sm:w-auto">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Benutzer suchen..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 w-full"
+                  />
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => exportData("Benutzerliste")}
+                  className="w-full sm:w-auto"
+                >
+                  <Download className="w-4 h-4 mr-1" />
+                  Export
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Table>

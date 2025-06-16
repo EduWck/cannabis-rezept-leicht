@@ -18,6 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { 
   FileText, 
@@ -190,272 +196,336 @@ const RequestsPage = () => {
   };
 
   return (
-    <div className="container mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Behandlungsanfragen</h1>
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Suchen..."
-            className="pl-8 w-[250px]"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+    <TooltipProvider>
+      <div className="container mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-bold">Behandlungsanfragen</h1>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Suchen..."
+              className="pl-8 w-[250px]"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
         </div>
-      </div>
 
-      <Tabs defaultValue="prescriptions">
-        <TabsList className="mb-4">
-          <TabsTrigger value="prescriptions" className="flex items-center">
-            <FileText className="mr-2 h-4 w-4" />
-            Rezeptanfragen
-          </TabsTrigger>
-          <TabsTrigger value="appointments" className="flex items-center">
-            <Calendar className="mr-2 h-4 w-4" />
-            Terminanfragen
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="prescriptions">
-          <Card>
-            <CardHeader>
-              <CardTitle>Rezeptanfragen</CardTitle>
-              <CardDescription>Offene Anfragen zur Ausstellung von Rezepten</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Symptome</TableHead>
-                    <TableHead>Datum/Zeit</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Dringlichkeit</TableHead>
-                    <TableHead className="text-right">Aktionen</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredPrescriptionRequests.map((request) => (
-                    <TableRow key={request.id} className="hover:bg-muted/50">
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{request.patient}</p>
-                          <p className="text-sm text-muted-foreground">{request.patientId}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="space-y-1">
-                          {request.symptoms.map((symptom, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {symptom}
+        <Tabs defaultValue="prescriptions">
+          <TabsList className="mb-4">
+            <TabsTrigger value="prescriptions" className="flex items-center">
+              <FileText className="mr-2 h-4 w-4" />
+              Rezeptanfragen
+            </TabsTrigger>
+            <TabsTrigger value="appointments" className="flex items-center">
+              <Calendar className="mr-2 h-4 w-4" />
+              Terminanfragen
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="prescriptions">
+            <Card>
+              <CardHeader>
+                <CardTitle>Rezeptanfragen</CardTitle>
+                <CardDescription>Offene Anfragen zur Ausstellung von Rezepten</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Symptome</TableHead>
+                      <TableHead>Datum/Zeit</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Dringlichkeit</TableHead>
+                      <TableHead className="text-right">Aktionen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPrescriptionRequests.map((request) => (
+                      <TableRow key={request.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{request.patient}</p>
+                            <p className="text-sm text-muted-foreground">{request.patientId}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            {request.symptoms.map((symptom, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {symptom}
+                              </Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-sm">
+                            <Clock className="mr-1 h-3 w-3" />
+                            <div>
+                              <p>{request.date}</p>
+                              <p className="text-muted-foreground">{request.time}</p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(request.status)}
+                        </TableCell>
+                        <TableCell>
+                          {getPriorityBadge(request.priority)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleViewDetails(request.id)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Details anzeigen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleApprove(request, 'prescription')}
+                                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Rezept genehmigen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {}}
+                                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Nachfrage stellen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleReject(request, 'prescription')}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Rezept ablehnen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+
+                    {filteredPrescriptionRequests.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <FileText className="h-8 w-8 mb-2" />
+                            <p>Keine Rezeptanfragen gefunden</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="appointments">
+            <Card>
+              <CardHeader>
+                <CardTitle>Terminanfragen</CardTitle>
+                <CardDescription>Anfragen zur Vereinbarung von Terminen</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Patient</TableHead>
+                      <TableHead>Grund</TableHead>
+                      <TableHead>Gewünschtes Datum</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Dringlichkeit</TableHead>
+                      <TableHead className="text-right">Aktionen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredAppointmentRequests.map((request) => (
+                      <TableRow key={request.id} className="hover:bg-muted/50">
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{request.patient}</p>
+                            <p className="text-sm text-muted-foreground">{request.patientId}</p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p>{request.reason}</p>
+                            <Badge variant="outline" className="text-xs mt-1">
+                              {request.type}
                             </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center text-sm">
-                          <Clock className="mr-1 h-3 w-3" />
-                          <div>
-                            <p>{request.date}</p>
-                            <p className="text-muted-foreground">{request.time}</p>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(request.status)}
-                      </TableCell>
-                      <TableCell>
-                        {getPriorityBadge(request.priority)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleViewDetails(request.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleApprove(request, 'prescription')}
-                            className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {}}
-                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleReject(request, 'prescription')}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-
-                  {filteredPrescriptionRequests.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <FileText className="h-8 w-8 mb-2" />
-                          <p>Keine Rezeptanfragen gefunden</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="appointments">
-          <Card>
-            <CardHeader>
-              <CardTitle>Terminanfragen</CardTitle>
-              <CardDescription>Anfragen zur Vereinbarung von Terminen</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Patient</TableHead>
-                    <TableHead>Grund</TableHead>
-                    <TableHead>Gewünschtes Datum</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Dringlichkeit</TableHead>
-                    <TableHead className="text-right">Aktionen</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredAppointmentRequests.map((request) => (
-                    <TableRow key={request.id} className="hover:bg-muted/50">
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{request.patient}</p>
-                          <p className="text-sm text-muted-foreground">{request.patientId}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p>{request.reason}</p>
-                          <Badge variant="outline" className="text-xs mt-1">
-                            {request.type}
-                          </Badge>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center text-sm">
-                          <Calendar className="mr-1 h-3 w-3" />
-                          <div>
-                            <p>{request.preferredDate}</p>
-                            <p className="text-muted-foreground">{request.time}</p>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center text-sm">
+                            <Calendar className="mr-1 h-3 w-3" />
+                            <div>
+                              <p>{request.preferredDate}</p>
+                              <p className="text-muted-foreground">{request.time}</p>
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {getStatusBadge(request.status)}
-                      </TableCell>
-                      <TableCell>
-                        {getPriorityBadge(request.priority)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleViewDetails(request.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleApprove(request, 'appointment')}
-                            className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {}}
-                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                          >
-                            <MessageSquare className="h-4 w-4" />
-                          </Button>
-                          <Button 
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleReject(request, 'appointment')}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <XCircle className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusBadge(request.status)}
+                        </TableCell>
+                        <TableCell>
+                          {getPriorityBadge(request.priority)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleViewDetails(request.id)}
+                                  className="h-8 w-8 p-0"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Details anzeigen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleApprove(request, 'appointment')}
+                                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Termin bestätigen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {}}
+                                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Nachfrage stellen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleReject(request, 'appointment')}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Termin ablehnen</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
 
-                  {filteredAppointmentRequests.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8">
-                        <div className="flex flex-col items-center justify-center text-muted-foreground">
-                          <Calendar className="h-8 w-8 mb-2" />
-                          <p>Keine Terminanfragen gefunden</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                    {filteredAppointmentRequests.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={6} className="text-center py-8">
+                          <div className="flex flex-col items-center justify-center text-muted-foreground">
+                            <Calendar className="h-8 w-8 mb-2" />
+                            <p>Keine Terminanfragen gefunden</p>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center">
-              <ClipboardList className="mr-2 h-5 w-5" />
-              Aktuelle Übersicht
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="rounded-lg border p-3">
-              <div className="text-sm font-medium text-muted-foreground">Offene Rezeptanfragen</div>
-              <div className="mt-2 text-2xl font-bold">{prescriptionRequests.length}</div>
+        <Card className="mt-6">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                <ClipboardList className="mr-2 h-5 w-5" />
+                Aktuelle Übersicht
+              </CardTitle>
             </div>
-            <div className="rounded-lg border p-3">
-              <div className="text-sm font-medium text-muted-foreground">Offene Terminanfragen</div>
-              <div className="mt-2 text-2xl font-bold">{appointmentRequests.length}</div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-lg border p-3">
+                <div className="text-sm font-medium text-muted-foreground">Offene Rezeptanfragen</div>
+                <div className="mt-2 text-2xl font-bold">{prescriptionRequests.length}</div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-sm font-medium text-muted-foreground">Offene Terminanfragen</div>
+                <div className="mt-2 text-2xl font-bold">{appointmentRequests.length}</div>
+              </div>
+              <div className="rounded-lg border p-3">
+                <div className="text-sm font-medium text-muted-foreground">Ausgestellte Rezepte (Monat)</div>
+                <div className="mt-2 text-2xl font-bold">28</div>
+              </div>
             </div>
-            <div className="rounded-lg border p-3">
-              <div className="text-sm font-medium text-muted-foreground">Ausgestellte Rezepte (Monat)</div>
-              <div className="mt-2 text-2xl font-bold">28</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 };
 

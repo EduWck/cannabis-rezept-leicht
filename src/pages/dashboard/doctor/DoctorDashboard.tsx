@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -383,7 +382,10 @@ const DoctorDashboard = () => {
                 {upcomingAppointments.map((appointment) => (
                   <div key={appointment.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
-                      <p className="font-medium text-sm">{appointment.patientName}</p>
+                      <p className="font-medium text-sm cursor-pointer hover:text-blue-600"
+                         onClick={() => navigate(`/dashboard/patients/P-${appointment.id.split('-')[1]}`)}>
+                        {appointment.patientName}
+                      </p>
                       <p className="text-xs text-muted-foreground">{appointment.type}</p>
                     </div>
                     <div className="text-right">

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ import {
 
 const PatientsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
   
   // Sample patient data
   const patients = [
@@ -37,6 +39,10 @@ const PatientsPage = () => {
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     patient.condition.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handlePatientRecord = (patientId: number) => {
+    navigate(`/dashboard/patients/P-${patientId.toString().padStart(3, '0')}`);
+  };
 
   return (
     <div className="container mx-auto">
@@ -80,7 +86,14 @@ const PatientsPage = () => {
             <TableBody>
               {filteredPatients.map(patient => (
                 <TableRow key={patient.id}>
-                  <TableCell className="font-medium">{patient.name}</TableCell>
+                  <TableCell>
+                    <span 
+                      className="font-medium cursor-pointer hover:text-blue-600 hover:underline"
+                      onClick={() => handlePatientRecord(patient.id)}
+                    >
+                      {patient.name}
+                    </span>
+                  </TableCell>
                   <TableCell>{patient.age}</TableCell>
                   <TableCell>{patient.condition}</TableCell>
                   <TableCell>{patient.lastVisit}</TableCell>
@@ -89,10 +102,7 @@ const PatientsPage = () => {
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        onClick={() => toast({
-                          title: "Patientenakte",
-                          description: `Die Akte von ${patient.name} wurde geöffnet.`
-                        })}
+                        onClick={() => handlePatientRecord(patient.id)}
                       >
                         <User className="h-4 w-4 mr-1" />
                         Akte

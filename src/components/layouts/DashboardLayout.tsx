@@ -17,7 +17,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel
 } from "@/components/ui/sidebar";
-import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard } from "lucide-react";
+import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard, Activity, MessageSquare, BarChart3, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DashboardLayout = () => {
@@ -29,9 +29,11 @@ const DashboardLayout = () => {
       return [
         { icon: Home, title: "Dashboard", path: "/dashboard" },
         { icon: Users, title: "Benutzer", path: "/dashboard/users" },
-        { icon: FileText, title: "Rezepte", path: "/dashboard/all-prescriptions" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/all-orders" },
         { icon: Package, title: "Produkte", path: "/dashboard/products" },
+        { icon: CreditCard, title: "Rechnungen", path: "/dashboard/billing" },
+        { icon: BarChart3, title: "Berichte", path: "/dashboard/reports" },
+        { icon: Settings, title: "Einstellungen", path: "/dashboard/settings" },
       ];
     } else if (userRole === "doctor") {
       return [
@@ -39,6 +41,9 @@ const DashboardLayout = () => {
         { icon: Users, title: "Patienten", path: "/dashboard/patients" },
         { icon: Calendar, title: "Termine", path: "/dashboard/calendar" },
         { icon: Clipboard, title: "Anfragen", path: "/dashboard/requests" },
+        { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
+        { icon: MessageSquare, title: "Nachrichten", path: "/dashboard/messages" },
+        { icon: User, title: "Profil", path: "/dashboard/profile" },
       ];
     } else if (userRole === "pharmacy") {
       return [
@@ -46,6 +51,9 @@ const DashboardLayout = () => {
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
         { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
+        { icon: Activity, title: "Versand", path: "/dashboard/shipping" },
+        { icon: MessageSquare, title: "Support", path: "/dashboard/support" },
+        { icon: User, title: "Profil", path: "/dashboard/profile" },
       ];
     } else {
       // Patient or default
@@ -55,6 +63,8 @@ const DashboardLayout = () => {
         { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
+        { icon: Calendar, title: "Termine", path: "/dashboard/appointments" },
+        { icon: MessageSquare, title: "Hilfe", path: "/dashboard/help" },
       ];
     }
   };

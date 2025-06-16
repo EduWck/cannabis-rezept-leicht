@@ -47,7 +47,7 @@ const PharmacyInventoryPage = () => {
       id: "PROD-001",
       name: "Cannabisblüte THC18",
       category: "flower",
-      stock: 25,
+      stock: 25, // Anzahl Packungen
       minStock: 10,
       pricePerGram: 12.99,
       packageSize: "10g",
@@ -57,7 +57,7 @@ const PharmacyInventoryPage = () => {
       id: "PROD-002",
       name: "Cannabisblüte THC22",
       category: "flower",
-      stock: 5,
+      stock: 5, // Anzahl Packungen
       minStock: 10,
       pricePerGram: 14.99,
       packageSize: "10g",
@@ -67,7 +67,7 @@ const PharmacyInventoryPage = () => {
       id: "PROD-003",
       name: "CBD Öl 5%",
       category: "oil",
-      stock: 15,
+      stock: 15, // Anzahl Packungen
       minStock: 5,
       pricePerGram: 19.99,
       packageSize: "100g",
@@ -77,7 +77,7 @@ const PharmacyInventoryPage = () => {
       id: "PROD-004",
       name: "CBD Öl 10%",
       category: "oil",
-      stock: 8,
+      stock: 8, // Anzahl Packungen
       minStock: 5,
       pricePerGram: 29.99,
       packageSize: "100g",
@@ -87,7 +87,7 @@ const PharmacyInventoryPage = () => {
       id: "PROD-005",
       name: "CBD Öl 15%",
       category: "oil",
-      stock: 12,
+      stock: 12, // Anzahl Packungen
       minStock: 5,
       pricePerGram: 39.99,
       packageSize: "10g",
@@ -97,7 +97,7 @@ const PharmacyInventoryPage = () => {
       id: "PROD-006",
       name: "Cannabis Extrakt THC/CBD 1:1",
       category: "extract",
-      stock: 0,
+      stock: 0, // Anzahl Packungen
       minStock: 3,
       pricePerGram: 49.99,
       packageSize: "10g",
@@ -110,6 +110,12 @@ const PharmacyInventoryPage = () => {
     { value: "oil", label: "CBD-Öl" },
     { value: "extract", label: "Extrakt" },
   ];
+  
+  // Funktion zur Berechnung der Gramm basierend auf Packungen und Packungseinheit
+  const calculateTotalGrams = (stock: number, packageSize: string) => {
+    const grams = parseInt(packageSize.replace('g', ''));
+    return stock * grams;
+  };
   
   const getStockStatus = (stock: number, minStock: number) => {
     if (stock === 0) {
@@ -217,9 +223,14 @@ const PharmacyInventoryPage = () => {
                       {categories.find(c => c.value === product.category)?.label || product.category}
                     </TableCell>
                     <TableCell>
-                      <span className={product.stock < product.minStock ? "text-red-500 font-bold" : ""}>
-                        {product.stock}
-                      </span>
+                      <div className="space-y-1">
+                        <div className={product.stock < product.minStock ? "text-red-500 font-bold" : "font-medium"}>
+                          {product.stock} Stück
+                        </div>
+                        <div className={`text-sm ${product.stock < product.minStock ? "text-red-400" : "text-muted-foreground"}`}>
+                          ({calculateTotalGrams(product.stock, product.packageSize)}g gesamt)
+                        </div>
+                      </div>
                     </TableCell>
                     <TableCell>{getStockStatus(product.stock, product.minStock)}</TableCell>
                     <TableCell>{product.pricePerGram.toFixed(2)} €</TableCell>

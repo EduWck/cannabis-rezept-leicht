@@ -61,10 +61,8 @@ import { useIsMobile } from "@/hooks/use-is-mobile";
 
 interface OrderItem {
   name: string;
-  packageSize: string;
-  quantity: number;
-  stock?: number;
-  totalGrams?: number;
+  orderedGrams: number;
+  totalStockGrams: number;
 }
 
 interface Order {
@@ -95,7 +93,7 @@ const PharmacyOrdersPage = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   
-  // Erweiterte Mock-Daten mit Packungsgrößen und Beständen
+  // Vereinfachte Mock-Daten mit nur Gramm-Angaben
   const orders: Order[] = [
     {
       id: "ORD-2023-001",
@@ -105,17 +103,13 @@ const PharmacyOrdersPage = () => {
       items: [
         { 
           name: "Cannabisblüte THC18", 
-          packageSize: "10g", 
-          quantity: 2, 
-          stock: 25,
-          totalGrams: 20
+          orderedGrams: 20, 
+          totalStockGrams: 250
         },
         { 
           name: "CBD Öl 10%", 
-          packageSize: "10ml", 
-          quantity: 1, 
-          stock: 8,
-          totalGrams: 0
+          orderedGrams: 0, // Öl wird nicht in Gramm gemessen
+          totalStockGrams: 0
         },
       ],
       shippingMethod: "dhl",
@@ -132,10 +126,8 @@ const PharmacyOrdersPage = () => {
       items: [
         { 
           name: "Cannabisblüte THC22", 
-          packageSize: "25g", 
-          quantity: 1, 
-          stock: 5,
-          totalGrams: 25
+          orderedGrams: 25, 
+          totalStockGrams: 125
         },
       ],
       shippingMethod: "kurier",
@@ -153,17 +145,13 @@ const PharmacyOrdersPage = () => {
       items: [
         { 
           name: "Cannabisblüte THC18", 
-          packageSize: "10g", 
-          quantity: 1, 
-          stock: 25,
-          totalGrams: 10
+          orderedGrams: 10, 
+          totalStockGrams: 250
         },
         { 
           name: "CBD Öl 5%", 
-          packageSize: "30ml", 
-          quantity: 2, 
-          stock: 15,
-          totalGrams: 0
+          orderedGrams: 0, 
+          totalStockGrams: 0
         },
       ],
       shippingMethod: "dhl",
@@ -182,10 +170,8 @@ const PharmacyOrdersPage = () => {
       items: [
         { 
           name: "CBD Öl 15%", 
-          packageSize: "10ml", 
-          quantity: 1, 
-          stock: 12,
-          totalGrams: 0
+          orderedGrams: 0, 
+          totalStockGrams: 0
         },
       ],
       shippingMethod: "abholung",
@@ -282,13 +268,13 @@ const PharmacyOrdersPage = () => {
     );
   };
 
-  const calculateTotalGramsForOrder = (items: OrderItem[]) => {
-    return items.reduce((total, item) => total + (item.totalGrams || 0), 0);
+  const calculateTotalOrderedGrams = (items: OrderItem[]) => {
+    return items.reduce((total, item) => total + item.orderedGrams, 0);
   };
 
-  // Mobile Card Component mit verbesserter Produktanzeige
+  // Mobile Card Component mit vereinfachter Produktanzeige
   const OrderCard = ({ order }: { order: Order }) => {
-    const totalGrams = calculateTotalGramsForOrder(order.items);
+    const totalOrderedGrams = calculateTotalOrderedGrams(order.items);
     
     return (
       <Card className="mb-4">
@@ -314,9 +300,9 @@ const PharmacyOrdersPage = () => {
               <Package className="h-3 w-3 text-muted-foreground" />
               <span className="text-xs">
                 {order.items.length} Produkt{order.items.length !== 1 ? 'e' : ''}
-                {totalGrams > 0 && (
+                {totalOrderedGrams > 0 && (
                   <span className="ml-1 font-medium text-green-600">
-                    ({totalGrams}g gesamt)
+                    ({totalOrderedGrams}g bestellt)
                   </span>
                 )}
               </span>
@@ -457,7 +443,7 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
       
-      {/* Bestellungen - Desktop Tabelle / Mobile Karten mit verbesserter Produktdarstellung */}
+      {/* Vereinfachte Bestellungen Tabelle */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -493,7 +479,7 @@ const PharmacyOrdersPage = () => {
                     </TableHead>
                     <TableHead>Bestellung</TableHead>
                     <TableHead>Patient</TableHead>
-                    <TableHead>Produkte</TableHead>
+                    <TableHead>Produkte & Lagerbestand</TableHead>
                     <TableHead>Versand</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Datum</TableHead>
@@ -503,7 +489,7 @@ const PharmacyOrdersPage = () => {
                 </TableHeader>
                 <TableBody>
                   {filteredOrders.map((order) => {
-                    const totalGrams = calculateTotalGramsForOrder(order.items);
+                    const totalOrderedGrams = calculateTotalOrderedGrams(order.items);
                     return (
                       <TableRow key={order.id}>
                         <TableCell>
@@ -532,24 +518,25 @@ const PharmacyOrdersPage = () => {
                               <div key={index} className="text-xs">
                                 <span className="font-medium">{item.name}</span>
                                 <br />
-                                <span className="text-muted-foreground">
-                                  {item.quantity}x {item.packageSize}
-                                  {item.totalGrams && item.totalGrams > 0 && (
-                                    <span className="ml-1 text-green-600 font-medium">
-                                      ({item.totalGrams}g)
+                                {item.orderedGrams > 0 ? (
+                                  <span className="text-muted-foreground">
+                                    <span className="text-green-600 font-medium">
+                                      {item.orderedGrams}g bestellt
                                     </span>
-                                  )}
-                                  {item.stock !== undefined && (
-                                    <span className={`ml-1 ${item.stock < 10 ? 'text-red-500' : 'text-green-600'}`}>
-                                      (Lager: {item.stock})
+                                    <span className={`ml-2 ${item.totalStockGrams < 50 ? 'text-red-500' : 'text-green-600'}`}>
+                                      (Lager: {item.totalStockGrams}g)
                                     </span>
-                                  )}
-                                </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-muted-foreground text-blue-600">
+                                    Nicht-Cannabis Produkt
+                                  </span>
+                                )}
                               </div>
                             ))}
-                            {totalGrams > 0 && (
-                              <div className="text-xs font-medium text-green-600 mt-1">
-                                Gesamt: {totalGrams}g
+                            {totalOrderedGrams > 0 && (
+                              <div className="text-xs font-medium text-green-600 mt-1 pt-1 border-t">
+                                Gesamt bestellt: {totalOrderedGrams}g
                               </div>
                             )}
                           </div>
@@ -619,7 +606,7 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog mit verbesserter Produktanzeige */}
+      {/* Vereinfachter Detail Dialog */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -650,27 +637,28 @@ const PharmacyOrdersPage = () => {
                     <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
                       <div>
                         <p className="font-medium">{item.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.quantity}x {item.packageSize}
-                          {item.totalGrams && item.totalGrams > 0 && (
-                            <span className="ml-2 text-green-600 font-medium">
-                              ({item.totalGrams}g)
+                        {item.orderedGrams > 0 ? (
+                          <p className="text-sm text-muted-foreground">
+                            <span className="text-green-600 font-medium">
+                              {item.orderedGrams}g bestellt
                             </span>
-                          )}
-                          {item.stock !== undefined && (
-                            <span className={`ml-2 ${item.stock < 10 ? 'text-red-500' : 'text-green-600'}`}>
-                              Lagerbestand: {item.stock}
+                            <span className={`ml-2 ${item.totalStockGrams < 50 ? 'text-red-500' : 'text-green-600'}`}>
+                              Lagerbestand: {item.totalStockGrams}g
                             </span>
-                          )}
-                        </p>
+                          </p>
+                        ) : (
+                          <p className="text-sm text-blue-600">
+                            Nicht-Cannabis Produkt
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
                   
-                  {calculateTotalGramsForOrder(selectedOrder.items) > 0 && (
+                  {calculateTotalOrderedGrams(selectedOrder.items) > 0 && (
                     <div className="p-2 bg-green-50 border border-green-200 rounded">
                       <p className="text-sm font-medium text-green-700">
-                        Gesamtmenge: {calculateTotalGramsForOrder(selectedOrder.items)}g Cannabis
+                        Gesamtmenge bestellt: {calculateTotalOrderedGrams(selectedOrder.items)}g Cannabis
                       </p>
                     </div>
                   )}

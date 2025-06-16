@@ -34,7 +34,7 @@ const DOCTOR_MENU_ITEMS = [
   { icon: Users, title: "Patienten", path: "/dashboard/patients" },
   { icon: Calendar, title: "Termine", path: "/dashboard/calendar" },
   { icon: Clipboard, title: "Anfragen", path: "/dashboard/requests" },
-  { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
+  { icon: FileText, title: "Rezepte", path: "/dashboard/doctor-prescriptions" },
 ];
 
 const PHARMACY_MENU_ITEMS = [

@@ -1,4 +1,3 @@
-
 import { Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -40,6 +39,7 @@ import AllOrdersPage from "@/pages/dashboard/admin/AllOrdersPage";
 import AllAppointmentsPage from "@/pages/dashboard/admin/AllAppointmentsPage";
 import ProductsPage from "@/pages/dashboard/admin/ProductsPage";
 import SettingsPage from "@/pages/dashboard/admin/SettingsPage";
+import BillingPage from "@/pages/dashboard/admin/BillingPage";
 
 // Doctor pages
 import PatientsPage from "@/pages/dashboard/doctor/PatientsPage";
@@ -52,6 +52,12 @@ import PharmacyDashboard from "@/pages/dashboard/pharmacy/PharmacyDashboard";
 import PharmacyOrdersPage from "@/pages/dashboard/pharmacy/PharmacyOrdersPage";
 import PharmacyInventoryPage from "@/pages/dashboard/pharmacy/PharmacyInventoryPage";
 import PharmacyPrescriptionsPage from "@/pages/dashboard/pharmacy/PharmacyPrescriptionsPage";
+
+// Detail pages
+import RequestDetailPage from "@/pages/dashboard/RequestDetailPage";
+import PrescriptionDetailPage from "@/pages/dashboard/PrescriptionDetailPage";
+import MedicalFindingDetailPage from "@/pages/dashboard/MedicalFindingDetailPage";
+import OrderDetailPage from "@/pages/dashboard/OrderDetailPage";
 
 // Create a layout component to avoid repetition
 const MainLayout = ({ children }: { children: React.ReactNode }) => (
@@ -108,6 +114,7 @@ const AppRoutes = [
     <Route key="all-appointments" path="/dashboard/all-appointments" element={<AllAppointmentsPage />} />
     <Route key="products" path="/dashboard/products" element={<ProductsPage />} />
     <Route key="settings" path="/dashboard/settings" element={<SettingsPage />} />
+    <Route key="billing" path="/dashboard/billing" element={<BillingPage />} />
     
     {/* Doctor routes */}
     <Route key="patients" path="/dashboard/patients" element={<PatientsPage />} />
@@ -119,6 +126,13 @@ const AppRoutes = [
     <Route key="pharmacy-orders" path="/dashboard/pharmacy-orders" element={<PharmacyOrdersPage />} />
     <Route key="pharmacy-inventory" path="/dashboard/pharmacy-inventory" element={<PharmacyInventoryPage />} />
     <Route key="pharmacy-prescriptions" path="/dashboard/pharmacy-prescriptions" element={<PharmacyPrescriptionsPage />} />
+    
+    {/* Detail routes */}
+    <Route key="request-detail" path="/dashboard/requests/:id" element={<RequestDetailPage />} />
+    <Route key="prescription-detail" path="/dashboard/prescriptions/:id" element={<PrescriptionDetailPage />} />
+    <Route key="medical-finding-detail" path="/dashboard/medical-findings/:id" element={<MedicalFindingDetailPage />} />
+    <Route key="order-detail" path="/dashboard/orders/:id" element={<OrderDetailPage />} />
+    <Route key="pharmacy-order-detail" path="/dashboard/pharmacy-orders/:id" element={<OrderDetailPage />} />
   </Route>,
 
   // Catch-all route

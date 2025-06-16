@@ -131,6 +131,8 @@ const AppRoutes = [
     {/* Pharmacy routes */}
     <Route key="pharmacy-orders" path="/dashboard/pharmacy-orders" element={<PharmacyOrdersPage />} />
     <Route key="pharmacy-inventory" path="/dashboard/pharmacy-inventory" element={<PharmacyInventoryPage />} />
+    <Route key="pharmacy-inventory-new" path="/dashboard/pharmacy-inventory/new" element={<ProductEditPage />} />
+    <Route key="pharmacy-inventory-edit" path="/dashboard/pharmacy-inventory/:id" element={<ProductEditPage />} />
     <Route key="pharmacy-prescriptions" path="/dashboard/pharmacy-prescriptions" element={<PharmacyPrescriptionsPage />} />
     
     {/* Detail routes */}

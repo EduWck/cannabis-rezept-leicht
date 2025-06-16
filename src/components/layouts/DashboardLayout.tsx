@@ -17,14 +17,16 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel
 } from "@/components/ui/sidebar";
-import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard, Activity } from "lucide-react";
+import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DashboardLayout = () => {
   const { user, userRole, signOut } = useAuth();
 
-  // Different menu items based on user role
+  // Role-specific menu items - each role gets ONLY what they need
   const getMenuItems = () => {
+    console.log("Current userRole in getMenuItems:", userRole);
+    
     if (userRole === "admin") {
       return [
         { icon: Home, title: "Dashboard", path: "/dashboard" },
@@ -33,7 +35,9 @@ const DashboardLayout = () => {
         { icon: Package, title: "Produkte", path: "/dashboard/products" },
         { icon: Settings, title: "Einstellungen", path: "/dashboard/settings" },
       ];
-    } else if (userRole === "doctor") {
+    }
+    
+    if (userRole === "doctor") {
       return [
         { icon: Home, title: "Dashboard", path: "/dashboard" },
         { icon: Users, title: "Patienten", path: "/dashboard/patients" },
@@ -41,25 +45,30 @@ const DashboardLayout = () => {
         { icon: Clipboard, title: "Anfragen", path: "/dashboard/requests" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
       ];
-    } else if (userRole === "pharmacy") {
+    }
+    
+    if (userRole === "pharmacy") {
       return [
         { icon: Home, title: "Dashboard", path: "/dashboard" },
         { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
         { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
         { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
       ];
-    } else {
-      // Patient role
-      return [
-        { icon: Home, title: "Dashboard", path: "/dashboard" },
-        { icon: User, title: "Profil", path: "/dashboard/profile" },
-        { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
-        { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
-        { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
-        { icon: Calendar, title: "Termine", path: "/dashboard/appointments" },
-      ];
     }
+    
+    // Patient role (default)
+    return [
+      { icon: Home, title: "Dashboard", path: "/dashboard" },
+      { icon: User, title: "Profil", path: "/dashboard/profile" },
+      { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
+      { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
+      { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
+      { icon: Calendar, title: "Termine", path: "/dashboard/appointments" },
+    ];
   };
+
+  const menuItems = getMenuItems();
+  console.log("MenuItems for role", userRole, ":", menuItems);
 
   return (
     <SidebarProvider>
@@ -76,7 +85,7 @@ const DashboardLayout = () => {
                 <SidebarGroupLabel>Navigation</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {getMenuItems().map((item, index) => (
+                    {menuItems.map((item, index) => (
                       <SidebarMenuItem key={index}>
                         <SidebarMenuButton asChild tooltip={item.title}>
                           <a href={item.path} className="flex items-center gap-2">

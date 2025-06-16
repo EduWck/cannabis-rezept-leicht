@@ -479,7 +479,7 @@ const PharmacyOrdersPage = () => {
                     </TableHead>
                     <TableHead>Bestellung</TableHead>
                     <TableHead>Patient</TableHead>
-                    <TableHead>Produkte & Lagerbestand</TableHead>
+                    <TableHead>Produkte</TableHead>
                     <TableHead>Versand</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Datum</TableHead>
@@ -513,30 +513,37 @@ const PharmacyOrdersPage = () => {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="space-y-1">
+                          <div className="space-y-2">
                             {order.items.map((item, index) => (
-                              <div key={index} className="text-xs">
-                                <span className="font-medium">{item.name}</span>
-                                <br />
-                                {item.orderedGrams > 0 ? (
-                                  <span className="text-muted-foreground">
-                                    <span className="text-green-600 font-medium">
-                                      {item.orderedGrams}g bestellt
-                                    </span>
-                                    <span className={`ml-2 ${item.totalStockGrams < 50 ? 'text-red-500' : 'text-green-600'}`}>
-                                      (Lager: {item.totalStockGrams}g)
-                                    </span>
-                                  </span>
-                                ) : (
-                                  <span className="text-muted-foreground text-blue-600">
-                                    Nicht-Cannabis Produkt
-                                  </span>
-                                )}
+                              <div key={index} className="p-2 bg-gray-50 rounded-md border">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <p className="font-medium text-sm">{item.name}</p>
+                                    {item.orderedGrams > 0 ? (
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                                          {item.orderedGrams}g bestellt
+                                        </span>
+                                        <span className={`text-xs px-2 py-1 rounded ${
+                                          item.totalStockGrams < 50 
+                                            ? 'bg-red-100 text-red-700' 
+                                            : 'bg-blue-100 text-blue-700'
+                                        }`}>
+                                          Lager: {item.totalStockGrams}g
+                                        </span>
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded mt-1 inline-block">
+                                        Nicht-Cannabis
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
                             ))}
                             {totalOrderedGrams > 0 && (
-                              <div className="text-xs font-medium text-green-600 mt-1 pt-1 border-t">
-                                Gesamt bestellt: {totalOrderedGrams}g
+                              <div className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200">
+                                Gesamt Cannabis: {totalOrderedGrams}g
                               </div>
                             )}
                           </div>

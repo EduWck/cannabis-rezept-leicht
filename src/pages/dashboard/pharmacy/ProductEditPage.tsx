@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -59,7 +58,7 @@ const ProductEditPage = () => {
 
   useEffect(() => {
     if (id && id !== "new") {
-      // Mock product data - synchronized with PharmacyInventoryPage.tsx
+      // Mock product data - FULLY synchronized with PharmacyInventoryPage.tsx
       let mockProduct: ProductData;
       
       switch (id) {

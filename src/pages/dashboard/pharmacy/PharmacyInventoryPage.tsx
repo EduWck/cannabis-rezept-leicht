@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -26,30 +27,19 @@ import {
 } from "@/components/ui/select";
 import { 
   Search,
-  AlertCircle,
   Plus,
-  Save,
   FileEdit,
-  Trash2
+  CheckCircle,
+  AlertTriangle,
+  XCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 
 const PharmacyInventoryPage = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [editingProduct, setEditingProduct] = useState<any>(null);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   
   // Mock data - in real app would come from API
   const products = [
@@ -59,7 +49,8 @@ const PharmacyInventoryPage = () => {
       category: "flower",
       stock: 25,
       minStock: 10,
-      price: 12.99,
+      pricePerGram: 12.99,
+      packageSize: "10g",
       supplier: "CannaGrow GmbH",
     },
     {
@@ -68,7 +59,8 @@ const PharmacyInventoryPage = () => {
       category: "flower",
       stock: 5,
       minStock: 10,
-      price: 14.99,
+      pricePerGram: 14.99,
+      packageSize: "10g",
       supplier: "CannaGrow GmbH",
     },
     {
@@ -77,7 +69,8 @@ const PharmacyInventoryPage = () => {
       category: "oil",
       stock: 15,
       minStock: 5,
-      price: 19.99,
+      pricePerGram: 19.99,
+      packageSize: "100g",
       supplier: "NaturoCBD AG",
     },
     {
@@ -86,7 +79,8 @@ const PharmacyInventoryPage = () => {
       category: "oil",
       stock: 8,
       minStock: 5,
-      price: 29.99,
+      pricePerGram: 29.99,
+      packageSize: "100g",
       supplier: "NaturoCBD AG",
     },
     {
@@ -95,16 +89,18 @@ const PharmacyInventoryPage = () => {
       category: "oil",
       stock: 12,
       minStock: 5,
-      price: 39.99,
+      pricePerGram: 39.99,
+      packageSize: "10g",
       supplier: "NaturoCBD AG",
     },
     {
       id: "PROD-006",
       name: "Cannabis Extrakt THC/CBD 1:1",
       category: "extract",
-      stock: 7,
+      stock: 0,
       minStock: 3,
-      price: 49.99,
+      pricePerGram: 49.99,
+      packageSize: "10g",
       supplier: "ExtractMed GmbH",
     },
   ];
@@ -116,28 +112,28 @@ const PharmacyInventoryPage = () => {
   ];
   
   const getStockStatus = (stock: number, minStock: number) => {
-    if (stock === 0) return <Badge className="bg-red-500">Nicht auf Lager</Badge>;
-    if (stock < minStock) return <Badge className="bg-yellow-500">Niedriger Bestand</Badge>;
-    return <Badge className="bg-green-500">Auf Lager</Badge>;
-  };
-  
-  const handleSaveStock = (productId: string, newStock: number) => {
-    // In a real app, this would make an API call
-    toast({
-      title: "Bestand aktualisiert",
-      description: `Bestand für ${productId} wurde auf ${newStock} aktualisiert.`,
-    });
-    setEditingProduct(null);
-  };
-  
-  const handleAddProduct = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, this would make an API call
-    toast({
-      title: "Produkt hinzugefügt",
-      description: "Das neue Produkt wurde zum Inventar hinzugefügt.",
-    });
-    setIsAddDialogOpen(false);
+    if (stock === 0) {
+      return (
+        <Badge variant="destructive" className="flex items-center gap-1">
+          <XCircle className="h-3 w-3" />
+          Nicht auf Lager
+        </Badge>
+      );
+    }
+    if (stock < minStock) {
+      return (
+        <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-100 text-yellow-800 border-yellow-300">
+          <AlertTriangle className="h-3 w-3" />
+          Niedriger Bestand
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800 border-green-300">
+        <CheckCircle className="h-3 w-3" />
+        Auf Lager
+      </Badge>
+    );
   };
   
   const filteredProducts = products.filter(product => {
@@ -152,64 +148,10 @@ const PharmacyInventoryPage = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Bestand verwalten</h1>
         
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Produkt hinzufügen
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Neues Produkt hinzufügen</DialogTitle>
-              <DialogDescription>
-                Fügen Sie ein neues Produkt zu Ihrem Inventar hinzu.
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddProduct}>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="name" className="text-right">Name</Label>
-                  <Input id="name" className="col-span-3" required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="category" className="text-right">Kategorie</Label>
-                  <Select>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Kategorie wählen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.value} value={category.value}>
-                          {category.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="stock" className="text-right">Bestand</Label>
-                  <Input id="stock" type="number" min="0" className="col-span-3" required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="minStock" className="text-right">Mindestbestand</Label>
-                  <Input id="minStock" type="number" min="0" className="col-span-3" required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="price" className="text-right">Preis (€)</Label>
-                  <Input id="price" type="number" min="0" step="0.01" className="col-span-3" required />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="supplier" className="text-right">Lieferant</Label>
-                  <Input id="supplier" className="col-span-3" required />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button type="submit">Produkt hinzufügen</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button onClick={() => navigate("/dashboard/pharmacy-inventory/new")}>
+          <Plus className="mr-2 h-4 w-4" />
+          Produkt hinzufügen
+        </Button>
       </div>
       
       <Card>
@@ -252,78 +194,61 @@ const PharmacyInventoryPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Produkt-ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Kategorie</TableHead>
-                <TableHead>Bestand</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Preis</TableHead>
-                <TableHead>Aktionen</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>{product.id}</TableCell>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>
-                    {categories.find(c => c.value === product.category)?.label || product.category}
-                  </TableCell>
-                  <TableCell>
-                    {editingProduct?.id === product.id ? (
-                      <Input 
-                        type="number" 
-                        min="0" 
-                        value={editingProduct.stock} 
-                        onChange={e => setEditingProduct({...editingProduct, stock: parseInt(e.target.value)})} 
-                        className="w-20"
-                      />
-                    ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Produkt-ID</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Kategorie</TableHead>
+                  <TableHead>Bestand</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Preis/g</TableHead>
+                  <TableHead>Packungseinheit</TableHead>
+                  <TableHead>Aktionen</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProducts.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-mono text-sm">{product.id}</TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>
+                      {categories.find(c => c.value === product.category)?.label || product.category}
+                    </TableCell>
+                    <TableCell>
                       <span className={product.stock < product.minStock ? "text-red-500 font-bold" : ""}>
                         {product.stock}
                       </span>
-                    )}
-                  </TableCell>
-                  <TableCell>{getStockStatus(product.stock, product.minStock)}</TableCell>
-                  <TableCell>{product.price.toFixed(2)} €</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      {editingProduct?.id === product.id ? (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleSaveStock(product.id, editingProduct.stock)}
-                        >
-                          <Save className="h-4 w-4 mr-1" />
-                          Speichern
-                        </Button>
-                      ) : (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => setEditingProduct(product)}
-                        >
-                          <FileEdit className="h-4 w-4 mr-1" />
-                          Bearbeiten
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              
-              {filteredProducts.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    Keine Produkte gefunden.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                    </TableCell>
+                    <TableCell>{getStockStatus(product.stock, product.minStock)}</TableCell>
+                    <TableCell>{product.pricePerGram.toFixed(2)} €</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{product.packageSize}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => navigate(`/dashboard/pharmacy-inventory/${product.id}`)}
+                      >
+                        <FileEdit className="h-4 w-4 mr-1" />
+                        Bearbeiten
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                
+                {filteredProducts.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">
+                      Keine Produkte gefunden.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

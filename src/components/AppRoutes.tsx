@@ -1,3 +1,4 @@
+
 import { Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -54,6 +55,7 @@ import PharmacyDashboard from "@/pages/dashboard/pharmacy/PharmacyDashboard";
 import PharmacyOrdersPage from "@/pages/dashboard/pharmacy/PharmacyOrdersPage";
 import PharmacyInventoryPage from "@/pages/dashboard/pharmacy/PharmacyInventoryPage";
 import PharmacyPrescriptionsPage from "@/pages/dashboard/pharmacy/PharmacyPrescriptionsPage";
+import ProductEditPage from "@/pages/dashboard/pharmacy/ProductEditPage";
 
 // Detail pages
 import RequestDetailPage from "@/pages/dashboard/RequestDetailPage";

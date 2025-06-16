@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -58,36 +59,98 @@ const ProductEditPage = () => {
 
   useEffect(() => {
     if (id && id !== "new") {
-      // Mock product data - updated for extract example
+      // Mock product data - synchronized with PharmacyInventoryPage.tsx
       let mockProduct: ProductData;
       
-      if (id === "PROD-005") {
-        mockProduct = {
-          name: "THC/CBD Extrakt 1:1",
-          category: "extract",
-          packageVariants: [
-            { size: "10ml", quantity: 0, minStock: 3 }
-          ],
-          pricePerBottle: 199.99,
-          supplier: "ExtractMed GmbH",
-          description: "Hochwertiger THC/CBD Extrakt im Verhältnis 1:1 mit 25% THC und 25% CBD",
-          thcContent: 25,
-          cbdContent: 25,
-        };
-      } else {
-        mockProduct = {
-          name: "Cannabisblüte THC18",
-          category: "flower",
-          packageVariants: [
-            { size: "10g", quantity: 20, minStock: 5 },
-            { size: "50g", quantity: 5, minStock: 2 }
-          ],
-          pricePerGram: 12.99,
-          supplier: "CannaGrow GmbH",
-          description: "Hochwertige Cannabisblüte mit 18% THC-Gehalt",
-          thcContent: 18,
-          cbdContent: 1,
-        };
+      switch (id) {
+        case "PROD-001":
+          mockProduct = {
+            name: "Cannabisblüte THC18",
+            category: "flower",
+            packageVariants: [
+              { size: "10g", quantity: 20, minStock: 5 },
+              { size: "50g", quantity: 5, minStock: 2 }
+            ],
+            pricePerGram: 12.99,
+            supplier: "CannaGrow GmbH",
+            description: "Hochwertige Cannabisblüte mit 18% THC-Gehalt",
+            thcContent: 18,
+            cbdContent: 1,
+          };
+          break;
+        case "PROD-002":
+          mockProduct = {
+            name: "Cannabisblüte THC22",
+            category: "flower",
+            packageVariants: [
+              { size: "10g", quantity: 3, minStock: 5 },
+              { size: "25g", quantity: 2, minStock: 3 }
+            ],
+            pricePerGram: 14.99,
+            supplier: "CannaGrow GmbH",
+            description: "Premium Cannabisblüte mit 22% THC-Gehalt",
+            thcContent: 22,
+            cbdContent: 0.5,
+          };
+          break;
+        case "PROD-003":
+          mockProduct = {
+            name: "THC Extrakt 25%",
+            category: "extract",
+            packageVariants: [
+              { size: "5ml", quantity: 8, minStock: 3 },
+              { size: "10ml", quantity: 5, minStock: 2 }
+            ],
+            pricePerBottle: 89.99,
+            supplier: "ExtractMed GmbH",
+            description: "Hochwertiger THC Extrakt mit 25% THC-Gehalt",
+            thcContent: 25,
+            cbdContent: 1,
+          };
+          break;
+        case "PROD-004":
+          mockProduct = {
+            name: "CBD Extrakt 15%",
+            category: "extract",
+            packageVariants: [
+              { size: "10ml", quantity: 2, minStock: 5 },
+              { size: "15ml", quantity: 1, minStock: 3 }
+            ],
+            pricePerBottle: 149.99,
+            supplier: "ExtractMed GmbH",
+            description: "Reiner CBD Extrakt mit 15% CBD-Gehalt",
+            thcContent: 0,
+            cbdContent: 15,
+          };
+          break;
+        case "PROD-005":
+          mockProduct = {
+            name: "THC/CBD Extrakt 1:1",
+            category: "extract",
+            packageVariants: [
+              { size: "10ml", quantity: 0, minStock: 3 }
+            ],
+            pricePerBottle: 199.99,
+            supplier: "ExtractMed GmbH",
+            description: "Hochwertiger THC/CBD Extrakt im Verhältnis 1:1 mit 25% THC und 25% CBD",
+            thcContent: 25,
+            cbdContent: 25,
+          };
+          break;
+        default:
+          mockProduct = {
+            name: "Cannabisblüte THC18",
+            category: "flower",
+            packageVariants: [
+              { size: "10g", quantity: 20, minStock: 5 },
+              { size: "50g", quantity: 5, minStock: 2 }
+            ],
+            pricePerGram: 12.99,
+            supplier: "CannaGrow GmbH",
+            description: "Hochwertige Cannabisblüte mit 18% THC-Gehalt",
+            thcContent: 18,
+            cbdContent: 1,
+          };
       }
       
       setProductData(mockProduct);
@@ -126,7 +189,7 @@ const ProductEditPage = () => {
       
       // Beim Kategoriewechsel Packungsgrößen zurücksetzen
       if (field === "category") {
-        const defaultSize = value === "flower" ? "10g" : "5ml";
+        const defaultSize = value === "flower" ? "10g" : "10ml"; // Standardgröße für Extrakte auf 10ml geändert
         updated.packageVariants = [{ size: defaultSize, quantity: 0, minStock: 5 }];
         
         // Preisfelder entsprechend anpassen
@@ -157,7 +220,7 @@ const ProductEditPage = () => {
   };
 
   const addPackageVariant = () => {
-    const defaultSize = productData.category === "flower" ? "10g" : "5ml";
+    const defaultSize = productData.category === "flower" ? "10g" : "10ml"; // Konsistente Standardgröße
     setProductData(prev => ({
       ...prev,
       packageVariants: [...prev.packageVariants, { size: defaultSize, quantity: 0, minStock: 5 }]
@@ -459,7 +522,7 @@ const ProductEditPage = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Mindestbestand</Label>
+                    <Label>Mindestbestand ({productData.category === "flower" ? "Packungen" : "Flaschen"})</Label>
                     <Input
                       type="number"
                       min="0"

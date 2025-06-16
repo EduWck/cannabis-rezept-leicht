@@ -20,55 +20,69 @@ import {
 import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Static sidebar configurations for each role
+const ADMIN_MENU_ITEMS = [
+  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: Users, title: "Benutzer", path: "/dashboard/users" },
+  { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/all-orders" },
+  { icon: Package, title: "Produkte", path: "/dashboard/products" },
+  { icon: Settings, title: "Einstellungen", path: "/dashboard/settings" },
+];
+
+const DOCTOR_MENU_ITEMS = [
+  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: Users, title: "Patienten", path: "/dashboard/patients" },
+  { icon: Calendar, title: "Termine", path: "/dashboard/calendar" },
+  { icon: Clipboard, title: "Anfragen", path: "/dashboard/requests" },
+  { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
+];
+
+const PHARMACY_MENU_ITEMS = [
+  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
+  { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
+  { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
+];
+
+const PATIENT_MENU_ITEMS = [
+  { icon: Home, title: "Dashboard", path: "/dashboard" },
+  { icon: User, title: "Profil", path: "/dashboard/profile" },
+  { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
+  { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
+  { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
+  { icon: Calendar, title: "Termine", path: "/dashboard/appointments" },
+];
+
 const DashboardLayout = () => {
   const { user, userRole, signOut } = useAuth();
 
-  // Role-specific menu items - each role gets ONLY what they need
-  const getMenuItems = () => {
-    console.log("Current userRole in getMenuItems:", userRole);
-    
-    if (userRole === "admin") {
-      return [
-        { icon: Home, title: "Dashboard", path: "/dashboard" },
-        { icon: Users, title: "Benutzer", path: "/dashboard/users" },
-        { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/all-orders" },
-        { icon: Package, title: "Produkte", path: "/dashboard/products" },
-        { icon: Settings, title: "Einstellungen", path: "/dashboard/settings" },
-      ];
+  // Get menu items based on current URL for demonstration
+  const getCurrentMenuItems = () => {
+    const currentPath = window.location.pathname;
+    console.log("Current path:", currentPath);
+    console.log("Current userRole:", userRole);
+
+    // For demonstration: determine role based on URL or userRole
+    if (currentPath.includes('/admin') || userRole === 'admin') {
+      console.log("Using ADMIN sidebar");
+      return ADMIN_MENU_ITEMS;
     }
     
-    if (userRole === "doctor") {
-      return [
-        { icon: Home, title: "Dashboard", path: "/dashboard" },
-        { icon: Users, title: "Patienten", path: "/dashboard/patients" },
-        { icon: Calendar, title: "Termine", path: "/dashboard/calendar" },
-        { icon: Clipboard, title: "Anfragen", path: "/dashboard/requests" },
-        { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
-      ];
+    if (currentPath.includes('/doctor') || userRole === 'doctor') {
+      console.log("Using DOCTOR sidebar");
+      return DOCTOR_MENU_ITEMS;
     }
     
-    if (userRole === "pharmacy") {
-      return [
-        { icon: Home, title: "Dashboard", path: "/dashboard" },
-        { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
-        { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
-        { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
-      ];
+    if (currentPath.includes('/pharmacy') || userRole === 'pharmacy') {
+      console.log("Using PHARMACY sidebar");
+      return PHARMACY_MENU_ITEMS;
     }
     
-    // Patient role (default)
-    return [
-      { icon: Home, title: "Dashboard", path: "/dashboard" },
-      { icon: User, title: "Profil", path: "/dashboard/profile" },
-      { icon: Clipboard, title: "Befunde", path: "/dashboard/medical-findings" },
-      { icon: FileText, title: "Rezepte", path: "/dashboard/prescriptions" },
-      { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/orders" },
-      { icon: Calendar, title: "Termine", path: "/dashboard/appointments" },
-    ];
+    console.log("Using PATIENT sidebar (default)");
+    return PATIENT_MENU_ITEMS;
   };
 
-  const menuItems = getMenuItems();
-  console.log("MenuItems for role", userRole, ":", menuItems);
+  const menuItems = getCurrentMenuItems();
 
   return (
     <SidebarProvider>

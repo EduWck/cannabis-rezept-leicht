@@ -321,21 +321,9 @@ const PharmacyInventoryPage = () => {
                     <TableCell>{getStockStatus(product.packageVariants)}</TableCell>
                     <TableCell>
                       {product.category === "flower" ? (
-                        <div>
-                          <div className="font-medium">{product.pricePerGram?.toFixed(2)} €/g</div>
-                        </div>
+                        <div className="font-medium">{product.pricePerGram?.toFixed(2)} €/g</div>
                       ) : (
-                        <div>
-                          <div className="font-medium">{product.pricePerMl?.toFixed(2)} €/ml</div>
-                          <div className="text-xs text-muted-foreground">
-                            Flaschenpreise:
-                          </div>
-                          {product.packageVariants.map((variant, idx) => (
-                            <div key={idx} className="text-xs text-blue-600">
-                              {variant.size}: {calculateBottlePrice(product.pricePerMl || 0, variant.size).toFixed(2)} €
-                            </div>
-                          ))}
-                        </div>
+                        <div className="font-medium">{product.pricePerMl?.toFixed(2)} €/ml</div>
                       )}
                     </TableCell>
                     <TableCell>

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -63,7 +64,7 @@ const PharmacyDashboard = () => {
       prescriptionId: "RX-2023-001",
       date: "2023-12-15",
       status: "pending",
-      total: 129.90, // Aktualisiert für neuen ml-basierten Preis
+      total: 129.90,
       items: [
         { name: "Cannabisblüte THC18", quantity: "10g", type: "flower", price: 129.90 }
       ],
@@ -76,7 +77,7 @@ const PharmacyDashboard = () => {
       prescriptionId: "RX-2023-002",
       date: "2023-12-14", 
       status: "processing",
-      total: 154.85, // Aktualisiert: 10ml THC Extrakt (89.90€) + 5g Blüte (64.95€)
+      total: 154.85,
       items: [
         { name: "THC Extrakt 25%", quantity: "1 Flasche à 10ml", type: "extract", price: 89.90 },
         { name: "Cannabisblüte THC15", quantity: "5g", type: "flower", price: 64.95 }
@@ -90,7 +91,7 @@ const PharmacyDashboard = () => {
       prescriptionId: "RX-2023-003",
       date: "2023-12-13",
       status: "shipped",
-      total: 399.80, // Aktualisiert: 2 × 10ml THC/CBD Extrakt (2 × 199.90€)
+      total: 399.80,
       items: [
         { name: "THC/CBD Extrakt 1:1", quantity: "2 Flaschen à 10ml", type: "extract", price: 399.80 }
       ],
@@ -107,7 +108,7 @@ const PharmacyDashboard = () => {
       unit: "Flaschen à 10ml",
       type: "extract",
       bottleSize: 10,
-      pricePerMl: 8.99 // Hinzugefügt für Preisberechnung
+      pricePerMl: 8.99
     },
     { 
       name: "Cannabisblüte THC18", 
@@ -123,26 +124,7 @@ const PharmacyDashboard = () => {
       unit: "Flaschen à 10ml",
       type: "extract",
       bottleSize: 10,
-      pricePerMl: 19.99 // Hinzugefügt für Preisberechnung
-    }
-  ];
-
-  const pendingPrescriptions = [
-    {
-      id: "RX-2023-008",
-      patientName: "Thomas Fischer",
-      doctorName: "Dr. Sarah Schmidt",
-      submittedAt: "2023-12-15T10:30:00",
-      products: ["Cannabisblüte THC20", "THC Extrakt 20%"],
-      urgency: "normal"
-    },
-    {
-      id: "RX-2023-009", 
-      patientName: "Maria Gonzalez",
-      doctorName: "Dr. Michael Weber",
-      submittedAt: "2023-12-15T09:15:00",
-      products: ["THC/CBD Extrakt 1:1"],
-      urgency: "high"
+      pricePerMl: 19.99
     }
   ];
 
@@ -272,9 +254,9 @@ const PharmacyDashboard = () => {
         </div>
       </div>
       
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Bestellungen */}
-        <div className="lg:col-span-2">
+        <div>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -402,50 +384,6 @@ const PharmacyDashboard = () => {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Wartende Rezepte */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="w-5 h-5 mr-2" />
-                Wartende Rezepte
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {pendingPrescriptions.map((prescription) => (
-                  <div key={prescription.id} className="p-3 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="font-medium text-sm">{prescription.id}</p>
-                      {prescription.urgency === 'high' && (
-                        <Badge variant="destructive" className="text-xs">
-                          <AlertCircle className="w-3 h-3 mr-1" />
-                          Dringend
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-1">
-                      Patient: {prescription.patientName}
-                    </p>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      Arzt: {prescription.doctorName}
-                    </p>
-                    <div className="text-xs text-muted-foreground">
-                      Produkte: {prescription.products.join(", ")}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full mt-4" 
-                onClick={() => navigate("/dashboard/pharmacy-prescriptions")}
-              >
-                Alle Rezepte prüfen
-              </Button>
-            </CardContent>
-          </Card>
-
           {/* Niedriger Bestand */}
           <Card>
             <CardHeader>
@@ -472,9 +410,6 @@ const PharmacyDashboard = () => {
                       <div className="text-xs space-y-1 mt-1">
                         <p className="text-blue-600">
                           Gesamt: {product.currentStock * product.bottleSize}ml verfügbar
-                        </p>
-                        <p className="text-green-600">
-                          Wert: {(product.currentStock * product.bottleSize * product.pricePerMl).toFixed(2)} €
                         </p>
                         <p className="text-muted-foreground">
                           {product.pricePerMl.toFixed(2)} €/ml

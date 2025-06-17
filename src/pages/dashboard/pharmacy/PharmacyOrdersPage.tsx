@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -48,7 +49,8 @@ import {
   Filter,
   MoreHorizontal,
   Check,
-  X
+  X,
+  FileText
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -62,11 +64,11 @@ import { useIsMobile } from "@/hooks/use-is-mobile";
 interface OrderItem {
   name: string;
   type: "flower" | "extract";
-  orderedGrams?: number; // Nur für Cannabis-Blüten
-  totalStockGrams?: number; // Nur für Cannabis-Blüten
-  orderedBottles?: number; // Nur für Extrakte
-  bottleSize?: number; // ml pro Flasche für Extrakte
-  totalStockBottles?: number; // Anzahl Flaschen im Lager für Extrakte
+  orderedGrams?: number;
+  totalStockGrams?: number;
+  orderedBottles?: number;
+  bottleSize?: number;
+  totalStockBottles?: number;
 }
 
 interface Order {
@@ -87,6 +89,7 @@ interface Order {
 
 const PharmacyOrdersPage = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [shippingFilter, setShippingFilter] = useState("all");
@@ -254,6 +257,10 @@ const PharmacyOrdersPage = () => {
       setEditingOrder(null);
     }
   };
+
+  const handlePrescriptionClick = (prescriptionId: string) => {
+    navigate(`/dashboard/prescriptions/${prescriptionId}`);
+  };
   
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
@@ -322,6 +329,16 @@ const PharmacyOrdersPage = () => {
               <span className="text-xs text-muted-foreground truncate">
                 {order.patientAddress.split(',')[0]}...
               </span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <FileText className="h-3 w-3 text-muted-foreground" />
+              <button 
+                onClick={() => handlePrescriptionClick(order.prescriptionId)}
+                className="text-xs text-blue-600 hover:underline"
+              >
+                {order.prescriptionId}
+              </button>
             </div>
             
             <div className="flex items-center gap-2">
@@ -509,6 +526,7 @@ const PharmacyOrdersPage = () => {
                     </TableHead>
                     <TableHead>Bestellung</TableHead>
                     <TableHead>Patient</TableHead>
+                    <TableHead>Rezept</TableHead>
                     <TableHead>Produkte</TableHead>
                     <TableHead>Versand</TableHead>
                     <TableHead>Status</TableHead>
@@ -532,7 +550,6 @@ const PharmacyOrdersPage = () => {
                         <TableCell className="font-medium">
                           <div>
                             <p className="font-mono text-sm">{order.id}</p>
-                            <p className="text-xs text-muted-foreground">{order.prescriptionId}</p>
                           </div>
                         </TableCell>
                         <TableCell>
@@ -542,6 +559,15 @@ const PharmacyOrdersPage = () => {
                               {order.patientAddress.split(',')[0]}...
                             </p>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <button 
+                            onClick={() => handlePrescriptionClick(order.prescriptionId)}
+                            className="flex items-center gap-1 text-blue-600 hover:underline font-mono text-sm"
+                          >
+                            <FileText className="h-3 w-3" />
+                            {order.prescriptionId}
+                          </button>
                         </TableCell>
                         <TableCell>
                           <div className="space-y-2">
@@ -650,7 +676,7 @@ const PharmacyOrdersPage = () => {
                   
                   {filteredOrders.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={9} className="h-24 text-center">
+                      <TableCell colSpan={10} className="h-24 text-center">
                         Keine Bestellungen gefunden.
                       </TableCell>
                     </TableRow>
@@ -683,6 +709,19 @@ const PharmacyOrdersPage = () => {
                 <div>
                   <Label className="text-sm font-medium">Status</Label>
                   <div className="mt-1">{getStatusBadge(selectedOrder.status)}</div>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Rezept</Label>
+                <div className="mt-2">
+                  <button 
+                    onClick={() => handlePrescriptionClick(selectedOrder.prescriptionId)}
+                    className="flex items-center gap-2 text-blue-600 hover:underline"
+                  >
+                    <FileText className="h-4 w-4" />
+                    {selectedOrder.prescriptionId} - Rezept anzeigen
+                  </button>
                 </div>
               </div>
               

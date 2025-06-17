@@ -12,13 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowLeft, ShoppingBag, Package, Truck, MapPin } from "lucide-react";
+import { ArrowLeft, ShoppingBag, Package, Truck, MapPin, FileText, User, Eye } from "lucide-react";
 
 const OrderDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Mock order data
+  // Mock order data with prescription details
   const order = {
     id: id || "ORD-2023-105",
     patientName: "Max Mustermann",
@@ -28,6 +28,15 @@ const OrderDetailPage = () => {
     shippingDate: "2023-12-16T14:20:00",
     estimatedDelivery: "2023-12-18T12:00:00",
     trackingNumber: "DE123456789",
+    prescriptionId: "RX-2023-001",
+    prescriptionDetails: {
+      doctorName: "Dr. Sarah Schmidt",
+      issuedAt: "2023-12-14T14:30:00",
+      validUntil: "2024-01-14T23:59:59",
+      symptoms: ["Chronische Schmerzen", "Schlafstörungen"],
+      dosage: "2x täglich 0.25g",
+      instructions: "Vaporisation bei 180°C, nach Bedarf"
+    },
     shippingAddress: {
       street: "Musterstraße 123",
       city: "20095 Hamburg",
@@ -67,6 +76,10 @@ const OrderDetailPage = () => {
       default:
         return <Badge>Unbekannt</Badge>;
     }
+  };
+
+  const handleViewPrescription = () => {
+    navigate(`/dashboard/prescriptions/${order.prescriptionId}`);
   };
 
   return (
@@ -142,6 +155,73 @@ const OrderDetailPage = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Prescription Details Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <FileText className="w-5 h-5 mr-2" />
+                  Rezept-Informationen
+                </span>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleViewPrescription}
+                >
+                  <Eye className="w-4 h-4 mr-2" />
+                  Rezept anzeigen
+                </Button>
+              </CardTitle>
+              <CardDescription>
+                Details zum zugehörigen Rezept {order.prescriptionId}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Rezept-ID</p>
+                  <p className="font-medium font-mono">{order.prescriptionId}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Ausstellender Arzt</p>
+                  <p className="font-medium">{order.prescriptionDetails.doctorName}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Ausgestellt am</p>
+                  <p className="font-medium">{new Date(order.prescriptionDetails.issuedAt).toLocaleDateString('de-DE')}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Gültig bis</p>
+                  <p className="font-medium">{new Date(order.prescriptionDetails.validUntil).toLocaleDateString('de-DE')}</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Symptome</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {order.prescriptionDetails.symptoms.map((symptom, index) => (
+                    <Badge key={index} variant="secondary" className="text-xs">
+                      {symptom}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Dosierung</p>
+                <p className="font-medium">{order.prescriptionDetails.dosage}</p>
+              </div>
+              
+              <div>
+                <p className="text-sm text-muted-foreground">Anwendungshinweise</p>
+                <p className="text-sm">{order.prescriptionDetails.instructions}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Sidebar */}
@@ -202,6 +282,14 @@ const OrderDetailPage = () => {
               </Button>
               <Button className="w-full" variant="outline">
                 Rechnung herunterladen
+              </Button>
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={handleViewPrescription}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Rezept öffnen
               </Button>
             </CardContent>
           </Card>

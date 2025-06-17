@@ -259,7 +259,12 @@ const PharmacyOrdersPage = () => {
   };
 
   const handlePrescriptionClick = (prescriptionId: string) => {
-    navigate(`/dashboard/prescriptions/${prescriptionId}`);
+    navigate(`/dashboard/prescriptions/${prescriptionId}`, {
+      state: { 
+        from: '/dashboard/pharmacy-orders',
+        fromLabel: 'Bestellungen'
+      }
+    });
   };
   
   const filteredOrders = orders.filter(order => {

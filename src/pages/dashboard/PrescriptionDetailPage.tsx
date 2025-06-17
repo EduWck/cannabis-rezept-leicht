@@ -1,5 +1,4 @@
-
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +8,11 @@ import { ArrowLeft, FileText, User, Calendar, Package } from "lucide-react";
 const PrescriptionDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the previous route information from navigation state
+  const fromRoute = location.state?.from || "/dashboard/prescriptions";
+  const fromLabel = location.state?.fromLabel || "Rezepten";
 
   // Mock prescription data
   const prescription = {
@@ -40,9 +44,9 @@ const PrescriptionDetailPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => navigate("/dashboard/prescriptions")}>
+        <Button variant="outline" onClick={() => navigate(fromRoute)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Zurück zu Rezepten
+          Zurück zu {fromLabel}
         </Button>
         <h1 className="text-2xl font-bold">Rezept Details</h1>
       </div>

@@ -1,5 +1,5 @@
-
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 const ProductsPage = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isAddProductDialogOpen, setIsAddProductDialogOpen] = useState(false);
   
@@ -78,6 +79,10 @@ const ProductsPage = () => {
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleEditProduct = (productId: number) => {
+    navigate(`/dashboard/products/${productId}`);
+  };
+
   const handleToggleStock = (id: number, newStatus: boolean) => {
     const product = products.find(p => p.id === id);
     if (product) {
@@ -92,7 +97,7 @@ const ProductsPage = () => {
     <div className="container mx-auto">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">Produktverwaltung</h1>
-        <Button onClick={() => setIsAddProductDialogOpen(true)}>
+        <Button onClick={() => navigate("/dashboard/products/new")}>
           <Plus className="mr-2 h-4 w-4" />
           Neues Produkt
         </Button>
@@ -151,10 +156,7 @@ const ProductsPage = () => {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => toast({
-                          title: "Produkt bearbeiten",
-                          description: `Die Daten für ${product.name} werden bearbeitet.`
-                        })}
+                        onClick={() => handleEditProduct(product.id)}
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Bearbeiten

@@ -1,3 +1,4 @@
+
 import { Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -39,6 +40,7 @@ import AllPrescriptionsPage from "@/pages/dashboard/admin/AllPrescriptionsPage";
 import AllOrdersPage from "@/pages/dashboard/admin/AllOrdersPage";
 import AllAppointmentsPage from "@/pages/dashboard/admin/AllAppointmentsPage";
 import ProductsPage from "@/pages/dashboard/admin/ProductsPage";
+import ProductEditPage from "@/pages/dashboard/admin/ProductEditPage";
 import SettingsPage from "@/pages/dashboard/admin/SettingsPage";
 import BillingPage from "@/pages/dashboard/admin/BillingPage";
 
@@ -53,7 +55,7 @@ import PatientRecordPage from "@/pages/dashboard/doctor/PatientRecordPage";
 import PharmacyDashboard from "@/pages/dashboard/pharmacy/PharmacyDashboard";
 import PharmacyOrdersPage from "@/pages/dashboard/pharmacy/PharmacyOrdersPage";
 import PharmacyInventoryPage from "@/pages/dashboard/pharmacy/PharmacyInventoryPage";
-import ProductEditPage from "@/pages/dashboard/pharmacy/ProductEditPage";
+import PharmacyProductEditPage from "@/pages/dashboard/pharmacy/ProductEditPage";
 
 // Detail pages
 import RequestDetailPage from "@/pages/dashboard/RequestDetailPage";
@@ -116,6 +118,8 @@ const AppRoutes = [
     <Route key="all-orders" path="/dashboard/all-orders" element={<AllOrdersPage />} />
     <Route key="all-appointments" path="/dashboard/all-appointments" element={<AllAppointmentsPage />} />
     <Route key="products" path="/dashboard/products" element={<ProductsPage />} />
+    <Route key="product-new" path="/dashboard/products/new" element={<ProductEditPage />} />
+    <Route key="product-edit" path="/dashboard/products/:id" element={<ProductEditPage />} />
     <Route key="settings" path="/dashboard/settings" element={<SettingsPage />} />
     <Route key="billing" path="/dashboard/billing" element={<BillingPage />} />
     
@@ -129,8 +133,8 @@ const AppRoutes = [
     {/* Pharmacy routes */}
     <Route key="pharmacy-orders" path="/dashboard/pharmacy-orders" element={<PharmacyOrdersPage />} />
     <Route key="pharmacy-inventory" path="/dashboard/pharmacy-inventory" element={<PharmacyInventoryPage />} />
-    <Route key="pharmacy-inventory-new" path="/dashboard/pharmacy-inventory/new" element={<ProductEditPage />} />
-    <Route key="pharmacy-inventory-edit" path="/dashboard/pharmacy-inventory/:id" element={<ProductEditPage />} />
+    <Route key="pharmacy-inventory-new" path="/dashboard/pharmacy-inventory/new" element={<PharmacyProductEditPage />} />
+    <Route key="pharmacy-inventory-edit" path="/dashboard/pharmacy-inventory/:id" element={<PharmacyProductEditPage />} />
     
     {/* Detail routes */}
     <Route key="request-detail" path="/dashboard/requests/:id" element={<RequestDetailPage />} />

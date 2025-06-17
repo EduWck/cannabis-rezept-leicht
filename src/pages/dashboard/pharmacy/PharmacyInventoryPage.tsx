@@ -304,11 +304,6 @@ const PharmacyInventoryPage = () => {
                               {variant.quantity}x {variant.size}
                               {product.category === "extract" ? " Flaschen" : " Packungen"}
                             </span>
-                            {variant.quantity < variant.minStock && (
-                              <Badge variant="outline" className="text-xs px-2 py-1 flex items-center gap-1">
-                                <span className="text-red-500">Min: {variant.minStock}</span>
-                              </Badge>
-                            )}
                           </div>
                         ))}
                       </div>

@@ -1,4 +1,3 @@
-
 import { Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/Navbar";
@@ -40,7 +39,6 @@ const DOCTOR_MENU_ITEMS = [
 const PHARMACY_MENU_ITEMS = [
   { icon: Home, title: "Dashboard", path: "/dashboard/pharmacy" },
   { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
-  { icon: FileText, title: "Rezepte", path: "/dashboard/pharmacy-prescriptions" },
   { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
 ];
 

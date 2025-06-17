@@ -31,7 +31,7 @@ interface ProductData {
   category: "flower" | "extract";
   packageVariants: PackageVariant[];
   pricePerGram?: number; // Nur für Cannabis-Blüten
-  pricePerBottle?: number; // Nur für Extrakte
+  pricePerMl?: number; // Nur für Extrakte - Preis pro ml
   supplier: string;
   description: string;
   thcContent: number;
@@ -100,7 +100,7 @@ const ProductEditPage = () => {
               { size: "5ml", quantity: 8, minStock: 3 },
               { size: "10ml", quantity: 5, minStock: 2 }
             ],
-            pricePerBottle: 89.99,
+            pricePerMl: 8.99, // Preis pro ml statt pro Flasche
             supplier: "ExtractMed GmbH",
             description: "Hochwertiger THC Extrakt mit 25% THC-Gehalt",
             thcContent: 25,
@@ -115,7 +115,7 @@ const ProductEditPage = () => {
               { size: "10ml", quantity: 2, minStock: 5 },
               { size: "15ml", quantity: 1, minStock: 3 }
             ],
-            pricePerBottle: 149.99,
+            pricePerMl: 14.99, // Preis pro ml statt pro Flasche
             supplier: "ExtractMed GmbH",
             description: "Reiner CBD Extrakt mit 15% CBD-Gehalt",
             thcContent: 0,
@@ -129,7 +129,7 @@ const ProductEditPage = () => {
             packageVariants: [
               { size: "10ml", quantity: 0, minStock: 3 }
             ],
-            pricePerBottle: 199.99,
+            pricePerMl: 19.99, // Preis pro ml statt pro Flasche
             supplier: "ExtractMed GmbH",
             description: "Hochwertiger THC/CBD Extrakt im Verhältnis 1:1 mit 25% THC und 25% CBD",
             thcContent: 25,
@@ -188,16 +188,16 @@ const ProductEditPage = () => {
       
       // Beim Kategoriewechsel Packungsgrößen zurücksetzen
       if (field === "category") {
-        const defaultSize = value === "flower" ? "10g" : "10ml"; // Standardgröße für Extrakte auf 10ml geändert
+        const defaultSize = value === "flower" ? "10g" : "10ml";
         updated.packageVariants = [{ size: defaultSize, quantity: 0, minStock: 5 }];
         
         // Preisfelder entsprechend anpassen
         if (value === "flower") {
-          updated.pricePerBottle = undefined;
+          updated.pricePerMl = undefined;
           if (!updated.pricePerGram) updated.pricePerGram = 0;
         } else {
           updated.pricePerGram = undefined;
-          if (!updated.pricePerBottle) updated.pricePerBottle = 0;
+          if (!updated.pricePerMl) updated.pricePerMl = 0;
         }
       }
       
@@ -268,8 +268,8 @@ const ProductEditPage = () => {
       newErrors.pricePerGram = "Preis pro Gramm muss größer als 0 sein";
     }
     
-    if (productData.category === "extract" && (productData.pricePerBottle || 0) <= 0) {
-      newErrors.pricePerBottle = "Preis pro Flasche muss größer als 0 sein";
+    if (productData.category === "extract" && (productData.pricePerMl || 0) <= 0) {
+      newErrors.pricePerMl = "Preis pro ml muss größer als 0 sein";
     }
 
     setErrors(newErrors);
@@ -380,18 +380,21 @@ const ProductEditPage = () => {
 
                   {productData.category === "extract" && (
                     <div className="space-y-2">
-                      <Label htmlFor="pricePerBottle">Preis pro Flasche (€) *</Label>
+                      <Label htmlFor="pricePerMl">Preis pro ml (€) *</Label>
                       <Input
-                        id="pricePerBottle"
+                        id="pricePerMl"
                         type="number"
                         min="0"
                         step="0.01"
                         placeholder="0.00"
-                        value={productData.pricePerBottle || 0}
-                        onChange={(e) => updateField('pricePerBottle', parseFloat(e.target.value) || 0)}
-                        className={errors.pricePerBottle ? "border-red-500" : ""}
+                        value={productData.pricePerMl || 0}
+                        onChange={(e) => updateField('pricePerMl', parseFloat(e.target.value) || 0)}
+                        className={errors.pricePerMl ? "border-red-500" : ""}
                       />
-                      {errors.pricePerBottle && <p className="text-sm text-red-500">{errors.pricePerBottle}</p>}
+                      {errors.pricePerMl && <p className="text-sm text-red-500">{errors.pricePerMl}</p>}
+                      <p className="text-xs text-muted-foreground">
+                        Berechnung: Preis pro Flasche = Preis/ml × Flaschengröße
+                      </p>
                     </div>
                   )}
 
@@ -546,6 +549,11 @@ const ProductEditPage = () => {
                     <div className="text-sm text-muted-foreground">
                       ({calculateTotalStock()}ml gesamt)
                     </div>
+                    {productData.pricePerMl && (
+                      <div className="text-sm text-blue-600 mt-1">
+                        Gesamtwert: {(calculateTotalStock() * productData.pricePerMl).toFixed(2)} €
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -63,9 +63,9 @@ const PharmacyDashboard = () => {
       prescriptionId: "RX-2023-001",
       date: "2023-12-15",
       status: "pending",
-      total: 89.95,
+      total: 129.90, // Aktualisiert für neuen ml-basierten Preis
       items: [
-        { name: "Cannabisblüte THC18", quantity: "10g", type: "flower" }
+        { name: "Cannabisblüte THC18", quantity: "10g", type: "flower", price: 129.90 }
       ],
       trackingId: null,
       priority: "normal"
@@ -76,10 +76,10 @@ const PharmacyDashboard = () => {
       prescriptionId: "RX-2023-002",
       date: "2023-12-14", 
       status: "processing",
-      total: 156.50,
+      total: 154.85, // Aktualisiert: 10ml THC Extrakt (89.90€) + 5g Blüte (64.95€)
       items: [
-        { name: "THC Extrakt 25%", quantity: "1 Flasche à 10ml", type: "extract" },
-        { name: "Cannabisblüte THC15", quantity: "5g", type: "flower" }
+        { name: "THC Extrakt 25%", quantity: "1 Flasche à 10ml", type: "extract", price: 89.90 },
+        { name: "Cannabisblüte THC15", quantity: "5g", type: "flower", price: 64.95 }
       ],
       trackingId: null,
       priority: "high"
@@ -90,9 +90,9 @@ const PharmacyDashboard = () => {
       prescriptionId: "RX-2023-003",
       date: "2023-12-13",
       status: "shipped",
-      total: 234.75,
+      total: 399.80, // Aktualisiert: 2 × 10ml THC/CBD Extrakt (2 × 199.90€)
       items: [
-        { name: "THC/CBD Extrakt 1:1", quantity: "2 Flaschen à 10ml", type: "extract" }
+        { name: "THC/CBD Extrakt 1:1", quantity: "2 Flaschen à 10ml", type: "extract", price: 399.80 }
       ],
       trackingId: "DHL123456789",
       priority: "normal"
@@ -106,7 +106,8 @@ const PharmacyDashboard = () => {
       minStock: 10, 
       unit: "Flaschen à 10ml",
       type: "extract",
-      bottleSize: 10
+      bottleSize: 10,
+      pricePerMl: 8.99 // Hinzugefügt für Preisberechnung
     },
     { 
       name: "Cannabisblüte THC18", 
@@ -121,7 +122,8 @@ const PharmacyDashboard = () => {
       minStock: 3, 
       unit: "Flaschen à 10ml",
       type: "extract",
-      bottleSize: 10
+      bottleSize: 10,
+      pricePerMl: 19.99 // Hinzugefügt für Preisberechnung
     }
   ];
 
@@ -324,9 +326,12 @@ const PharmacyDashboard = () => {
                       <p className="text-sm font-medium mb-1">Bestellte Produkte:</p>
                       <div className="space-y-1">
                         {order.items.map((item, index) => (
-                          <p key={index} className="text-sm text-muted-foreground">
-                            • {item.name} - {item.quantity}
-                          </p>
+                          <div key={index} className="text-sm text-muted-foreground flex justify-between">
+                            <span>• {item.name} - {item.quantity}</span>
+                            {item.price && (
+                              <span className="font-medium">{item.price.toFixed(2)} €</span>
+                            )}
+                          </div>
                         ))}
                       </div>
                     </div>
@@ -463,10 +468,18 @@ const PharmacyDashboard = () => {
                     <p className="text-xs text-red-600">
                       Mindestbestand: {product.minStock} {product.unit}
                     </p>
-                    {product.type === "extract" && product.bottleSize && product.currentStock > 0 && (
-                      <p className="text-xs text-blue-600">
-                        Gesamt: {product.currentStock * product.bottleSize}ml verfügbar
-                      </p>
+                    {product.type === "extract" && product.bottleSize && product.currentStock > 0 && product.pricePerMl && (
+                      <div className="text-xs space-y-1 mt-1">
+                        <p className="text-blue-600">
+                          Gesamt: {product.currentStock * product.bottleSize}ml verfügbar
+                        </p>
+                        <p className="text-green-600">
+                          Wert: {(product.currentStock * product.bottleSize * product.pricePerMl).toFixed(2)} €
+                        </p>
+                        <p className="text-muted-foreground">
+                          {product.pricePerMl.toFixed(2)} €/ml
+                        </p>
+                      </div>
                     )}
                     {product.type === "extract" && product.currentStock === 0 && (
                       <p className="text-xs text-red-600 font-medium">

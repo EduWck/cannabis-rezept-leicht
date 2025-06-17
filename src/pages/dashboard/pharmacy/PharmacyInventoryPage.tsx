@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -49,7 +48,7 @@ interface Product {
   category: string;
   packageVariants: PackageVariant[];
   pricePerGram?: number; // Nur für Cannabis-Blüten
-  pricePerBottle?: number; // Nur für Extrakte
+  pricePerMl?: number; // Nur für Extrakte - Preis pro ml
   supplier: string;
   thcContent?: number;
   cbdContent?: number;
@@ -60,7 +59,7 @@ const PharmacyInventoryPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   
-  // Mock data - aktualisierte Struktur ohne CBD Öle
+  // Mock data - aktualisierte Struktur mit Preis pro ml für Extrakte
   const products: Product[] = [
     {
       id: "PROD-001",
@@ -96,7 +95,7 @@ const PharmacyInventoryPage = () => {
         { size: "5ml", quantity: 8, minStock: 3 },
         { size: "10ml", quantity: 5, minStock: 2 }
       ],
-      pricePerBottle: 89.99,
+      pricePerMl: 8.99, // Preis pro ml
       supplier: "ExtractMed GmbH",
       thcContent: 25,
       cbdContent: 1,
@@ -109,7 +108,7 @@ const PharmacyInventoryPage = () => {
         { size: "10ml", quantity: 2, minStock: 5 },
         { size: "15ml", quantity: 1, minStock: 3 }
       ],
-      pricePerBottle: 149.99,
+      pricePerMl: 14.99, // Preis pro ml
       supplier: "ExtractMed GmbH",
       thcContent: 0,
       cbdContent: 15,
@@ -121,7 +120,7 @@ const PharmacyInventoryPage = () => {
       packageVariants: [
         { size: "10ml", quantity: 0, minStock: 3 }
       ],
-      pricePerBottle: 199.99,
+      pricePerMl: 19.99, // Preis pro ml
       supplier: "ExtractMed GmbH",
       thcContent: 25,
       cbdContent: 25,
@@ -189,6 +188,11 @@ const PharmacyInventoryPage = () => {
     );
   };
   
+  const calculateBottlePrice = (pricePerMl: number, bottleSize: string) => {
+    const ml = parseInt(bottleSize.replace('ml', '')) || 0;
+    return pricePerMl * ml;
+  };
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                         product.id.toLowerCase().includes(searchQuery.toLowerCase());
@@ -322,7 +326,15 @@ const PharmacyInventoryPage = () => {
                         </div>
                       ) : (
                         <div>
-                          <div className="font-medium">{product.pricePerBottle?.toFixed(2)} €/Flasche</div>
+                          <div className="font-medium">{product.pricePerMl?.toFixed(2)} €/ml</div>
+                          <div className="text-xs text-muted-foreground">
+                            Flaschenpreise:
+                          </div>
+                          {product.packageVariants.map((variant, idx) => (
+                            <div key={idx} className="text-xs text-blue-600">
+                              {variant.size}: {calculateBottlePrice(product.pricePerMl || 0, variant.size).toFixed(2)} €
+                            </div>
+                          ))}
                         </div>
                       )}
                     </TableCell>

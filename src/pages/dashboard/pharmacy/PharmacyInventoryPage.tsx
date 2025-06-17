@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -30,8 +31,7 @@ import {
   FileEdit,
   CheckCircle,
   AlertTriangle,
-  XCircle,
-  Package
+  XCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
@@ -304,14 +304,13 @@ const PharmacyInventoryPage = () => {
                       <div className="space-y-1">
                         {product.packageVariants.map((variant, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <Package className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span className={`text-sm ${variant.quantity < variant.minStock ? "text-red-500 font-medium" : ""}`}>
                               {variant.quantity}x {variant.size}
                               {product.category === "extract" ? " Flaschen" : " Packungen"}
                             </span>
                             {variant.quantity < variant.minStock && (
                               <Badge variant="outline" className="text-xs px-2 py-1 flex items-center gap-1">
-                                <span>Min: {variant.minStock}</span>
+                                <span className="text-red-500">Min: {variant.minStock}</span>
                               </Badge>
                             )}
                           </div>

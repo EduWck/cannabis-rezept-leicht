@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -166,23 +165,20 @@ const PharmacyInventoryPage = () => {
   const getStockStatus = (packageVariants: PackageVariant[]) => {
     if (isOutOfStock(packageVariants)) {
       return (
-        <Badge variant="destructive" className="flex items-center gap-1">
-          <XCircle className="h-3 w-3" />
+        <Badge variant="destructive">
           Nicht auf Lager
         </Badge>
       );
     }
     if (isLowStock(packageVariants)) {
       return (
-        <Badge variant="secondary" className="flex items-center gap-1 bg-yellow-100 text-yellow-800 border-yellow-300">
-          <AlertTriangle className="h-3 w-3" />
+        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
           Niedriger Bestand
         </Badge>
       );
     }
     return (
-      <Badge variant="default" className="flex items-center gap-1 bg-green-100 text-green-800 border-green-300">
-        <CheckCircle className="h-3 w-3" />
+      <Badge variant="default" className="bg-green-100 text-green-800 border-green-300">
         Auf Lager
       </Badge>
     );

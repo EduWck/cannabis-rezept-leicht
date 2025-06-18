@@ -118,76 +118,85 @@ const ProductDetailModal = ({
   const step = getQuantityStep(product.type);
   const maxQty = getMaxQuantity(product.type);
 
+  const getTotalPrice = () => {
+    if (product.type === "flower" && product.pricePerGram) {
+      return product.pricePerGram * quantity;
+    } else if (product.type === "extract" && product.pricePerBottle) {
+      return product.pricePerBottle * quantity;
+    }
+    return 0;
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[80vh] overflow-hidden flex flex-col">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="text-xl font-bold">{product.name}</DialogTitle>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0 pb-3">
+          <DialogTitle className="text-2xl font-bold">{product.name}</DialogTitle>
         </DialogHeader>
         
         <div className="flex-1 overflow-hidden">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
             {/* Left Column - Image and Product Info */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="aspect-[4/3] relative bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
                 <img 
                   src={product.image} 
                   alt={product.name} 
                   className="object-cover w-full h-full"
                 />
-                <div className="absolute top-2 right-2 px-2 py-1 bg-cannabis-green-500 text-white text-sm rounded-full">
+                <div className="absolute top-3 right-3 px-3 py-1 bg-cannabis-green-500 text-white text-sm font-medium rounded-full">
                   {product.type === "flower" ? "Blüte" : "Extrakt"}
                 </div>
               </div>
               
               {/* Product Info Grid */}
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <div className="text-center p-2 bg-cannabis-green-50 dark:bg-cannabis-green-900/20 rounded">
-                  <div className="font-bold text-cannabis-green-600 dark:text-cannabis-green-400 text-xs">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="text-center p-3 bg-cannabis-green-50 dark:bg-cannabis-green-900/20 rounded-lg">
+                  <div className="font-bold text-cannabis-green-600 dark:text-cannabis-green-400 text-sm">
                     {product.type === "flower" && product.pricePerGram && `${product.pricePerGram.toFixed(2)} €/g`}
                     {product.type === "extract" && product.pricePerBottle && `${product.pricePerBottle.toFixed(2)} €/Fl.`}
                   </div>
                   <div className="text-xs text-muted-foreground">Preis</div>
                 </div>
                 
-                <div className="text-center p-2 bg-purple-50 dark:bg-purple-900/20 rounded">
-                  <div className="font-bold text-purple-600 text-xs">{product.thcPercentage}%</div>
+                <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+                  <div className="font-bold text-purple-600 text-sm">{product.thcPercentage}%</div>
                   <div className="text-xs text-muted-foreground">THC</div>
                 </div>
                 
-                <div className="text-center p-2 bg-green-50 dark:bg-green-900/20 rounded">
-                  <div className="font-bold text-green-600 text-xs">{product.cbdPercentage}%</div>
+                <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                  <div className="font-bold text-green-600 text-sm">{product.cbdPercentage}%</div>
                   <div className="text-xs text-muted-foreground">CBD</div>
                 </div>
               </div>
 
               {product.type === "extract" && product.bottleSize && (
-                <div className="text-center p-2 bg-gray-50 dark:bg-gray-800 rounded text-xs">
-                  <span className="font-medium">Flaschengröße: {product.bottleSize}ml</span>
+                <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <span className="font-medium text-blue-600">Flaschengröße: {product.bottleSize}ml</span>
                 </div>
               )}
               
               {/* Genetics and Description */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Badge className={`text-xs ${getGeneticsColor(product.genetics)}`}>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Badge className={`${getGeneticsColor(product.genetics)}`}>
                     {getGeneticsLabel(product.genetics)}
                   </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {getGeneticsDescription(product.genetics)}
                 </p>
               </div>
               
               {/* Effects and Terpenes */}
               {(product.effects && product.effects.length > 0) || (product.terpenes && product.terpenes.length > 0) ? (
-                <div className="grid grid-cols-1 gap-2">
+                <div className="space-y-3">
                   {product.effects && product.effects.length > 0 && (
                     <div>
-                      <h5 className="text-xs font-medium mb-1">Wirkung</h5>
-                      <div className="flex flex-wrap gap-1">
-                        {product.effects.slice(0, 4).map((effect, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs py-0 px-1">
+                      <h5 className="text-sm font-medium mb-2">Wirkung</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {product.effects.slice(0, 6).map((effect, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
                             {effect}
                           </Badge>
                         ))}
@@ -197,10 +206,10 @@ const ProductDetailModal = ({
                   
                   {product.terpenes && product.terpenes.length > 0 && (
                     <div>
-                      <h5 className="text-xs font-medium mb-1">Terpene</h5>
-                      <div className="flex flex-wrap gap-1">
-                        {product.terpenes.slice(0, 4).map((terpene, index) => (
-                          <Badge key={index} variant="outline" className="text-xs py-0 px-1">
+                      <h5 className="text-sm font-medium mb-2">Terpene</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {product.terpenes.slice(0, 6).map((terpene, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
                             {terpene}
                           </Badge>
                         ))}
@@ -212,33 +221,33 @@ const ProductDetailModal = ({
             </div>
             
             {/* Right Column - Description, Pharmacies and Quantity */}
-            <div className="space-y-3 flex flex-col min-h-0">
+            <div className="flex flex-col h-full">
               {/* Description */}
-              <div>
-                <h4 className="text-sm font-medium mb-2">Beschreibung</h4>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+              <div className="flex-shrink-0 mb-4">
+                <h4 className="text-lg font-semibold mb-3">Beschreibung</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
                   {product.detailDescription || product.description}
                 </p>
               </div>
               
               {/* Available Pharmacies */}
-              <div className="flex-1 min-h-0">
-                <h4 className="text-sm font-medium mb-2">Verfügbare Apotheken</h4>
-                <div className="space-y-2 overflow-y-auto max-h-60">
+              <div className="flex-1 min-h-0 mb-4">
+                <h4 className="text-lg font-semibold mb-3">Verfügbare Apotheken</h4>
+                <div className="space-y-3 overflow-y-auto max-h-64 pr-2">
                   {availablePharmacies.map((pharmacy) => (
-                    <div key={pharmacy.id} className="flex items-center justify-between p-2 border rounded text-xs">
+                    <div key={pharmacy.id} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium truncate">{pharmacy.name}</div>
-                        <div className="flex items-center text-muted-foreground mt-0.5 text-xs">
+                        <div className="font-medium text-sm">{pharmacy.name}</div>
+                        <div className="flex items-center text-muted-foreground mt-1 text-xs">
                           <MapPin className="w-3 h-3 mr-1 flex-shrink-0" />
-                          <span className="truncate mr-2">{pharmacy.city}</span>
+                          <span className="truncate mr-3">{pharmacy.city}</span>
                           <Clock className="w-3 h-3 mr-1 flex-shrink-0" />
-                          <span className="truncate mr-2">{pharmacy.deliveryTime}</span>
+                          <span className="truncate mr-3">{pharmacy.deliveryTime}</span>
                           <Star className="w-3 h-3 mr-1 text-yellow-400 flex-shrink-0" />
                           <span>{pharmacy.rating}</span>
                         </div>
                       </div>
-                      <div className="text-xs font-medium ml-2 flex-shrink-0">
+                      <div className="text-sm font-medium ml-3 flex-shrink-0">
                         {product.type === "flower" && product.pricePerGram && `${product.pricePerGram.toFixed(2)} €/g`}
                         {product.type === "extract" && product.pricePerBottle && `${product.pricePerBottle.toFixed(2)} €/Fl.`}
                       </div>
@@ -247,17 +256,17 @@ const ProductDetailModal = ({
                 </div>
               </div>
               
-              {/* Quantity Selection */}
-              <div className="border-t pt-3">
-                <h4 className="text-sm font-medium mb-2">Menge auswählen</h4>
+              {/* Quantity Selection - Fixed at bottom */}
+              <div className="flex-shrink-0 border-t bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+                <h4 className="text-lg font-semibold mb-3">Menge auswählen</h4>
                 
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-3">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleQuantityChange(Math.max(0, quantity - step))}
                     disabled={quantity === 0}
-                    className="h-8 w-8 p-0 text-xs"
+                    className="h-10 w-10 p-0"
                   >
                     -
                   </Button>
@@ -275,7 +284,7 @@ const ProductDetailModal = ({
                         : newValue;
                       handleQuantityChange(roundedValue);
                     }}
-                    className="text-center h-8 flex-1 text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="text-center h-10 w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
                   
                   <Button
@@ -283,25 +292,26 @@ const ProductDetailModal = ({
                     size="sm"
                     onClick={() => handleQuantityChange(Math.min(maxQty, quantity + step))}
                     disabled={quantity >= maxQty}
-                    className="h-8 w-8 p-0 text-xs"
+                    className="h-10 w-10 p-0"
                   >
                     +
                   </Button>
                   
-                  {quantity > 0 && (
-                    <div className="ml-2 text-right">
-                      <div className="font-semibold text-sm">
-                        {product.type === "flower" && product.pricePerGram && (product.pricePerGram * quantity).toFixed(2)} 
-                        {product.type === "extract" && product.pricePerBottle && (product.pricePerBottle * quantity).toFixed(2)} €
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {getQuantityLabel(product, quantity)}
-                      </div>
-                    </div>
-                  )}
+                  <div className="flex-1 text-right">
+                    {quantity > 0 && (
+                      <>
+                        <div className="font-bold text-lg text-cannabis-green-600">
+                          {getTotalPrice().toFixed(2)} €
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {getQuantityLabel(product, quantity)}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground mt-2">
                   {product.type === "flower" 
                     ? `Schritte: ${step}g (max. ${maxQty}g)`
                     : `Schritte: ${step} Flasche (max. ${maxQty} Flaschen)`

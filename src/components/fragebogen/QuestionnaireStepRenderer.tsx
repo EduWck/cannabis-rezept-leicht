@@ -141,6 +141,12 @@ const QuestionnaireStepRenderer = ({
   onSkipToFeedback,
   handlers
 }: QuestionnaireStepRendererProps) => {
+  console.log("=== QuestionnaireStepRenderer Debug ===");
+  console.log("Current step:", step);
+  console.log("Selected products:", selectedProducts);
+  console.log("Mock products:", mockProducts);
+  console.log("Mock pharmacies:", mockPharmacies);
+
   switch (step) {
     case 0:
       return (
@@ -256,6 +262,12 @@ const QuestionnaireStepRenderer = ({
         );
       }
     case 9:
+      console.log("=== Checkout Step Debug ===");
+      console.log("Passing to CheckoutStep - selectedProducts:", selectedProducts);
+      console.log("Passing to CheckoutStep - products:", mockProducts);
+      console.log("Passing to CheckoutStep - pharmacies:", mockPharmacies);
+      console.log("Total amount calculation result:", calculateTotalAmount(selectedProducts));
+      
       return (
         <CheckoutStep
           totalAmount={calculateTotalAmount(selectedProducts)}

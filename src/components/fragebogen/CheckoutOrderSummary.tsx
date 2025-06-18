@@ -36,10 +36,12 @@ interface CheckoutOrderSummaryProps {
 }
 
 const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: CheckoutOrderSummaryProps) => {
-  console.log("CheckoutOrderSummary received:", { selectedProducts, products, pharmacies });
+  console.log("=== CheckoutOrderSummary Debug ===");
+  console.log("Selected products:", selectedProducts);
+  console.log("Available products:", products);
+  console.log("Available pharmacies:", pharmacies);
 
   const getProductPrice = (product: Product) => {
-    // Fix: Handle both flower and extract types properly
     if (product.type === "flower" && product.pricePerGram) {
       return product.pricePerGram;
     }
@@ -59,29 +61,47 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
   };
 
   const getProductsSubtotal = () => {
-    const subtotal = Object.entries(selectedProducts).reduce((total, [productId, selection]) => {
+    let subtotal = 0;
+    
+    Object.entries(selectedProducts).forEach(([productId, selection]) => {
+      console.log(`Calculating subtotal for product ID: ${productId}`, selection);
+      
       const product = products.find(p => p.id === productId);
-      console.log(`Calculating subtotal for product ${productId}:`, product, "selection:", selection);
+      console.log(`Found product:`, product);
       
       if (product && selection.quantity > 0) {
         const productTotal = calculateProductTotal(product, selection.quantity);
+        subtotal += productTotal;
         console.log(`Product ${product.name}: ${selection.quantity} x ${getProductPrice(product)} = ${productTotal}`);
-        return total + productTotal;
+      } else {
+        console.log(`Product ${productId} not found or quantity is 0`);
       }
-      return total;
-    }, 0);
+    });
     
     console.log("Final subtotal:", subtotal);
     return subtotal;
   };
 
   const selectedItems = Object.entries(selectedProducts).filter(([_, selection]) => selection.quantity > 0);
-  console.log("Selected items:", selectedItems);
+  console.log("Selected items after filtering:", selectedItems);
 
   if (selectedItems.length === 0) {
-    console.log("No selected items, returning null");
-    return null;
+    console.log("No selected items, showing empty state");
+    return (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Ihre Produktauswahl</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-4">
+            Keine Produkte ausgewählt.
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
+
+  const subtotal = getProductsSubtotal();
 
   return (
     <Card className="mb-6">
@@ -108,7 +128,7 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
                 console.log(`Rendering product ${productId}:`, product, "pharmacy:", pharmacy);
                 
                 if (!product) {
-                  console.log(`Product ${productId} not found`);
+                  console.log(`Product ${productId} not found, skipping render`);
                   return null;
                 }
 
@@ -160,13 +180,13 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Zwischensumme Produkte:</span>
-              <span>{getProductsSubtotal().toFixed(2)} €</span>
+              <span>{subtotal.toFixed(2)} €</span>
             </div>
             <div className="flex justify-between text-sm">
               <span>Rezeptgebühr:</span>
               <span>14,99 €</span>
             </div>
-            {getProductsSubtotal() < 100 && (
+            {subtotal < 100 && (
               <div className="flex justify-between text-sm">
                 <span>Versandkosten:</span>
                 <span>10,00 €</span>
@@ -176,7 +196,7 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
             <div className="flex justify-between font-bold text-lg">
               <span>Gesamtbetrag:</span>
               <span>
-                {(getProductsSubtotal() + 14.99 + (getProductsSubtotal() < 100 ? 10 : 0)).toFixed(2)} €
+                {(subtotal + 14.99 + (subtotal < 100 ? 10 : 0)).toFixed(2)} €
               </span>
             </div>
           </div>

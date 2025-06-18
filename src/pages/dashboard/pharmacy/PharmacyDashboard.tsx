@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -362,7 +361,12 @@ const PharmacyDashboard = () => {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => navigate(`/dashboard/pharmacy-orders/${order.id}`)}
+                        onClick={() => navigate(`/dashboard/pharmacy-orders/${order.id}`, {
+                          state: { 
+                            from: '/dashboard/pharmacy',
+                            fromLabel: 'Dashboard'
+                          }
+                        })}
                       >
                         Details
                       </Button>
@@ -382,9 +386,7 @@ const PharmacyDashboard = () => {
           </Card>
         </div>
 
-        {/* Sidebar */}
         <div className="space-y-6">
-          {/* Niedriger Bestand */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
@@ -435,7 +437,6 @@ const PharmacyDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Schnellzugriffe */}
           <Card>
             <CardHeader>
               <CardTitle>Schnellzugriffe</CardTitle>
@@ -474,7 +475,6 @@ const PharmacyDashboard = () => {
         </div>
       </div>
 
-      {/* Tracking Dialog */}
       <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
         <DialogContent>
           <DialogHeader>

@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ interface Product {
   id: string;
   name: string;
   type: "flower" | "extract";
+  genetics: "indica" | "sativa" | "hybrid";
   thcPercentage: number;
   cbdPercentage: number;
   pricePerGram?: number;
@@ -54,6 +54,45 @@ const ProductDetailModal = ({
 }: ProductDetailModalProps) => {
   if (!product) return null;
 
+  const getGeneticsColor = (genetics: string) => {
+    switch (genetics) {
+      case "indica":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+      case "sativa":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
+      case "hybrid":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    }
+  };
+
+  const getGeneticsLabel = (genetics: string) => {
+    switch (genetics) {
+      case "indica":
+        return "Indica";
+      case "sativa":
+        return "Sativa";
+      case "hybrid":
+        return "Hybrid";
+      default:
+        return genetics;
+    }
+  };
+
+  const getGeneticsDescription = (genetics: string) => {
+    switch (genetics) {
+      case "indica":
+        return "Entspannend und beruhigend, ideal für den Abend";
+      case "sativa":
+        return "Energetisierend und fokussierend, ideal für den Tag";
+      case "hybrid":
+        return "Ausgewogene Mischung aus entspannenden und energetisierenden Eigenschaften";
+      default:
+        return "";
+    }
+  };
+
   const getQuantityStep = (productType: "flower" | "extract") => {
     return productType === "flower" ? 5 : 1;
   };
@@ -96,6 +135,19 @@ const ProductDetailModal = ({
               />
               <div className="absolute top-4 right-4 px-3 py-1 bg-cannabis-green-500 text-white text-sm rounded-full">
                 {product.type === "flower" ? "Blüte" : "Extrakt"}
+              </div>
+            </div>
+            
+            {/* Genetics Information */}
+            <div>
+              <h4 className="font-semibold mb-2">Genetik</h4>
+              <div className="space-y-2">
+                <Badge className={`text-sm px-3 py-1 ${getGeneticsColor(product.genetics)}`}>
+                  {getGeneticsLabel(product.genetics)}
+                </Badge>
+                <p className="text-sm text-muted-foreground">
+                  {getGeneticsDescription(product.genetics)}
+                </p>
               </div>
             </div>
             

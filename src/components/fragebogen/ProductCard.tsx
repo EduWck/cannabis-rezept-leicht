@@ -10,6 +10,7 @@ interface Product {
   id: string;
   name: string;
   type: "flower" | "extract";
+  genetics: "indica" | "sativa" | "hybrid";
   thcPercentage: number;
   cbdPercentage: number;
   pricePerGram?: number;
@@ -53,6 +54,32 @@ const ProductCard = ({
     selectedPharmacyId || availablePharmacies[0]?.id || ""
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const getGeneticsColor = (genetics: string) => {
+    switch (genetics) {
+      case "indica":
+        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+      case "sativa":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
+      case "hybrid":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    }
+  };
+
+  const getGeneticsLabel = (genetics: string) => {
+    switch (genetics) {
+      case "indica":
+        return "Indica";
+      case "sativa":
+        return "Sativa";
+      case "hybrid":
+        return "Hybrid";
+      default:
+        return genetics;
+    }
+  };
 
   const getQuantityStep = (productType: "flower" | "extract") => {
     return productType === "flower" ? 5 : 1;
@@ -134,6 +161,13 @@ const ProductCard = ({
                 {product.type === "flower" && product.pricePerGram && `${product.pricePerGram.toFixed(2)} €/g`}
                 {product.type === "extract" && product.pricePerBottle && `${product.pricePerBottle.toFixed(2)} €/Fl.`}
               </div>
+            </div>
+
+            {/* Genetics Badge */}
+            <div className="mb-3">
+              <Badge className={`text-xs ${getGeneticsColor(product.genetics)}`}>
+                {getGeneticsLabel(product.genetics)}
+              </Badge>
             </div>
             
             <div className="grid grid-cols-2 gap-2 mb-3 text-sm">

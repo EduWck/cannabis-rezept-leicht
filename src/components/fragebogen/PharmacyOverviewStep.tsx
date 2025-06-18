@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -371,16 +370,24 @@ const PharmacyOverviewStep = ({
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {getFilteredProducts().map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              quantity={selectedProducts[product.id]?.quantity || 0}
-              selectedPharmacyId={selectedProducts[product.id]?.pharmacyId}
-              availablePharmacies={pharmacies.filter(p => product.pharmacies.includes(p.id))}
-              onQuantityChange={(quantity, pharmacyId) => onProductSelectChange(product.id, quantity, pharmacyId)}
-            />
-          ))}
+          {getFilteredProducts().map((product) => {
+            // Filter available pharmacies based on user selection
+            const productPharmacies = pharmacies.filter(p => product.pharmacies.includes(p.id));
+            const filteredPharmacies = showAllPharmacies 
+              ? productPharmacies 
+              : productPharmacies.filter(pharmacy => selectedPharmacies.includes(pharmacy.id));
+
+            return (
+              <ProductCard
+                key={product.id}
+                product={product}
+                quantity={selectedProducts[product.id]?.quantity || 0}
+                selectedPharmacyId={selectedProducts[product.id]?.pharmacyId}
+                availablePharmacies={filteredPharmacies}
+                onQuantityChange={(quantity, pharmacyId) => onProductSelectChange(product.id, quantity, pharmacyId)}
+              />
+            );
+          })}
         </div>
       </div>
 

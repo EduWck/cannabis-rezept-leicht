@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import StepIndicator from "@/components/StepIndicator";
+import PharmacyOverviewStep from "@/components/fragebogen/PharmacyOverviewStep";
 import TreatmentTypeStep from "@/components/fragebogen/TreatmentTypeStep";
 import DeliveryOptionsStep from "@/components/fragebogen/DeliveryOptionsStep";
 import PreviousPrescriptionStep from "@/components/fragebogen/PreviousPrescriptionStep";
@@ -13,7 +13,6 @@ import SymptomsStep from "@/components/fragebogen/SymptomsStep";
 import PreviousTreatmentsStep from "@/components/fragebogen/PreviousTreatmentsStep";
 import ExclusionCriteriaStep from "@/components/fragebogen/ExclusionCriteriaStep";
 import CannabisExperienceStep from "@/components/fragebogen/CannabisExperienceStep";
-import ProductSelectionStep from "@/components/fragebogen/ProductSelectionStep";
 import CheckoutStep from "@/components/fragebogen/CheckoutStep";
 import CompletionStep from "@/components/fragebogen/CompletionStep";
 import FeedbackForm from "@/components/fragebogen/FeedbackForm";
@@ -26,16 +25,19 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const TOTAL_STEPS = 11; // Added one for the feedback step
+const TOTAL_STEPS = 10; // Updated: removed product selection step
 
 const Fragebogen = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0); // Start with step 0 (pharmacy overview)
   const [progress, setProgress] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [skipQuestionnaire, setSkipQuestionnaire] = useState(false); // For returning patients
+  const [skipQuestionnaire, setSkipQuestionnaire] = useState(false);
   
-  // Form data state
+  // Pharmacy and product selection from step 0
+  const [selectedProducts, setSelectedProducts] = useState<Record<string, { quantity: number; pharmacyId: string }>>({});
+  
+  // form data state variables same as before
   const [treatmentType, setTreatmentType] = useState<string>("");
   const [deliveryOption, setDeliveryOption] = useState<string>("");
   const [hasPreviousPrescription, setHasPreviousPrescription] = useState<boolean | null>(null);
@@ -49,7 +51,6 @@ const Fragebogen = () => {
     newsletter: false,
   });
   
-  // Symptoms data matching the component props structure
   const [symptoms, setSymptoms] = useState({
     chronicPain: false,
     sleepDisorder: false,
@@ -61,7 +62,6 @@ const Fragebogen = () => {
   const [symptomIntensity, setSymptomIntensity] = useState(5);
   const [symptomDuration, setSymptomDuration] = useState("");
   
-  // Previous treatments data
   const [visitedDoctor, setVisitedDoctor] = useState<boolean | null>(null);
   const [doctorTypes, setDoctorTypes] = useState({
     generalPractitioner: false,
@@ -84,7 +84,6 @@ const Fragebogen = () => {
     none: false,
   });
   
-  // Exclusion criteria data matching the component props
   const [isOver21, setIsOver21] = useState<boolean | null>(null);
   const [isPregnantOrNursing, setIsPregnantOrNursing] = useState<boolean | null>(null);
   const [highTHCConsumption, setHighTHCConsumption] = useState<boolean | null>(null);
@@ -99,7 +98,6 @@ const Fragebogen = () => {
     none: false,
   });
   
-  // Cannabis experience
   const [cannabisExperience, setCannabisExperience] = useState({
     hasCannabisExperience: null as boolean | null,
     hadSideEffects: null as boolean | null,
@@ -115,10 +113,6 @@ const Fragebogen = () => {
     },
   });
   
-  // Product selection
-  const [selectedProducts, setSelectedProducts] = useState<Record<string, { quantity: number }>>({});
-  
-  // Personal information
   const [personalDetails, setPersonalDetails] = useState({
     firstName: "",
     lastName: "",
@@ -155,12 +149,11 @@ const Fragebogen = () => {
     }
 
     // If payment is completed, show loading dialog
-    if (step === 10) {
+    if (step === 9) {
       setIsDialogOpen(true);
-      // Simulate form submission delay
       setTimeout(() => {
         setIsDialogOpen(false);
-        setStep(11); // Move to completion step
+        setStep(10);
       }, 2000);
     } else {
       setStep(prev => prev + 1);
@@ -172,7 +165,15 @@ const Fragebogen = () => {
     setStep(prev => prev - 1);
   };
 
-  // Handle consents changes
+  // Handle product selection from pharmacy overview
+  const handleProductSelectChange = (productId: string, quantity: number, pharmacyId: string) => {
+    setSelectedProducts(prev => ({
+      ...prev,
+      [productId]: { quantity, pharmacyId }
+    }));
+  };
+
+  // all handler functions same as before
   const handleConsentChange = (key: keyof typeof consents, value: boolean) => {
     setConsents(prev => ({
       ...prev,
@@ -180,7 +181,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle symptom changes
   const handleSymptomChange = (symptom: keyof typeof symptoms, value: boolean) => {
     setSymptoms(prev => ({
       ...prev,
@@ -188,7 +188,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle doctor type changes
   const handleDoctorTypeChange = (type: keyof typeof doctorTypes, value: boolean) => {
     setDoctorTypes(prev => ({
       ...prev,
@@ -196,7 +195,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle non-medical therapy changes
   const handleNonMedicalTherapyChange = (therapy: keyof typeof nonMedicalTherapies, value: boolean) => {
     setNonMedicalTherapies(prev => ({
       ...prev,
@@ -204,7 +202,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle pre-existing condition changes
   const handlePreExistingConditionChange = (condition: keyof typeof preExistingConditions, value: boolean) => {
     setPreExistingConditions(prev => ({
       ...prev,
@@ -212,7 +209,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle cannabis experience changes
   const handleCannabisExperienceChange = (value: boolean) => {
     setCannabisExperience(prev => ({
       ...prev,
@@ -220,7 +216,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle side effects changes
   const handleSideEffectsChange = (value: boolean) => {
     setCannabisExperience(prev => ({
       ...prev,
@@ -228,7 +223,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle treatment goal changes
   const handleTreatmentGoalChange = (goal: keyof typeof cannabisExperience.treatmentGoals, value: boolean) => {
     setCannabisExperience(prev => ({
       ...prev,
@@ -239,30 +233,37 @@ const Fragebogen = () => {
     }));
   };
 
-  // Handle product selection changes
-  const handleProductSelectChange = (productId: string, quantity: number) => {
-    setSelectedProducts(prev => ({
-      ...prev,
-      [productId]: { quantity }
-    }));
-  };
-
-  // Handle skip to feedback form for returning patients
   const skipToFeedbackForm = () => {
     setSkipQuestionnaire(true);
-    setStep(8); // Skip directly to feedback form which is step 8
+    setStep(8);
   };
 
-  // Calculate total amount based on selected products
   const calculateTotalAmount = () => {
-    // In a real application, this would sum up the prices of all selected products
-    // For now, let's return a placeholder value
-    return 114.99; // Example total amount including product costs and fees
+    // Calculate total based on selected products
+    let productTotal = 0;
+    Object.entries(selectedProducts).forEach(([productId, selection]) => {
+      // This would need to be calculated with actual product data
+      // For now, using a placeholder calculation
+      productTotal += selection.quantity * 12.5; // Placeholder price calculation
+    });
+    
+    const prescriptionFee = 14.99;
+    const shippingFee = productTotal < 100 ? 10.0 : 0;
+    
+    return productTotal + prescriptionFee + shippingFee;
   };
 
   // Render the current step
   const renderStep = () => {
     switch (step) {
+      case 0:
+        return (
+          <PharmacyOverviewStep
+            selectedProducts={selectedProducts}
+            onProductSelectChange={handleProductSelectChange}
+            onNext={nextStep}
+          />
+        );
       case 1:
         return (
           <TreatmentTypeStep
@@ -347,7 +348,6 @@ const Fragebogen = () => {
           />
         );
       case 8:
-        // Show feedback form if user has previous prescription and we're skipping questionnaire
         if (skipQuestionnaire) {
           return (
             <FeedbackForm
@@ -371,22 +371,13 @@ const Fragebogen = () => {
         }
       case 9:
         return (
-          <ProductSelectionStep
-            selectedProducts={selectedProducts}
-            onProductSelectChange={handleProductSelectChange}
-            onNext={nextStep}
-            onBack={prevStep}
-          />
-        );
-      case 10:
-        return (
           <CheckoutStep
             totalAmount={calculateTotalAmount()}
             onComplete={nextStep}
             onBack={prevStep}
           />
         );
-      case 11:
+      case 10:
         return (
           <CompletionStep treatmentType={treatmentType || "fragebogen"} />
         );
@@ -401,15 +392,20 @@ const Fragebogen = () => {
         <Button variant="ghost" onClick={() => navigate(-1)} className="mr-4">
           Zurück
         </Button>
-        <h1 className="text-3xl font-bold text-foreground">Medizinisches Cannabis - Fragebogen</h1>
+        <h1 className="text-3xl font-bold text-foreground">
+          {step === 0 ? "Apotheken & Sorten" : "Medizinisches Cannabis - Fragebogen"}
+        </h1>
       </div>
 
       {/* Progress bar and step indicator */}
       <div className="mb-8">
         <Progress value={progress} className="mb-2" />
-        {step <= 10 && (
+        {step <= 9 && (
           <div className="flex justify-between text-muted-foreground text-sm">
-            <span>Schritt {step} von {skipQuestionnaire ? 5 : TOTAL_STEPS}</span>
+            <span>
+              Schritt {step} von {skipQuestionnaire ? 5 : TOTAL_STEPS}
+              {step === 0 && " (Vorauswahl)"}
+            </span>
             <span>{progress}% abgeschlossen</span>
           </div>
         )}

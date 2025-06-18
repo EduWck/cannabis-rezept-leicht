@@ -10,9 +10,43 @@ const PrescriptionDetailPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get the previous route information from navigation state
-  const fromRoute = location.state?.from || "/dashboard/prescriptions";
-  const fromLabel = location.state?.fromLabel || "Rezepten";
+  // Enhanced route detection for better back navigation
+  const getReturnInfo = () => {
+    // Check if we have explicit state from navigation
+    if (location.state?.from && location.state?.fromLabel) {
+      return {
+        route: location.state.from,
+        label: location.state.fromLabel
+      };
+    }
+    
+    // Fallback: detect based on current path or referrer
+    const currentPath = window.location.pathname;
+    if (currentPath.includes('/pharmacy-orders/')) {
+      return {
+        route: '/dashboard/pharmacy-orders',
+        label: 'Bestellungen'
+      };
+    } else if (currentPath.includes('/doctor')) {
+      return {
+        route: '/dashboard/doctor-prescriptions',
+        label: 'Rezepten'
+      };
+    } else if (currentPath.includes('/admin')) {
+      return {
+        route: '/dashboard/all-prescriptions', 
+        label: 'Rezepten'
+      };
+    } else {
+      // Default to patient prescriptions
+      return {
+        route: '/dashboard/prescriptions',
+        label: 'Rezepten'
+      };
+    }
+  };
+
+  const returnInfo = getReturnInfo();
 
   // Mock prescription data
   const prescription = {
@@ -44,9 +78,9 @@ const PrescriptionDetailPage = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="outline" onClick={() => navigate(fromRoute)}>
+        <Button variant="outline" onClick={() => navigate(returnInfo.route)}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Zurück zu {fromLabel}
+          Zurück zu {returnInfo.label}
         </Button>
         <h1 className="text-2xl font-bold">Rezept Details</h1>
       </div>

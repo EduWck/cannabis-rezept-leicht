@@ -1,4 +1,3 @@
-
 import { Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -62,6 +61,7 @@ import RequestDetailPage from "@/pages/dashboard/RequestDetailPage";
 import PrescriptionDetailPage from "@/pages/dashboard/PrescriptionDetailPage";
 import MedicalFindingDetailPage from "@/pages/dashboard/MedicalFindingDetailPage";
 import OrderDetailPage from "@/pages/dashboard/OrderDetailPage";
+import PharmacyOrderDetailPage from "@/pages/dashboard/pharmacy/PharmacyOrderDetailPage";
 
 // Create a layout component to avoid repetition
 const MainLayout = ({ children }: { children: React.ReactNode }) => (
@@ -141,7 +141,7 @@ const AppRoutes = [
     <Route key="prescription-detail" path="/dashboard/prescriptions/:id" element={<PrescriptionDetailPage />} />
     <Route key="medical-finding-detail" path="/dashboard/medical-findings/:id" element={<MedicalFindingDetailPage />} />
     <Route key="order-detail" path="/dashboard/orders/:id" element={<OrderDetailPage />} />
-    <Route key="pharmacy-order-detail" path="/dashboard/pharmacy-orders/:id" element={<OrderDetailPage />} />
+    <Route key="pharmacy-order-detail" path="/dashboard/pharmacy-orders/:id" element={<PharmacyOrderDetailPage />} />
   </Route>,
 
   // Catch-all route

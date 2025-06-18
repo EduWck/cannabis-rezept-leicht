@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -18,6 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { 
   Download, 
   Search,
@@ -26,7 +35,12 @@ import {
   DollarSign,
   Clock,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Mail,
+  FileDown,
+  Archive,
+  Filter,
+  X
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -47,6 +61,14 @@ const PharmacyBillingPage = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<{
+    type: string;
+    title: string;
+    description: string;
+    action: () => void;
+  } | null>(null);
 
   // Mock data
   const stats = {
@@ -153,6 +175,107 @@ const PharmacyBillingPage = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Mass action functions
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedInvoices(filteredInvoices.map(inv => inv.id));
+    } else {
+      setSelectedInvoices([]);
+    }
+  };
+
+  const handleSelectInvoice = (invoiceId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedInvoices(prev => [...prev, invoiceId]);
+    } else {
+      setSelectedInvoices(prev => prev.filter(id => id !== invoiceId));
+    }
+  };
+
+  const handleQuickSelect = (type: string) => {
+    switch(type) {
+      case 'overdue':
+        setSelectedInvoices(filteredInvoices.filter(inv => inv.status === 'overdue').map(inv => inv.id));
+        break;
+      case 'pending':
+        setSelectedInvoices(filteredInvoices.filter(inv => inv.status === 'pending').map(inv => inv.id));
+        break;
+      case 'paid':
+        setSelectedInvoices(filteredInvoices.filter(inv => inv.status === 'paid').map(inv => inv.id));
+        break;
+      case 'clear':
+        setSelectedInvoices([]);
+        break;
+    }
+  };
+
+  const confirmMassAction = (type: string, title: string, description: string, action: () => void) => {
+    setConfirmAction({ type, title, description, action });
+    setIsConfirmDialogOpen(true);
+  };
+
+  const executeMassAction = () => {
+    if (confirmAction) {
+      confirmAction.action();
+      setIsConfirmDialogOpen(false);
+      setConfirmAction(null);
+    }
+  };
+
+  const handleBulkDownload = () => {
+    const selectedCount = selectedInvoices.length;
+    toast({
+      title: "Massendownload gestartet",
+      description: `${selectedCount} Rechnungen werden als ZIP heruntergeladen.`,
+    });
+    setSelectedInvoices([]);
+  };
+
+  const handleBulkReminders = () => {
+    const pendingSelected = selectedInvoices.filter(id => 
+      invoices.find(inv => inv.id === id)?.status === 'pending'
+    );
+    toast({
+      title: "Erinnerungen versendet",
+      description: `${pendingSelected.length} Erinnerungen wurden versendet.`,
+    });
+    setSelectedInvoices([]);
+  };
+
+  const handleBulkDunning = () => {
+    const overdueSelected = selectedInvoices.filter(id => 
+      invoices.find(inv => inv.id === id)?.status === 'overdue'
+    );
+    toast({
+      title: "Mahnungen versendet",
+      description: `${overdueSelected.length} Mahnungen wurden versendet.`,
+    });
+    setSelectedInvoices([]);
+  };
+
+  const handleBulkMarkPaid = () => {
+    const unpaidSelected = selectedInvoices.filter(id => 
+      invoices.find(inv => inv.id === id)?.status !== 'paid'
+    );
+    toast({
+      title: "Status aktualisiert",
+      description: `${unpaidSelected.length} Rechnungen wurden als bezahlt markiert.`,
+    });
+    setSelectedInvoices([]);
+  };
+
+  const handleBulkExport = () => {
+    const selectedCount = selectedInvoices.length;
+    toast({
+      title: "Export gestartet",
+      description: `${selectedCount} Rechnungen werden als Excel exportiert.`,
+    });
+    setSelectedInvoices([]);
+  };
+
+  const isAllSelected = filteredInvoices.length > 0 && selectedInvoices.length === filteredInvoices.length;
+  const isPartiallySelected = selectedInvoices.length > 0 && selectedInvoices.length < filteredInvoices.length;
+
   return (
     <div className="space-y-6">
       <div>
@@ -246,69 +369,232 @@ const PharmacyBillingPage = () => {
           <CardDescription>Übersicht aller Rechnungen</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredInvoices.map((invoice) => (
-              <div key={invoice.id} className="border rounded-lg p-4">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium">{invoice.invoiceNumber}</p>
-                      {getStatusBadge(invoice.status)}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      Kunde: {invoice.customerName}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Bestellungen: {invoice.orderIds.join(", ")}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Ausgestellt: {new Date(invoice.issueDate).toLocaleDateString('de-DE')} • 
-                      Fällig: {new Date(invoice.dueDate).toLocaleDateString('de-DE')}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-lg font-bold">{invoice.amount.toFixed(2)} €</p>
-                  </div>
-                </div>
+          {/* Quick Selection Bar */}
+          <div className="flex flex-wrap gap-2 mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleQuickSelect('overdue')}
+              className="text-xs"
+            >
+              <Filter className="w-3 h-3 mr-1" />
+              Alle Überfälligen
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleQuickSelect('pending')}
+              className="text-xs"
+            >
+              <Filter className="w-3 h-3 mr-1" />
+              Alle Ausstehenden
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleQuickSelect('paid')}
+              className="text-xs"
+            >
+              <Filter className="w-3 h-3 mr-1" />
+              Alle Bezahlten
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => handleQuickSelect('clear')}
+              className="text-xs"
+            >
+              <X className="w-3 h-3 mr-1" />
+              Auswahl löschen
+            </Button>
+          </div>
 
-                <div className="mb-3">
-                  <p className="text-sm text-muted-foreground">{invoice.description}</p>
+          {/* Mass Action Toolbar */}
+          {selectedInvoices.length > 0 && (
+            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium">
+                    {selectedInvoices.length} Rechnung{selectedInvoices.length !== 1 ? 'en' : ''} ausgewählt
+                  </span>
                 </div>
-
-                <div className="flex gap-2">
-                  <Button 
-                    size="sm" 
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
                     variant="outline"
-                    onClick={() => handleDownload(invoice)}
+                    onClick={() => confirmMassAction(
+                      'download',
+                      'Massendownload',
+                      `Möchten Sie ${selectedInvoices.length} Rechnung${selectedInvoices.length !== 1 ? 'en' : ''} als ZIP herunterladen?`,
+                      handleBulkDownload
+                    )}
+                    className="text-xs"
                   >
                     <Download className="w-3 h-3 mr-1" />
-                    Download
+                    Alle herunterladen
                   </Button>
                   
-                  {invoice.status === 'pending' && (
-                    <Button 
+                  {selectedInvoices.some(id => invoices.find(inv => inv.id === id)?.status === 'pending') && (
+                    <Button
                       size="sm"
-                      onClick={() => toast({
-                        title: "Zahlungserinnerung",
-                        description: `Erinnerung für Rechnung ${invoice.invoiceNumber} versendet.`,
-                      })}
+                      variant="outline"
+                      onClick={() => confirmMassAction(
+                        'reminders',
+                        'Erinnerungen versenden',
+                        `Möchten Sie Erinnerungen für alle ausstehenden Rechnungen versenden?`,
+                        handleBulkReminders
+                      )}
+                      className="text-xs"
                     >
-                      Erinnerung senden
+                      <Mail className="w-3 h-3 mr-1" />
+                      Erinnerungen
                     </Button>
                   )}
                   
-                  {invoice.status === 'overdue' && (
-                    <Button 
+                  {selectedInvoices.some(id => invoices.find(inv => inv.id === id)?.status === 'overdue') && (
+                    <Button
                       size="sm"
                       variant="destructive"
-                      onClick={() => toast({
-                        title: "Mahnung",
-                        description: `Mahnung für Rechnung ${invoice.invoiceNumber} versendet.`,
-                      })}
+                      onClick={() => confirmMassAction(
+                        'dunning',
+                        'Mahnungen versenden',
+                        `Möchten Sie Mahnungen für alle überfälligen Rechnungen versenden?`,
+                        handleBulkDunning
+                      )}
+                      className="text-xs"
                     >
-                      Mahnung senden
+                      <AlertCircle className="w-3 h-3 mr-1" />
+                      Mahnungen
                     </Button>
                   )}
+                  
+                  {selectedInvoices.some(id => invoices.find(inv => inv.id === id)?.status !== 'paid') && (
+                    <Button
+                      size="sm"
+                      onClick={() => confirmMassAction(
+                        'markPaid',
+                        'Als bezahlt markieren',
+                        `Möchten Sie ${selectedInvoices.filter(id => invoices.find(inv => inv.id === id)?.status !== 'paid').length} Rechnung${selectedInvoices.filter(id => invoices.find(inv => inv.id === id)?.status !== 'paid').length !== 1 ? 'en' : ''} als bezahlt markieren?`,
+                        handleBulkMarkPaid
+                      )}
+                      className="text-xs"
+                    >
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Als bezahlt markieren
+                    </Button>
+                  )}
+                  
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => confirmMassAction(
+                      'export',
+                      'Export',
+                      `Möchten Sie ${selectedInvoices.length} Rechnung${selectedInvoices.length !== 1 ? 'en' : ''} als Excel exportieren?`,
+                      handleBulkExport
+                    )}
+                    className="text-xs"
+                  >
+                    <FileDown className="w-3 h-3 mr-1" />
+                    Export
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Invoice List with Checkboxes */}
+          <div className="space-y-4">
+            {/* Header with Master Checkbox */}
+            {filteredInvoices.length > 0 && (
+              <div className="flex items-center gap-3 p-3 border-b">
+                <Checkbox
+                  checked={isAllSelected}
+                  onCheckedChange={handleSelectAll}
+                  ref={(checkbox) => {
+                    if (checkbox && isPartiallySelected) {
+                      checkbox.indeterminate = true;
+                    }
+                  }}
+                />
+                <span className="text-sm font-medium text-muted-foreground">
+                  {isAllSelected ? 'Alle abwählen' : 'Alle auswählen'}
+                </span>
+              </div>
+            )}
+
+            {filteredInvoices.map((invoice) => (
+              <div key={invoice.id} className="border rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Checkbox
+                    checked={selectedInvoices.includes(invoice.id)}
+                    onCheckedChange={(checked) => handleSelectInvoice(invoice.id, checked as boolean)}
+                    className="mt-1"
+                  />
+                  
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <p className="font-medium">{invoice.invoiceNumber}</p>
+                          {getStatusBadge(invoice.status)}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Kunde: {invoice.customerName}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Bestellungen: {invoice.orderIds.join(", ")}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Ausgestellt: {new Date(invoice.issueDate).toLocaleDateString('de-DE')} • 
+                          Fällig: {new Date(invoice.dueDate).toLocaleDateString('de-DE')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold">{invoice.amount.toFixed(2)} €</p>
+                      </div>
+                    </div>
+
+                    <div className="mb-3">
+                      <p className="text-sm text-muted-foreground">{invoice.description}</p>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleDownload(invoice)}
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        Download
+                      </Button>
+                      
+                      {invoice.status === 'pending' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => toast({
+                            title: "Zahlungserinnerung",
+                            description: `Erinnerung für Rechnung ${invoice.invoiceNumber} versendet.`,
+                          })}
+                        >
+                          Erinnerung senden
+                        </Button>
+                      )}
+                      
+                      {invoice.status === 'overdue' && (
+                        <Button 
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => toast({
+                            title: "Mahnung",
+                            description: `Mahnung für Rechnung ${invoice.invoiceNumber} versendet.`,
+                          })}
+                        >
+                          Mahnung senden
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -322,6 +608,26 @@ const PharmacyBillingPage = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{confirmAction?.title}</DialogTitle>
+            <DialogDescription>
+              {confirmAction?.description}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>
+              Abbrechen
+            </Button>
+            <Button onClick={executeMassAction}>
+              Bestätigen
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -82,7 +83,7 @@ const PharmacyDashboard = () => {
     pendingPrescriptions: 8,
     lowStockItems: 5,
     completedOrdersToday: 23,
-    pendingInvoices: 5 // Added for billing quick access
+    pendingInvoices: 5
   };
 
   // Synchronized mock data with PharmacyOrderDetailPage
@@ -207,9 +208,9 @@ const PharmacyDashboard = () => {
     
     const IconComponent = config.icon;
     return (
-      <Badge className={`${config.className} border`}>
-        <IconComponent className="w-3 h-3 mr-1" />
-        {config.label}
+      <Badge className={`${config.className} border text-xs`}>
+        <IconComponent className="w-3 h-3 mr-1 flex-shrink-0" />
+        <span className="hidden sm:inline">{config.label}</span>
       </Badge>
     );
   };
@@ -217,11 +218,11 @@ const PharmacyDashboard = () => {
   const getPriorityBadge = (priority: string) => {
     switch(priority) {
       case 'high':
-        return <Badge variant="destructive">Hoch</Badge>;
+        return <Badge variant="destructive" className="text-xs">Hoch</Badge>;
       case 'normal':
-        return <Badge variant="outline">Normal</Badge>;
+        return <Badge variant="outline" className="text-xs">Normal</Badge>;
       case 'low':
-        return <Badge variant="secondary">Niedrig</Badge>;
+        return <Badge variant="secondary" className="text-xs">Niedrig</Badge>;
       default:
         return null;
     }
@@ -276,316 +277,353 @@ const PharmacyDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-6">Apotheken Dashboard</h1>
-        
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Wartende Bestellungen</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">{stats.pendingOrders}</div>
-                <Clock className="h-5 w-5 text-amber-500" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Warten auf Bearbeitung</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Wartende Rezepte</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">{stats.pendingPrescriptions}</div>
-                <FileText className="h-5 w-5 text-blue-500" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Zu überprüfen</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Niedriger Bestand</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">{stats.lowStockItems}</div>
-                <AlertCircle className="h-5 w-5 text-red-500" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Produkte nachbestellen</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Abgeschlossen (heute)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div className="text-2xl font-bold">{stats.completedOrdersToday}</div>
-                <CheckCircle className="h-5 w-5 text-green-500" />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">Versandte Bestellungen</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-      
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Bestellungen */}
+    <div className="w-full max-w-none overflow-hidden">
+      <div className="space-y-4 sm:space-y-6">
         <div>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span className="flex items-center">
-                  <ShoppingBag className="w-5 h-5 mr-2" />
-                  Aktuelle Bestellungen
-                </span>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Bestellungen suchen..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 w-64"
-                  />
+          <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 break-words">Apotheken Dashboard</h1>
+          
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 mb-4 sm:mb-6">
+            <Card className="min-w-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Wartende Bestellungen</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="text-lg sm:text-2xl font-bold">{stats.pendingOrders}</div>
+                  <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500 flex-shrink-0" />
                 </div>
-              </CardTitle>
-              <CardDescription>Übersicht der neuesten Bestellungen</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {filteredOrders.map((order) => (
-                  <div key={order.id} className="border rounded-lg p-4">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="font-medium">{order.id}</p>
-                          {order.priority && getPriorityBadge(order.priority)}
-                          {getStatusBadge(order.status)}
+                <p className="text-xs text-muted-foreground">Warten auf Bearbeitung</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="min-w-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Wartende Rezepte</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="text-lg sm:text-2xl font-bold">{stats.pendingPrescriptions}</div>
+                  <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-blue-500 flex-shrink-0" />
+                </div>
+                <p className="text-xs text-muted-foreground">Zu überprüfen</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="min-w-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Niedriger Bestand</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="text-lg sm:text-2xl font-bold">{stats.lowStockItems}</div>
+                  <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-red-500 flex-shrink-0" />
+                </div>
+                <p className="text-xs text-muted-foreground">Produkte nachbestellen</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="min-w-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Abgeschlossen (heute)</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="text-lg sm:text-2xl font-bold">{stats.completedOrdersToday}</div>
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                </div>
+                <p className="text-xs text-muted-foreground">Versandte Bestellungen</p>
+              </CardContent>
+            </Card>
+
+            <Card className="min-w-0">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground truncate">Offene Rechnungen</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <div className="text-lg sm:text-2xl font-bold">{stats.pendingInvoices}</div>
+                  <Receipt className="h-4 w-4 sm:h-5 sm:w-5 text-purple-500 flex-shrink-0" />
+                </div>
+                <p className="text-xs text-muted-foreground">Ausstehende Zahlungen</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        
+        <div className="grid gap-4 sm:gap-6 grid-cols-1 xl:grid-cols-2">
+          {/* Bestellungen */}
+          <div className="min-w-0">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <span className="flex items-center min-w-0">
+                    <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                    <span className="truncate">Aktuelle Bestellungen</span>
+                  </span>
+                  <div className="relative w-full sm:w-auto sm:min-w-[200px] max-w-sm">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Bestellungen suchen..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10 text-sm"
+                    />
+                  </div>
+                </CardTitle>
+                <CardDescription>Übersicht der neuesten Bestellungen</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredOrders.map((order) => (
+                    <div key={order.id} className="border rounded-lg p-3 sm:p-4 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-2 mb-2">
+                            <p className="font-medium text-sm truncate">{order.id}</p>
+                            {order.priority && getPriorityBadge(order.priority)}
+                            {getStatusBadge(order.status)}
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs sm:text-sm text-muted-foreground break-words">
+                              Patient: <span className="font-medium">{order.patientName}</span>
+                            </p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">
+                              {new Date(order.createdAt).toLocaleDateString('de-DE')}
+                            </p>
+                            <p className="text-xs sm:text-sm text-muted-foreground break-words">
+                              Rezept: {order.prescriptionId}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-sm text-muted-foreground">
-                          Patient: {order.patientName} • {new Date(order.createdAt).toLocaleDateString('de-DE')}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Rezept: {order.prescriptionId}
-                        </p>
+                        <div className="text-right sm:text-left flex-shrink-0">
+                          <p className="font-medium text-sm sm:text-base">{order.totalAmount.toFixed(2)} €</p>
+                          {order.trackingId && (
+                            <p className="text-xs text-blue-600 break-all">
+                              Tracking: {order.trackingId}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium">{order.totalAmount.toFixed(2)} €</p>
-                        {order.trackingId && (
-                          <p className="text-xs text-blue-600">
-                            Tracking: {order.trackingId}
+
+                      <div className="mb-3">
+                        <p className="text-xs sm:text-sm font-medium mb-1">Bestellte Produkte:</p>
+                        <div className="space-y-1">
+                          {formatItemsDisplay(order.items).map((itemDisplay, index) => (
+                            <div key={index} className="text-xs sm:text-sm text-muted-foreground break-words">
+                              • {itemDisplay}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {order.status === 'neu' && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleStatusChange(order.id, 'in_bearbeitung')}
+                            className="bg-blue-600 hover:bg-blue-700 text-xs"
+                          >
+                            Bearbeitung starten
+                          </Button>
+                        )}
+                        
+                        {order.status === 'in_bearbeitung' && (
+                          <>
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleAddTracking(order)}
+                              className="bg-green-600 hover:bg-green-700 text-xs"
+                            >
+                              <Truck className="w-3 h-3 mr-1" />
+                              <span className="hidden sm:inline">Versenden</span>
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleAddTracking(order)}
+                              className="text-xs"
+                            >
+                              <span className="hidden sm:inline">Tracking hinzufügen</span>
+                              <span className="sm:hidden">Tracking</span>
+                            </Button>
+                          </>
+                        )}
+                        
+                        {order.status === 'versendet' && order.trackingId && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleStatusChange(order.id, 'zugestellt')}
+                            className="text-xs"
+                          >
+                            <span className="hidden sm:inline">Als zugestellt markieren</span>
+                            <span className="sm:hidden">Zugestellt</span>
+                          </Button>
+                        )}
+                        
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => navigate(`/dashboard/pharmacy-orders/${order.id}`, {
+                            state: { 
+                              from: '/dashboard/pharmacy',
+                              fromLabel: 'Dashboard'
+                            }
+                          })}
+                          className="text-xs"
+                        >
+                          Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-4 text-xs sm:text-sm" 
+                  onClick={() => navigate("/dashboard/pharmacy-orders")}
+                >
+                  Alle Bestellungen anzeigen
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-4 sm:space-y-6 min-w-0">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                  <span className="truncate">Niedriger Bestand</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {lowStockProducts.map((product, index) => (
+                    <div key={index} className="p-3 border rounded-lg bg-red-50 dark:bg-red-900/20 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <p className="font-medium text-xs sm:text-sm truncate pr-2">{product.name}</p>
+                        <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      </div>
+                      <div className="space-y-1 text-xs">
+                        <p className="text-muted-foreground break-words">
+                          Aktuell: {product.currentStock} {product.unit}
+                        </p>
+                        <p className="text-red-600">
+                          Mindestbestand: {product.minStock} {product.unit}
+                        </p>
+                        {product.type === "extract" && product.bottleSize && product.currentStock > 0 && product.pricePerMl && (
+                          <div className="space-y-1">
+                            <p className="text-blue-600">
+                              Gesamt: {product.currentStock * product.bottleSize}ml verfügbar
+                            </p>
+                            <p className="text-muted-foreground">
+                              {product.pricePerMl.toFixed(2)} €/ml
+                            </p>
+                          </div>
+                        )}
+                        {product.type === "extract" && product.currentStock === 0 && (
+                          <p className="text-red-600 font-medium">
+                            Ausverkauft
                           </p>
                         )}
                       </div>
                     </div>
-
-                    <div className="mb-3">
-                      <p className="text-sm font-medium mb-1">Bestellte Produkte:</p>
-                      <div className="space-y-1">
-                        {formatItemsDisplay(order.items).map((itemDisplay, index) => (
-                          <div key={index} className="text-sm text-muted-foreground">
-                            • {itemDisplay}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {order.status === 'neu' && (
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleStatusChange(order.id, 'in_bearbeitung')}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          Bearbeitung starten
-                        </Button>
-                      )}
-                      
-                      {order.status === 'in_bearbeitung' && (
-                        <>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleAddTracking(order)}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <Truck className="w-3 h-3 mr-1" />
-                            Versenden
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleAddTracking(order)}
-                          >
-                            Tracking hinzufügen
-                          </Button>
-                        </>
-                      )}
-                      
-                      {order.status === 'versendet' && order.trackingId && (
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleStatusChange(order.id, 'zugestellt')}
-                        >
-                          Als zugestellt markieren
-                        </Button>
-                      )}
-                      
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => navigate(`/dashboard/pharmacy-orders/${order.id}`, {
-                          state: { 
-                            from: '/dashboard/pharmacy',
-                            fromLabel: 'Dashboard'
-                          }
-                        })}
-                      >
-                        Details
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full mt-4" 
-                onClick={() => navigate("/dashboard/pharmacy-orders")}
-              >
-                Alle Bestellungen anzeigen
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Package className="w-5 h-5 mr-2" />
-                Niedriger Bestand
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {lowStockProducts.map((product, index) => (
-                  <div key={index} className="p-3 border rounded-lg bg-red-50 dark:bg-red-900/20">
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-medium text-sm">{product.name}</p>
-                      <AlertCircle className="w-4 h-4 text-red-500" />
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Aktuell: {product.currentStock} {product.unit}
-                    </p>
-                    <p className="text-xs text-red-600">
-                      Mindestbestand: {product.minStock} {product.unit}
-                    </p>
-                    {product.type === "extract" && product.bottleSize && product.currentStock > 0 && product.pricePerMl && (
-                      <div className="text-xs space-y-1 mt-1">
-                        <p className="text-blue-600">
-                          Gesamt: {product.currentStock * product.bottleSize}ml verfügbar
-                        </p>
-                        <p className="text-muted-foreground">
-                          {product.pricePerMl.toFixed(2)} €/ml
-                        </p>
-                      </div>
-                    )}
-                    {product.type === "extract" && product.currentStock === 0 && (
-                      <p className="text-xs text-red-600 font-medium">
-                        Ausverkauft
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full mt-4" 
-                onClick={() => navigate("/dashboard/pharmacy-inventory")}
-              >
-                Bestand verwalten
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Schnellzugriffe</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-2">
-                <Button 
-                  variant="outline" 
-                  className="justify-start" 
-                  onClick={() => navigate("/dashboard/pharmacy-orders")}
-                >
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  Bestellungen verwalten
-                </Button>
+                  ))}
+                </div>
                 
                 <Button 
                   variant="outline" 
-                  className="justify-start" 
+                  className="w-full mt-4 text-xs sm:text-sm" 
                   onClick={() => navigate("/dashboard/pharmacy-inventory")}
                 >
-                  <Package className="mr-2 h-4 w-4" />
-                  Bestand aktualisieren
+                  Bestand verwalten
                 </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="justify-start" 
-                  onClick={() => navigate("/dashboard/pharmacy-prescriptions")}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Rezepte prüfen
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              </CardContent>
+            </Card>
 
-      <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Tracking-ID hinzufügen</DialogTitle>
-            <DialogDescription>
-              Fügen Sie eine Tracking-ID für Bestellung {selectedOrder?.id} hinzu.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="py-4">
-            <Label htmlFor="trackingId" className="block mb-2">Tracking-ID</Label>
-            <Input
-              id="trackingId"
-              value={trackingId}
-              onChange={(e) => setTrackingId(e.target.value)}
-              placeholder="z.B. DHL123456789"
-            />
-            <p className="text-sm text-muted-foreground mt-2">
-              Die Tracking-ID wird an den Patienten weitergeleitet.
-            </p>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm sm:text-base">Schnellzugriffe</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col gap-2">
+                  <Button 
+                    variant="outline" 
+                    className="justify-start text-xs sm:text-sm h-8 sm:h-9" 
+                    onClick={() => navigate("/dashboard/pharmacy-orders")}
+                  >
+                    <ShoppingBag className="mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Bestellungen verwalten</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="justify-start text-xs sm:text-sm h-8 sm:h-9" 
+                    onClick={() => navigate("/dashboard/pharmacy-inventory")}
+                  >
+                    <Package className="mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Bestand aktualisieren</span>
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="justify-start text-xs sm:text-sm h-8 sm:h-9" 
+                    onClick={() => navigate("/dashboard/pharmacy-prescriptions")}
+                  >
+                    <FileText className="mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Rezepte prüfen</span>
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    className="justify-start text-xs sm:text-sm h-8 sm:h-9" 
+                    onClick={() => navigate("/dashboard/pharmacy-billing")}
+                  >
+                    <Receipt className="mr-2 h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="truncate">Rechnungen verwalten</span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsTrackingDialogOpen(false)}>
-              Abbrechen
-            </Button>
-            <Button onClick={saveTracking}>
-              Tracking-ID speichern
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+
+        <Dialog open={isTrackingDialogOpen} onOpenChange={setIsTrackingDialogOpen}>
+          <DialogContent className="max-w-sm sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-sm sm:text-base">Tracking-ID hinzufügen</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                Fügen Sie eine Tracking-ID für Bestellung {selectedOrder?.id} hinzu.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="py-4">
+              <Label htmlFor="trackingId" className="block mb-2 text-xs sm:text-sm">Tracking-ID</Label>
+              <Input
+                id="trackingId"
+                value={trackingId}
+                onChange={(e) => setTrackingId(e.target.value)}
+                placeholder="z.B. DHL123456789"
+                className="text-sm"
+              />
+              <p className="text-xs text-muted-foreground mt-2">
+                Die Tracking-ID wird an den Patienten weitergeleitet.
+              </p>
+            </div>
+            
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setIsTrackingDialogOpen(false)} className="text-xs sm:text-sm">
+                Abbrechen
+              </Button>
+              <Button onClick={saveTracking} className="text-xs sm:text-sm">
+                Tracking-ID speichern
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 };

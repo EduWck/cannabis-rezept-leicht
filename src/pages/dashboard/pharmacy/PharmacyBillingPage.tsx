@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -509,13 +508,8 @@ const PharmacyBillingPage = () => {
             {filteredInvoices.length > 0 && (
               <div className="flex items-center gap-3 p-3 border-b">
                 <Checkbox
-                  checked={isAllSelected}
+                  checked={isAllSelected || isPartiallySelected}
                   onCheckedChange={handleSelectAll}
-                  ref={(checkbox) => {
-                    if (checkbox && isPartiallySelected) {
-                      checkbox.indeterminate = true;
-                    }
-                  }}
                 />
                 <span className="text-sm font-medium text-muted-foreground">
                   {isAllSelected ? 'Alle abwählen' : 'Alle auswählen'}

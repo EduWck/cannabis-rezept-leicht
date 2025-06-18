@@ -36,8 +36,17 @@ interface CheckoutOrderSummaryProps {
 }
 
 const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: CheckoutOrderSummaryProps) => {
+  console.log("CheckoutOrderSummary received:", { selectedProducts, products, pharmacies });
+
   const getProductPrice = (product: Product) => {
-    return product.pricePerGram || product.pricePerBottle || 12.5; // Fallback price
+    // Fix: Handle both flower and extract types properly
+    if (product.type === "flower" && product.pricePerGram) {
+      return product.pricePerGram;
+    }
+    if (product.type === "extract" && product.pricePerBottle) {
+      return product.pricePerBottle;
+    }
+    return 12.5; // Fallback price
   };
 
   const getProductUnit = (product: Product) => {
@@ -45,22 +54,32 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
   };
 
   const calculateProductTotal = (product: Product, quantity: number) => {
-    return getProductPrice(product) * quantity;
+    const price = getProductPrice(product);
+    return price * quantity;
   };
 
   const getProductsSubtotal = () => {
-    return Object.entries(selectedProducts).reduce((total, [productId, selection]) => {
+    const subtotal = Object.entries(selectedProducts).reduce((total, [productId, selection]) => {
       const product = products.find(p => p.id === productId);
+      console.log(`Calculating subtotal for product ${productId}:`, product, "selection:", selection);
+      
       if (product && selection.quantity > 0) {
-        return total + calculateProductTotal(product, selection.quantity);
+        const productTotal = calculateProductTotal(product, selection.quantity);
+        console.log(`Product ${product.name}: ${selection.quantity} x ${getProductPrice(product)} = ${productTotal}`);
+        return total + productTotal;
       }
       return total;
     }, 0);
+    
+    console.log("Final subtotal:", subtotal);
+    return subtotal;
   };
 
   const selectedItems = Object.entries(selectedProducts).filter(([_, selection]) => selection.quantity > 0);
+  console.log("Selected items:", selectedItems);
 
   if (selectedItems.length === 0) {
+    console.log("No selected items, returning null");
     return null;
   }
 
@@ -86,7 +105,12 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
                 const product = products.find(p => p.id === productId);
                 const pharmacy = pharmacies.find(p => p.id === selection.pharmacyId);
                 
-                if (!product) return null;
+                console.log(`Rendering product ${productId}:`, product, "pharmacy:", pharmacy);
+                
+                if (!product) {
+                  console.log(`Product ${productId} not found`);
+                  return null;
+                }
 
                 const unitPrice = getProductPrice(product);
                 const totalPrice = calculateProductTotal(product, selection.quantity);

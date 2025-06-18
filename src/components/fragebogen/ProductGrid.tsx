@@ -20,6 +20,7 @@ interface Product {
   id: string;
   name: string;
   type: "flower" | "extract";
+  genetics: "indica" | "sativa" | "hybrid";
   thcPercentage: number;
   cbdPercentage: number;
   pricePerGram?: number;

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -354,23 +353,25 @@ const PharmacyDashboard = () => {
           {/* Bestellungen */}
           <div className="min-w-0">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <span className="flex items-center min-w-0">
+              <CardHeader className="space-y-4">
+                <div className="space-y-2">
+                  <CardTitle className="flex items-center text-lg sm:text-xl">
                     <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-                    <span className="truncate">Aktuelle Bestellungen</span>
-                  </span>
-                  <div className="relative w-full sm:w-auto sm:min-w-[200px] max-w-sm">
+                    <span className="min-w-0 break-words">Aktuelle Bestellungen</span>
+                  </CardTitle>
+                  <CardDescription className="text-sm">Übersicht der neuesten Bestellungen</CardDescription>
+                </div>
+                <div className="w-full">
+                  <div className="relative max-w-sm">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Bestellungen suchen..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 text-sm"
+                      className="pl-10 text-sm w-full"
                     />
                   </div>
-                </CardTitle>
-                <CardDescription>Übersicht der neuesten Bestellungen</CardDescription>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">

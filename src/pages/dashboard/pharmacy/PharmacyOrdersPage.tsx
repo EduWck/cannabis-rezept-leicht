@@ -97,10 +97,7 @@ const PharmacyOrdersPage = () => {
   const [selectedOrders, setSelectedOrders] = useState<string[]>([]);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   
-  // Mock-Daten mit Cannabis-Blüten und Extrakten (ohne CBD Öle)
   const orders: Order[] = [
     {
       id: "ORD-2023-001",
@@ -266,6 +263,15 @@ const PharmacyOrdersPage = () => {
       }
     });
   };
+
+  const handleViewDetails = (order: Order) => {
+    navigate(`/dashboard/pharmacy-orders/${order.id}`, {
+      state: { 
+        from: '/dashboard/pharmacy-orders',
+        fromLabel: 'Bestellungen'
+      }
+    });
+  };
   
   const filteredOrders = orders.filter(order => {
     const matchesSearch = 
@@ -311,7 +317,7 @@ const PharmacyOrdersPage = () => {
     }, 0);
   };
 
-  // Mobile Card Component mit angepasster Produktanzeige
+  // Mobile Card Component with navigation to detail page
   const OrderCard = ({ order }: { order: Order }) => {
     const totalOrderedGrams = calculateTotalOrderedGrams(order.items);
     const totalOrderedMl = calculateTotalOrderedMl(order.items);
@@ -379,10 +385,7 @@ const PharmacyOrdersPage = () => {
               <Button 
                 size="sm" 
                 variant="outline"
-                onClick={() => {
-                  setSelectedOrder(order);
-                  setShowDetailDialog(true);
-                }}
+                onClick={() => handleViewDetails(order)}
               >
                 <Eye className="h-3 w-3" />
               </Button>
@@ -435,7 +438,6 @@ const PharmacyOrdersPage = () => {
         )}
       </div>
       
-      {/* Filter & Suche */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -495,7 +497,6 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
       
-      {/* Angepasste Bestellungen Tabelle */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -613,7 +614,6 @@ const PharmacyOrdersPage = () => {
                               </div>
                             ))}
                             
-                            {/* Zusammenfassung nach Produkttyp */}
                             <div className="space-y-1">
                               {totalOrderedGrams > 0 && (
                                 <div className="text-xs font-medium text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200">
@@ -656,10 +656,7 @@ const PharmacyOrdersPage = () => {
                             <Button 
                               size="sm" 
                               variant="outline"
-                              onClick={() => {
-                                setSelectedOrder(order);
-                                setShowDetailDialog(true);
-                              }}
+                              onClick={() => handleViewDetails(order)}
                             >
                               <Eye className="h-3 w-3" />
                             </Button>
@@ -693,116 +690,6 @@ const PharmacyOrdersPage = () => {
         </CardContent>
       </Card>
 
-      {/* Angepasster Detail Dialog */}
-      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Bestelldetails - {selectedOrder?.id}</DialogTitle>
-            <DialogDescription>
-              Vollständige Informationen zur Bestellung
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedOrder && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Patient</Label>
-                  <p className="text-sm">{selectedOrder.patientName}</p>
-                  <p className="text-xs text-muted-foreground">{selectedOrder.patientAddress}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Status</Label>
-                  <div className="mt-1">{getStatusBadge(selectedOrder.status)}</div>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-sm font-medium">Rezept</Label>
-                <div className="mt-2">
-                  <button 
-                    onClick={() => handlePrescriptionClick(selectedOrder.prescriptionId)}
-                    className="flex items-center gap-2 text-blue-600 hover:underline"
-                  >
-                    <FileText className="h-4 w-4" />
-                    {selectedOrder.prescriptionId} - Rezept anzeigen
-                  </button>
-                </div>
-              </div>
-              
-              <div>
-                <Label className="text-sm font-medium">Bestellte Produkte</Label>
-                <div className="mt-2 space-y-2">
-                  {selectedOrder.items.map((item, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-muted rounded">
-                      <div>
-                        <p className="font-medium">{item.name}</p>
-                        {item.type === "flower" ? (
-                          <p className="text-sm text-muted-foreground">
-                            <span className="text-green-600 font-medium">
-                              {item.orderedGrams}g bestellt
-                            </span>
-                            <span className={`ml-2 ${(item.totalStockGrams || 0) < 50 ? 'text-red-500' : 'text-green-600'}`}>
-                              Lagerbestand: {item.totalStockGrams}g
-                            </span>
-                          </p>
-                        ) : (
-                          <p className="text-sm text-muted-foreground">
-                            <span className="text-purple-600 font-medium">
-                              {item.orderedBottles} × {item.bottleSize}ml Flasche{(item.orderedBottles || 0) > 1 ? 'n' : ''} bestellt
-                            </span>
-                            <span className={`ml-2 ${(item.totalStockBottles || 0) < 5 ? 'text-red-500' : 'text-green-600'}`}>
-                              Lagerbestand: {item.totalStockBottles} Flaschen
-                            </span>
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Zusammenfassung */}
-                  <div className="space-y-2">
-                    {calculateTotalOrderedGrams(selectedOrder.items) > 0 && (
-                      <div className="p-2 bg-green-50 border border-green-200 rounded">
-                        <p className="text-sm font-medium text-green-700">
-                          Gesamtmenge Cannabis: {calculateTotalOrderedGrams(selectedOrder.items)}g
-                        </p>
-                      </div>
-                    )}
-                    {calculateTotalOrderedMl(selectedOrder.items) > 0 && (
-                      <div className="p-2 bg-purple-50 border border-purple-200 rounded">
-                        <p className="text-sm font-medium text-purple-700">
-                          Gesamtmenge Extrakt: {calculateTotalOrderedMl(selectedOrder.items)}ml
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Versandart</Label>
-                  <p className="text-sm">{getShippingMethodLabel(selectedOrder.shippingMethod)}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Gesamtbetrag</Label>
-                  <p className="text-sm font-medium">{selectedOrder.totalAmount.toFixed(2)} €</p>
-                </div>
-              </div>
-              
-              {selectedOrder.trackingId && (
-                <div>
-                  <Label className="text-sm font-medium">Tracking-ID</Label>
-                  <p className="text-sm font-mono">{selectedOrder.trackingId}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Enhanced Edit Dialog with shipping method editing */}
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent>
           <DialogHeader>

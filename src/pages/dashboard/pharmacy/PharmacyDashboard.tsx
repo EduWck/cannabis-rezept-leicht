@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -41,6 +42,33 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
+interface OrderItem {
+  name: string;
+  type: "flower" | "extract";
+  orderedGrams?: number;
+  totalStockGrams?: number;
+  orderedBottles?: number;
+  bottleSize?: number;
+  totalStockBottles?: number;
+}
+
+interface Order {
+  id: string;
+  prescriptionId: string;
+  patientName: string;
+  patientAddress: string;
+  items: OrderItem[];
+  shippingMethod: "dhl" | "kurier" | "abholung";
+  totalAmount: number;
+  status: "neu" | "in_bearbeitung" | "versendet" | "zugestellt";
+  createdAt: string;
+  lastUpdated: string;
+  trackingId?: string;
+  shippingDate?: string;
+  notes?: string;
+  priority?: "high" | "normal" | "low";
+}
+
 const PharmacyDashboard = () => {
   const navigate = useNavigate();
   const [trackingId, setTrackingId] = useState("");
@@ -56,45 +84,83 @@ const PharmacyDashboard = () => {
     completedOrdersToday: 23
   };
 
-  const recentOrders = [
+  // Synchronized mock data with PharmacyOrderDetailPage
+  const recentOrders: Order[] = [
     {
-      id: "ORD-2023-105",
+      id: "ORD-2023-001",
+      prescriptionId: "RX-2023-101",
       patientName: "Max Mustermann",
-      prescriptionId: "RX-2023-001",
-      date: "2023-12-15",
-      status: "pending",
-      total: 129.90,
+      patientAddress: "Hauptstr. 123, 10115 Berlin",
       items: [
-        { name: "Cannabisblüte THC18", quantity: "10g", type: "flower", price: 129.90 }
+        { 
+          name: "Cannabisblüte THC18", 
+          type: "flower",
+          orderedGrams: 20, 
+          totalStockGrams: 250
+        },
+        { 
+          name: "THC Extrakt 25%", 
+          type: "extract",
+          orderedBottles: 2,
+          bottleSize: 10,
+          totalStockBottles: 15
+        },
       ],
-      trackingId: null,
+      shippingMethod: "dhl",
+      totalAmount: 159.89,
+      status: "neu",
+      createdAt: "2023-05-20",
+      lastUpdated: "2023-05-20",
       priority: "normal"
     },
     {
-      id: "ORD-2023-104",
-      patientName: "Anna Weber",
-      prescriptionId: "RX-2023-002",
-      date: "2023-12-14", 
-      status: "processing",
-      total: 154.85,
+      id: "ORD-2023-002",
+      prescriptionId: "RX-2023-102",
+      patientName: "Anna Schmidt",
+      patientAddress: "Musterweg 45, 20095 Hamburg",
       items: [
-        { name: "THC Extrakt 25%", quantity: "1 Flasche à 10ml", type: "extract", price: 89.90 },
-        { name: "Cannabisblüte THC15", quantity: "5g", type: "flower", price: 64.95 }
+        { 
+          name: "Cannabisblüte THC22", 
+          type: "flower",
+          orderedGrams: 25, 
+          totalStockGrams: 125
+        },
       ],
-      trackingId: null,
+      shippingMethod: "kurier",
+      totalAmount: 74.95,
+      status: "in_bearbeitung",
+      createdAt: "2023-05-19",
+      lastUpdated: "2023-05-20",
+      trackingId: "1Z999AA1234567890",
       priority: "high"
     },
     {
-      id: "ORD-2023-103",
-      patientName: "Julia Becker",
-      prescriptionId: "RX-2023-003",
-      date: "2023-12-13",
-      status: "shipped",
-      total: 399.80,
+      id: "ORD-2023-003",
+      prescriptionId: "RX-2023-103",
+      patientName: "Julia Weber",
+      patientAddress: "Gartenstr. 78, 80331 München",
       items: [
-        { name: "THC/CBD Extrakt 1:1", quantity: "2 Flaschen à 10ml", type: "extract", price: 399.80 }
+        { 
+          name: "Cannabisblüte THC18", 
+          type: "flower",
+          orderedGrams: 10, 
+          totalStockGrams: 250
+        },
+        { 
+          name: "CBD Extrakt 15%", 
+          type: "extract",
+          orderedBottles: 1,
+          bottleSize: 15,
+          totalStockBottles: 8
+        },
       ],
-      trackingId: "DHL123456789",
+      shippingMethod: "dhl",
+      totalAmount: 104.93,
+      status: "versendet",
+      createdAt: "2023-05-18",
+      lastUpdated: "2023-05-19",
+      trackingId: "1Z999AA0987654321",
+      shippingDate: "2023-05-19",
       priority: "normal"
     }
   ];
@@ -128,18 +194,23 @@ const PharmacyDashboard = () => {
   ];
 
   const getStatusBadge = (status: string) => {
-    switch(status) {
-      case 'pending':
-        return <Badge className="bg-yellow-500"><Clock className="w-3 h-3 mr-1" />Wartend</Badge>;
-      case 'processing':
-        return <Badge className="bg-blue-500"><Settings className="w-3 h-3 mr-1" />In Bearbeitung</Badge>;
-      case 'shipped':
-        return <Badge className="bg-green-500"><Truck className="w-3 h-3 mr-1" />Versendet</Badge>;
-      case 'delivered':
-        return <Badge className="bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Zugestellt</Badge>;
-      default:
-        return <Badge>Unbekannt</Badge>;
-    }
+    const statusConfig = {
+      neu: { label: "Neu", className: "bg-gray-100 text-gray-800 border-gray-300", icon: Clock },
+      in_bearbeitung: { label: "In Bearbeitung", className: "bg-yellow-100 text-yellow-800 border-yellow-300", icon: Settings },
+      versendet: { label: "Versendet", className: "bg-green-100 text-green-800 border-green-300", icon: Truck },
+      zugestellt: { label: "Zugestellt", className: "bg-blue-100 text-blue-800 border-blue-300", icon: CheckCircle },
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig];
+    if (!config) return <Badge>Unbekannt</Badge>;
+    
+    const IconComponent = config.icon;
+    return (
+      <Badge className={`${config.className} border`}>
+        <IconComponent className="w-3 h-3 mr-1" />
+        {config.label}
+      </Badge>
+    );
   };
 
   const getPriorityBadge = (priority: string) => {
@@ -162,7 +233,7 @@ const PharmacyDashboard = () => {
     });
   };
 
-  const handleAddTracking = (order: any) => {
+  const handleAddTracking = (order: Order) => {
     setSelectedOrder(order);
     setTrackingId(order.trackingId || "");
     setIsTrackingDialogOpen(true);
@@ -192,6 +263,16 @@ const PharmacyDashboard = () => {
     order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.prescriptionId.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const formatItemsDisplay = (items: OrderItem[]) => {
+    return items.map(item => {
+      if (item.type === "flower") {
+        return `${item.name} - ${item.orderedGrams}g`;
+      } else {
+        return `${item.name} - ${item.orderedBottles} × ${item.bottleSize}ml`;
+      }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -283,18 +364,18 @@ const PharmacyDashboard = () => {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <p className="font-medium">{order.id}</p>
-                          {getPriorityBadge(order.priority)}
+                          {order.priority && getPriorityBadge(order.priority)}
                           {getStatusBadge(order.status)}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Patient: {order.patientName} • {new Date(order.date).toLocaleDateString('de-DE')}
+                          Patient: {order.patientName} • {new Date(order.createdAt).toLocaleDateString('de-DE')}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           Rezept: {order.prescriptionId}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{order.total.toFixed(2)} €</p>
+                        <p className="font-medium">{order.totalAmount.toFixed(2)} €</p>
                         {order.trackingId && (
                           <p className="text-xs text-blue-600">
                             Tracking: {order.trackingId}
@@ -306,29 +387,26 @@ const PharmacyDashboard = () => {
                     <div className="mb-3">
                       <p className="text-sm font-medium mb-1">Bestellte Produkte:</p>
                       <div className="space-y-1">
-                        {order.items.map((item, index) => (
-                          <div key={index} className="text-sm text-muted-foreground flex justify-between">
-                            <span>• {item.name} - {item.quantity}</span>
-                            {item.price && (
-                              <span className="font-medium">{item.price.toFixed(2)} €</span>
-                            )}
+                        {formatItemsDisplay(order.items).map((itemDisplay, index) => (
+                          <div key={index} className="text-sm text-muted-foreground">
+                            • {itemDisplay}
                           </div>
                         ))}
                       </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2">
-                      {order.status === 'pending' && (
+                      {order.status === 'neu' && (
                         <Button 
                           size="sm" 
-                          onClick={() => handleStatusChange(order.id, 'processing')}
+                          onClick={() => handleStatusChange(order.id, 'in_bearbeitung')}
                           className="bg-blue-600 hover:bg-blue-700"
                         >
                           Bearbeitung starten
                         </Button>
                       )}
                       
-                      {order.status === 'processing' && (
+                      {order.status === 'in_bearbeitung' && (
                         <>
                           <Button 
                             size="sm" 
@@ -348,11 +426,11 @@ const PharmacyDashboard = () => {
                         </>
                       )}
                       
-                      {order.status === 'shipped' && order.trackingId && (
+                      {order.status === 'versendet' && order.trackingId && (
                         <Button 
                           size="sm" 
                           variant="outline"
-                          onClick={() => handleStatusChange(order.id, 'delivered')}
+                          onClick={() => handleStatusChange(order.id, 'zugestellt')}
                         >
                           Als zugestellt markieren
                         </Button>

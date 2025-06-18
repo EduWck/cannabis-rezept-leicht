@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -38,7 +37,8 @@ import {
   TrendingUp,
   Truck,
   Search,
-  Settings
+  Settings,
+  Receipt
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -81,7 +81,8 @@ const PharmacyDashboard = () => {
     pendingOrders: 12,
     pendingPrescriptions: 8,
     lowStockItems: 5,
-    completedOrdersToday: 23
+    completedOrdersToday: 23,
+    pendingInvoices: 5 // Added for billing quick access
   };
 
   // Synchronized mock data with PharmacyOrderDetailPage

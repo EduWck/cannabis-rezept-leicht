@@ -16,7 +16,7 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel
 } from "@/components/ui/sidebar";
-import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard } from "lucide-react";
+import { FileText, Home, LogOut, Settings, ShoppingBag, User, Calendar, Users, Package, Clipboard, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 // Role-specific sidebar configurations
@@ -40,6 +40,7 @@ const PHARMACY_MENU_ITEMS = [
   { icon: Home, title: "Dashboard", path: "/dashboard/pharmacy" },
   { icon: ShoppingBag, title: "Bestellungen", path: "/dashboard/pharmacy-orders" },
   { icon: Package, title: "Bestand", path: "/dashboard/pharmacy-inventory" },
+  { icon: Receipt, title: "Rechnungen", path: "/dashboard/pharmacy-billing" },
 ];
 
 const PATIENT_MENU_ITEMS = [

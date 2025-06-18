@@ -1,3 +1,4 @@
+
 import { Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -55,6 +56,7 @@ import PharmacyDashboard from "@/pages/dashboard/pharmacy/PharmacyDashboard";
 import PharmacyOrdersPage from "@/pages/dashboard/pharmacy/PharmacyOrdersPage";
 import PharmacyInventoryPage from "@/pages/dashboard/pharmacy/PharmacyInventoryPage";
 import PharmacyProductEditPage from "@/pages/dashboard/pharmacy/ProductEditPage";
+import PharmacyBillingPage from "@/pages/dashboard/pharmacy/PharmacyBillingPage";
 
 // Detail pages
 import RequestDetailPage from "@/pages/dashboard/RequestDetailPage";
@@ -135,6 +137,7 @@ const AppRoutes = [
     <Route key="pharmacy-inventory" path="/dashboard/pharmacy-inventory" element={<PharmacyInventoryPage />} />
     <Route key="pharmacy-inventory-new" path="/dashboard/pharmacy-inventory/new" element={<PharmacyProductEditPage />} />
     <Route key="pharmacy-inventory-edit" path="/dashboard/pharmacy-inventory/:id" element={<PharmacyProductEditPage />} />
+    <Route key="pharmacy-billing" path="/dashboard/pharmacy-billing" element={<PharmacyBillingPage />} />
     
     {/* Detail routes */}
     <Route key="request-detail" path="/dashboard/requests/:id" element={<RequestDetailPage />} />

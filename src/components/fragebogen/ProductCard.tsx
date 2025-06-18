@@ -183,7 +183,7 @@ const ProductCard = ({
                     : newValue;
                   handleQuantityChange(roundedValue);
                 }}
-                className="mx-2 text-center w-20"
+                className="mx-2 text-center w-20 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
               
               <Button

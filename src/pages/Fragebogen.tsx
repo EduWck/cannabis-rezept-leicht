@@ -25,19 +25,76 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const TOTAL_STEPS = 10; // Updated: removed product selection step
+const TOTAL_STEPS = 10;
+
+// Mock data for products and pharmacies (this should come from a data source in real app)
+const mockProducts = [
+  {
+    id: "1",
+    name: "Aurora Indica",
+    type: "flower" as const,
+    thcPercentage: 18,
+    cbdPercentage: 1,
+    pricePerGram: 12.5,
+    description: "Eine beruhigende Indica-Sorte",
+    image: "/placeholder.svg",
+    pharmacies: ["1", "2"]
+  },
+  {
+    id: "2", 
+    name: "Green Crack",
+    type: "flower" as const,
+    thcPercentage: 22,
+    cbdPercentage: 0.5,
+    pricePerGram: 14.0,
+    description: "Eine energetisierende Sativa-Sorte",
+    image: "/placeholder.svg",
+    pharmacies: ["1", "3"]
+  }
+];
+
+const mockPharmacies = [
+  {
+    id: "1",
+    name: "Apotheke am Markt",
+    address: "Marktplatz 1",
+    city: "Berlin",
+    rating: 4.5,
+    deliveryTime: "1-2 Tage",
+    phone: "+49 30 12345678",
+    products: ["1", "2"]
+  },
+  {
+    id: "2",
+    name: "Stadt-Apotheke",
+    address: "Hauptstraße 25",
+    city: "München",
+    rating: 4.8,
+    deliveryTime: "2-3 Tage", 
+    phone: "+49 89 87654321",
+    products: ["1"]
+  },
+  {
+    id: "3",
+    name: "Zentral-Apotheke",
+    address: "Königsallee 15",
+    city: "Hamburg",
+    rating: 4.2,
+    deliveryTime: "1-3 Tage",
+    phone: "+49 40 11223344",
+    products: ["2"]
+  }
+];
 
 const Fragebogen = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0); // Start with step 0 (pharmacy overview)
+  const [step, setStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [skipQuestionnaire, setSkipQuestionnaire] = useState(false);
   
-  // Pharmacy and product selection from step 0
   const [selectedProducts, setSelectedProducts] = useState<Record<string, { quantity: number; pharmacyId: string }>>({});
   
-  // form data state variables same as before
   const [treatmentType, setTreatmentType] = useState<string>("");
   const [deliveryOption, setDeliveryOption] = useState<string>("");
   const [hasPreviousPrescription, setHasPreviousPrescription] = useState<boolean | null>(null);
@@ -127,15 +184,12 @@ const Fragebogen = () => {
     phone: "",
   });
 
-  // Calculate progress when step changes
   useEffect(() => {
     const newProgress = Math.round((step / TOTAL_STEPS) * 100);
     setProgress(newProgress);
   }, [step]);
 
-  // Handle next step
   const nextStep = () => {
-    // Check exclusion criteria before proceeding further
     if (step === 7) {
       if (isOver21 === false || isPregnantOrNursing === true) {
         toast({
@@ -148,7 +202,6 @@ const Fragebogen = () => {
       }
     }
 
-    // If payment is completed, show loading dialog
     if (step === 9) {
       setIsDialogOpen(true);
       setTimeout(() => {
@@ -160,12 +213,10 @@ const Fragebogen = () => {
     }
   };
 
-  // Handle previous step
   const prevStep = () => {
     setStep(prev => prev - 1);
   };
 
-  // Handle product selection from pharmacy overview
   const handleProductSelectChange = (productId: string, quantity: number, pharmacyId: string) => {
     setSelectedProducts(prev => ({
       ...prev,
@@ -173,7 +224,6 @@ const Fragebogen = () => {
     }));
   };
 
-  // all handler functions same as before
   const handleConsentChange = (key: keyof typeof consents, value: boolean) => {
     setConsents(prev => ({
       ...prev,
@@ -239,12 +289,13 @@ const Fragebogen = () => {
   };
 
   const calculateTotalAmount = () => {
-    // Calculate total based on selected products
     let productTotal = 0;
     Object.entries(selectedProducts).forEach(([productId, selection]) => {
-      // This would need to be calculated with actual product data
-      // For now, using a placeholder calculation
-      productTotal += selection.quantity * 12.5; // Placeholder price calculation
+      const product = mockProducts.find(p => p.id === productId);
+      if (product && selection.quantity > 0) {
+        const price = product.pricePerGram || product.pricePerBottle || 12.5;
+        productTotal += selection.quantity * price;
+      }
     });
     
     const prescriptionFee = 14.99;
@@ -253,7 +304,6 @@ const Fragebogen = () => {
     return productTotal + prescriptionFee + shippingFee;
   };
 
-  // Render the current step
   const renderStep = () => {
     switch (step) {
       case 0:
@@ -373,6 +423,9 @@ const Fragebogen = () => {
         return (
           <CheckoutStep
             totalAmount={calculateTotalAmount()}
+            selectedProducts={selectedProducts}
+            products={mockProducts}
+            pharmacies={mockPharmacies}
             onComplete={nextStep}
             onBack={prevStep}
           />
@@ -397,7 +450,6 @@ const Fragebogen = () => {
         </h1>
       </div>
 
-      {/* Progress bar and step indicator */}
       <div className="mb-8">
         <Progress value={progress} className="mb-2" />
         {step <= 9 && (
@@ -411,12 +463,10 @@ const Fragebogen = () => {
         )}
       </div>
 
-      {/* Current step content */}
       <div className="bg-card dark:bg-card border border-border rounded-xl p-8 shadow-lg animate-fade-in">
         {renderStep()}
       </div>
 
-      {/* Loading dialog */}
       <AlertDialog open={isDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -1,23 +1,57 @@
-
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
+import CheckoutOrderSummary from "./CheckoutOrderSummary";
+import { Separator } from "@/components/ui/separator";
+
+interface Product {
+  id: string;
+  name: string;
+  type: "flower" | "extract";
+  thcPercentage: number;
+  cbdPercentage: number;
+  pricePerGram?: number;
+  pricePerBottle?: number;
+  bottleSize?: number;
+  description: string;
+  image: string;
+  pharmacies: string[];
+}
+
+interface Pharmacy {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  rating: number;
+  deliveryTime: string;
+  phone: string;
+  products: string[];
+}
 
 interface CheckoutStepProps {
   totalAmount: number;
+  selectedProducts: Record<string, { quantity: number; pharmacyId: string }>;
+  products: Product[];
+  pharmacies: Pharmacy[];
   onComplete: () => void;
   onBack: () => void;
 }
 
-const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) => {
+const CheckoutStep = ({ 
+  totalAmount, 
+  selectedProducts, 
+  products, 
+  pharmacies, 
+  onComplete, 
+  onBack 
+}: CheckoutStepProps) => {
   const [paymentMethod, setPaymentMethod] = useState<'creditCard' | 'paypal' | 'sepa'>('creditCard');
   const [isProcessing, setIsProcessing] = useState(false);
   
-  // Contact information
   const [contactInfo, setContactInfo] = useState({
     firstName: "",
     lastName: "",
@@ -27,7 +61,7 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
     houseNumber: "",
     postalCode: "",
     city: "",
-    country: "Deutschland", // Default value
+    country: "Deutschland",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +75,6 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'street', 'houseNumber', 'postalCode', 'city'];
     const missingFields = requiredFields.filter(field => !contactInfo[field as keyof typeof contactInfo]);
     
@@ -54,7 +87,6 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
       return;
     }
     
-    // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contactInfo.email)) {
       toast({
@@ -65,7 +97,6 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
       return;
     }
     
-    // Phone number validation (simple format check)
     const phoneRegex = /^[+\d\s()-]{8,20}$/;
     if (!phoneRegex.test(contactInfo.phone)) {
       toast({
@@ -76,7 +107,6 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
       return;
     }
     
-    // Postal code validation for Germany (5 digits)
     const postalCodeRegex = /^\d{5}$/;
     if (!postalCodeRegex.test(contactInfo.postalCode)) {
       toast({
@@ -89,7 +119,6 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
     
     setIsProcessing(true);
     
-    // Simulate payment processing
     setTimeout(() => {
       setIsProcessing(false);
       onComplete();
@@ -99,6 +128,12 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-center">Bestellung abschließen</h2>
+      
+      <CheckoutOrderSummary 
+        selectedProducts={selectedProducts}
+        products={products}
+        pharmacies={pharmacies}
+      />
       
       <form onSubmit={handleSubmit}>
         <Card className="mb-6">
@@ -216,28 +251,6 @@ const CheckoutStep = ({ totalAmount, onComplete, onBack }: CheckoutStepProps) =>
         
         <Card>
           <CardContent className="p-6">
-            <div className="mb-6 border-b dark:border-gray-700 pb-4">
-              <h3 className="font-medium text-lg mb-2">Zahlungsübersicht</h3>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Produkte:</span>
-                <span>{(totalAmount - 14.99 - (totalAmount < 114.99 ? 10 : 0)).toFixed(2)} €</span>
-              </div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Rezeptgebühr:</span>
-                <span>14,99 €</span>
-              </div>
-              {totalAmount < 114.99 && (
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Versandkosten:</span>
-                  <span>10,00 €</span>
-                </div>
-              )}
-              <div className="flex justify-between font-bold text-lg mt-3">
-                <span>Gesamtbetrag:</span>
-                <span>{totalAmount.toFixed(2)} €</span>
-              </div>
-            </div>
-            
             <div className="space-y-6">
               <div>
                 <h3 className="font-medium text-lg mb-4">Zahlungsmethode auswählen</h3>

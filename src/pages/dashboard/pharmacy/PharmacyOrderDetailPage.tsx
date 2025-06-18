@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,9 +42,36 @@ const PharmacyOrderDetailPage = () => {
   const location = useLocation();
   const [isEditing, setIsEditing] = useState(false);
 
-  // Get the previous route information from navigation state
-  const fromRoute = location.state?.from || "/dashboard/pharmacy-orders";
-  const fromLabel = location.state?.fromLabel || "Bestellungen";
+  // Enhanced route detection for better back navigation
+  const getReturnInfo = () => {
+    // Check if we have explicit state from navigation
+    if (location.state?.from && location.state?.fromLabel) {
+      return {
+        route: location.state.from,
+        label: location.state.fromLabel
+      };
+    }
+    
+    // Fallback: detect based on current path or referrer
+    const currentPath = window.location.pathname;
+    const referrer = document.referrer;
+    
+    // Check if coming from pharmacy dashboard
+    if (referrer.includes('/dashboard/pharmacy') && !referrer.includes('/pharmacy-orders')) {
+      return {
+        route: '/dashboard/pharmacy',
+        label: 'Dashboard'
+      };
+    }
+    
+    // Default to pharmacy orders overview
+    return {
+      route: '/dashboard/pharmacy-orders',
+      label: 'Bestellungen'
+    };
+  };
+
+  const returnInfo = getReturnInfo();
 
   // Mock order data with prescription details (adapted for pharmacy view)
   const [orderData, setOrderData] = useState({
@@ -154,9 +180,9 @@ const PharmacyOrderDetailPage = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => navigate(fromRoute)}>
+          <Button variant="outline" onClick={() => navigate(returnInfo.route)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Zurück zu {fromLabel}
+            Zurück zu {returnInfo.label}
           </Button>
           <h1 className="text-2xl font-bold">Bestellung Details</h1>
         </div>

@@ -1,13 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Clock, Search, Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { MapPin, Star, Clock, Search, X } from "lucide-react";
 
 interface Pharmacy {
   id: string;
@@ -35,18 +33,50 @@ const PharmacySelector = ({
   onPharmacyToggle,
   onShowAllToggle
 }: PharmacySelectorProps) => {
-  const [comboboxOpen, setComboboxOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const getFilteredPharmacies = () => {
+    const availablePharmacies = pharmacies.filter(pharmacy => !selectedPharmacies.includes(pharmacy.id));
+    
+    if (!searchTerm.trim()) {
+      return availablePharmacies;
+    }
+    
+    const searchLower = searchTerm.toLowerCase();
+    return availablePharmacies.filter(pharmacy =>
+      pharmacy.name.toLowerCase().includes(searchLower) ||
+      pharmacy.city.toLowerCase().includes(searchLower) ||
+      pharmacy.address.toLowerCase().includes(searchLower)
+    );
+  };
 
   const handlePharmacySelect = (pharmacyId: string) => {
-    if (!selectedPharmacies.includes(pharmacyId)) {
-      onPharmacyToggle(pharmacyId);
-    }
-    setComboboxOpen(false);
+    onPharmacyToggle(pharmacyId);
+    setSearchTerm("");
+    setIsDropdownOpen(false);
   };
 
-  const getAvailablePharmacies = () => {
-    return pharmacies.filter(pharmacy => !selectedPharmacies.includes(pharmacy.id));
+  const clearSearch = () => {
+    setSearchTerm("");
+    setIsDropdownOpen(false);
   };
+
+  // Handle clicks outside dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredPharmacies = getFilteredPharmacies();
 
   return (
     <Card>
@@ -66,70 +96,71 @@ const PharmacySelector = ({
             </label>
           </div>
 
-          {/* Pharmacy Search & Selection */}
+          {/* Direct Pharmacy Search */}
           {!showAllPharmacies && (
-            <div className="space-y-3">
-              <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
-                <PopoverTrigger asChild>
+            <div className="space-y-3 relative" ref={dropdownRef}>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Apotheke suchen und hinzufügen..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setIsDropdownOpen(true);
+                  }}
+                  onFocus={() => setIsDropdownOpen(true)}
+                  className="pl-10 pr-10"
+                />
+                {searchTerm && (
                   <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={comboboxOpen}
-                    className="w-full justify-between"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                    onClick={clearSearch}
                   >
-                    <div className="flex items-center">
-                      <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>Apotheke suchen und hinzufügen...</span>
-                    </div>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    <X className="h-4 w-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0" align="start">
-                  <Command className="w-full">
-                    <CommandInput 
-                      placeholder="Apotheke suchen..." 
-                      className="h-9"
-                    />
-                    <CommandList>
-                      <CommandEmpty>Keine Apotheke gefunden.</CommandEmpty>
-                      <CommandGroup>
-                        {getAvailablePharmacies().map((pharmacy) => (
-                          <CommandItem
-                            key={pharmacy.id}
-                            value={`${pharmacy.name} ${pharmacy.city}`}
-                            onSelect={() => handlePharmacySelect(pharmacy.id)}
-                            className="flex items-center justify-between cursor-pointer"
-                          >
-                            <div className="flex flex-col">
-                              <div className="flex items-center">
-                                <span className="font-medium">{pharmacy.name}</span>
-                                <div className="flex items-center ml-2 text-xs text-muted-foreground">
-                                  <MapPin className="w-3 h-3 mr-1" />
-                                  <span>{pharmacy.city}</span>
-                                </div>
-                              </div>
-                              <div className="flex items-center text-xs text-muted-foreground mt-1">
-                                <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                                <span className="mr-3">{pharmacy.rating}</span>
-                                <Clock className="w-3 h-3 mr-1" />
-                                <span>{pharmacy.deliveryTime}</span>
+                )}
+              </div>
+
+              {/* Dropdown Results */}
+              {isDropdownOpen && (searchTerm || filteredPharmacies.length > 0) && (
+                <div className="absolute top-full left-0 right-0 z-50 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                  {filteredPharmacies.length > 0 ? (
+                    <div className="p-1">
+                      {filteredPharmacies.map((pharmacy) => (
+                        <div
+                          key={pharmacy.id}
+                          className="flex items-center justify-between p-3 hover:bg-accent hover:text-accent-foreground cursor-pointer rounded-sm"
+                          onClick={() => handlePharmacySelect(pharmacy.id)}
+                        >
+                          <div className="flex flex-col">
+                            <div className="flex items-center">
+                              <span className="font-medium">{pharmacy.name}</span>
+                              <div className="flex items-center ml-2 text-xs text-muted-foreground">
+                                <MapPin className="w-3 h-3 mr-1" />
+                                <span>{pharmacy.city}</span>
                               </div>
                             </div>
-                            <Check
-                              className={cn(
-                                "ml-auto h-4 w-4",
-                                selectedPharmacies.includes(pharmacy.id) 
-                                  ? "opacity-100" 
-                                  : "opacity-0"
-                              )}
-                            />
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+                            <div className="flex items-center text-xs text-muted-foreground mt-1">
+                              <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                              <span className="mr-3">{pharmacy.rating}</span>
+                              <Clock className="w-3 h-3 mr-1" />
+                              <span>{pharmacy.deliveryTime}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-3 text-sm text-muted-foreground text-center">
+                      Keine Apotheke gefunden
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
 

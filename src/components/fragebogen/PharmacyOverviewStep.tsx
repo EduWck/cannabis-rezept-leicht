@@ -1,11 +1,13 @@
+
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { MapPin, Star, Clock, Phone, Search } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MapPin, Star, Clock, Phone, Search, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import ProductCard from "./ProductCard";
 
 interface Pharmacy {
@@ -46,7 +48,7 @@ const PharmacyOverviewStep = ({
 }: PharmacyOverviewStepProps) => {
   const [selectedPharmacies, setSelectedPharmacies] = useState<string[]>([]);
   const [showAllPharmacies, setShowAllPharmacies] = useState(true);
-  const [pharmacySearch, setPharmacySearch] = useState("");
+  const [comboboxOpen, setComboboxOpen] = useState(false);
 
   // Test data for pharmacies
   const pharmacies: Pharmacy[] = [
@@ -194,22 +196,15 @@ const PharmacyOverviewStep = ({
   };
 
   const handlePharmacySelect = (pharmacyId: string) => {
-    if (pharmacyId === "all") {
-      setShowAllPharmacies(true);
-      setSelectedPharmacies([]);
-    } else {
+    if (!selectedPharmacies.includes(pharmacyId)) {
+      setSelectedPharmacies(prev => [...prev, pharmacyId]);
       setShowAllPharmacies(false);
-      if (!selectedPharmacies.includes(pharmacyId)) {
-        setSelectedPharmacies(prev => [...prev, pharmacyId]);
-      }
     }
+    setComboboxOpen(false);
   };
 
-  const getFilteredPharmacies = () => {
-    return pharmacies.filter(pharmacy => 
-      pharmacy.name.toLowerCase().includes(pharmacySearch.toLowerCase()) ||
-      pharmacy.city.toLowerCase().includes(pharmacySearch.toLowerCase())
-    );
+  const getAvailablePharmacies = () => {
+    return pharmacies.filter(pharmacy => !selectedPharmacies.includes(pharmacy.id));
   };
 
   const getFilteredProducts = () => {
@@ -261,42 +256,70 @@ const PharmacyOverviewStep = ({
               </label>
             </div>
 
-            {/* Pharmacy Search & Selection */}
+            {/* Integrated Pharmacy Search & Selection */}
             {!showAllPharmacies && (
               <div className="space-y-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-                  <Input
-                    placeholder="Apotheke suchen..."
-                    value={pharmacySearch}
-                    onChange={(e) => setPharmacySearch(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                
-                <Select onValueChange={handlePharmacySelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Apotheke hinzufügen" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-64">
-                    {getFilteredPharmacies()
-                      .filter(pharmacy => !selectedPharmacies.includes(pharmacy.id))
-                      .map((pharmacy) => (
-                        <SelectItem key={pharmacy.id} value={pharmacy.id}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{pharmacy.name}</span>
-                            <div className="flex items-center space-x-2 text-xs text-muted-foreground ml-2">
-                              <span>{pharmacy.city}</span>
-                              <div className="flex items-center">
-                                <Star className="w-3 h-3 text-yellow-400 mr-1" />
-                                <span>{pharmacy.rating}</span>
+                <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={comboboxOpen}
+                      className="w-full justify-between"
+                    >
+                      <div className="flex items-center">
+                        <Search className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <span>Apotheke suchen und hinzufügen...</span>
+                      </div>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command className="w-full">
+                      <CommandInput 
+                        placeholder="Apotheke suchen..." 
+                        className="h-9"
+                      />
+                      <CommandList>
+                        <CommandEmpty>Keine Apotheke gefunden.</CommandEmpty>
+                        <CommandGroup>
+                          {getAvailablePharmacies().map((pharmacy) => (
+                            <CommandItem
+                              key={pharmacy.id}
+                              value={`${pharmacy.name} ${pharmacy.city}`}
+                              onSelect={() => handlePharmacySelect(pharmacy.id)}
+                              className="flex items-center justify-between cursor-pointer"
+                            >
+                              <div className="flex flex-col">
+                                <div className="flex items-center">
+                                  <span className="font-medium">{pharmacy.name}</span>
+                                  <div className="flex items-center ml-2 text-xs text-muted-foreground">
+                                    <MapPin className="w-3 h-3 mr-1" />
+                                    <span>{pharmacy.city}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center text-xs text-muted-foreground mt-1">
+                                  <Star className="w-3 h-3 text-yellow-400 mr-1" />
+                                  <span className="mr-3">{pharmacy.rating}</span>
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  <span>{pharmacy.deliveryTime}</span>
+                                </div>
                               </div>
-                            </div>
-                          </div>
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                              <Check
+                                className={cn(
+                                  "ml-auto h-4 w-4",
+                                  selectedPharmacies.includes(pharmacy.id) 
+                                    ? "opacity-100" 
+                                    : "opacity-0"
+                                )}
+                              />
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
             )}
 

@@ -1,3 +1,4 @@
+
 #root {
   max-width: 100%;
   margin: 0 auto;
@@ -44,20 +45,20 @@
   color: #888;
 }
 
-/* Enhanced background accents with increased visibility */
+/* Enhanced background accents with much better visibility */
 .bg-accent {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35; /* Increased from 0.15 */
+  filter: blur(60px);
+  opacity: 0.65; /* Significantly increased from 0.35 */
   z-index: -1;
 }
 
 .bg-accent-1 {
   top: 10vh;
   left: 5vw;
-  width: 60vw; /* Increased size */
-  height: 50vh; /* Increased size */
+  width: 70vw; /* Increased size */
+  height: 60vh; /* Increased size */
   background: linear-gradient(45deg, var(--cannabis-green-300), var(--cannabis-green-500));
   animation: float 18s ease-in-out infinite alternate;
 }
@@ -65,8 +66,8 @@
 .bg-accent-2 {
   top: 25vh;
   right: 5vw;
-  width: 50vw; /* Increased size */
-  height: 45vh; /* Increased size */
+  width: 60vw; /* Increased size */
+  height: 55vh; /* Increased size */
   background: linear-gradient(120deg, var(--cannabis-green-200), #a5d6a7);
   animation: float 22s ease-in-out infinite alternate-reverse;
 }
@@ -74,8 +75,8 @@
 .bg-accent-3 {
   bottom: 10vh;
   left: 8vw;
-  width: 55vw; /* Increased size */
-  height: 40vh; /* Increased size */
+  width: 65vw; /* Increased size */
+  height: 50vh; /* Increased size */
   background: linear-gradient(200deg, var(--cannabis-green-100), var(--cannabis-green-300));
   animation: float 26s ease-in-out infinite alternate;
 }
@@ -110,26 +111,26 @@
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(8%, 5%) scale(1.08); /* Enhanced movement */
+    transform: translate(10%, 8%) scale(1.12); /* Enhanced movement */
   }
   66% {
-    transform: translate(-6%, 3%) scale(0.92);
+    transform: translate(-8%, 5%) scale(0.88);
   }
   100% {
-    transform: translate(-2%, 2%) scale(0.96);
+    transform: translate(-3%, 3%) scale(0.92);
   }
 }
 
 /* Enhanced responsive adjustments */
 @media (max-width: 768px) {
   .bg-accent-1, .bg-accent-2, .bg-accent-3 {
-    opacity: 0.15; /* Reduced but still more visible than before */
-    filter: blur(60px);
-    width: 70vw; /* Increased mobile size */
+    opacity: 0.35; /* Reduced but still much more visible than before */
+    filter: blur(50px);
+    width: 80vw; /* Increased mobile size */
   }
   
   .bg-accent {
-    opacity: 0.20; /* Base mobile opacity increased */
+    opacity: 0.45; /* Base mobile opacity significantly increased */
   }
 }
 
@@ -279,4 +280,61 @@ h1, h2, h3, h4, h5, h6, p, span, div {
   max-width: 100%;
   overflow-wrap: break-word;
   word-wrap: break-word;
+}
+
+/* New geometric background elements styling */
+.geometric-accent {
+  position: absolute;
+  opacity: 0.6;
+  filter: blur(1px);
+  z-index: -8;
+  pointer-events: none;
+}
+
+.geometric-accent.square {
+  border-radius: 8px;
+}
+
+.geometric-accent.circle {
+  border-radius: 50%;
+}
+
+.geometric-accent.diamond {
+  transform: rotate(45deg);
+}
+
+.geometric-accent.hexagon {
+  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+}
+
+/* Enhanced medical cross styling */
+.medical-cross {
+  position: absolute;
+  opacity: 0.5;
+  z-index: -9;
+  pointer-events: none;
+}
+
+.medical-cross::before,
+.medical-cross::after {
+  content: '';
+  position: absolute;
+  background: var(--cannabis-green-400);
+  border-radius: 2px;
+}
+
+.medical-cross::before {
+  width: 20px;
+  height: 4px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.medical-cross::after {
+  width: 4px;
+  height: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }

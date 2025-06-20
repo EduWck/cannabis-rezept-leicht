@@ -1,3 +1,4 @@
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -176,6 +177,27 @@ module.exports = {
           "75%": { 
             transform: "translateY(-25px) rotate(-8deg) scale(1.02)" 
           }
+        },
+        "pulse-slow": {
+          "0%, 100%": { 
+            opacity: "0.8", 
+            transform: "scale(1)"
+          },
+          "50%": { 
+            opacity: "0.4", 
+            transform: "scale(1.1)"
+          }
+        },
+        "geometric-float": {
+          "0%, 100%": { 
+            transform: "translateY(0) rotate(0deg)" 
+          },
+          "33%": { 
+            transform: "translateY(-15px) rotate(120deg)" 
+          },
+          "66%": { 
+            transform: "translateY(-10px) rotate(240deg)" 
+          }
         }
       },
       animation: {
@@ -187,6 +209,8 @@ module.exports = {
         "blob": "blob 25s infinite alternate",
         "enhanced-blob": "enhanced-blob 30s infinite alternate",
         "enhanced-float": "enhanced-float 10s ease-in-out infinite",
+        "pulse-slow": "pulse-slow 6s ease-in-out infinite",
+        "geometric-float": "geometric-float 8s ease-in-out infinite",
       },
       fontFamily: {
         sans: [
@@ -229,5 +253,7 @@ module.exports = {
     'animation-delay-6000',
     'animation-delay-7000',
     'animation-delay-8000',
+    'animate-pulse-slow',
+    'animate-geometric-float',
   ]
 };

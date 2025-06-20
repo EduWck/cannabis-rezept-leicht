@@ -1,4 +1,3 @@
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -143,6 +142,40 @@ module.exports = {
           "100%": {
             transform: "translate(0px, 0px) scale(1)"
           }
+        },
+        "enhanced-blob": {
+          "0%": {
+            transform: "translate(0px, 0px) scale(1) rotate(0deg)"
+          },
+          "20%": {
+            transform: "translate(35px, -60px) scale(1.15) rotate(72deg)"
+          },
+          "40%": {
+            transform: "translate(-25px, 25px) scale(0.85) rotate(144deg)"
+          },
+          "60%": {
+            transform: "translate(40px, -20px) scale(1.1) rotate(216deg)"
+          },
+          "80%": {
+            transform: "translate(-15px, -35px) scale(0.9) rotate(288deg)"
+          },
+          "100%": {
+            transform: "translate(0px, 0px) scale(1) rotate(360deg)"
+          }
+        },
+        "enhanced-float": {
+          "0%, 100%": { 
+            transform: "translateY(0) rotate(0deg) scale(1)" 
+          },
+          "25%": { 
+            transform: "translateY(-20px) rotate(8deg) scale(1.05)" 
+          },
+          "50%": { 
+            transform: "translateY(-15px) rotate(0deg) scale(0.95)" 
+          },
+          "75%": { 
+            transform: "translateY(-25px) rotate(-8deg) scale(1.02)" 
+          }
         }
       },
       animation: {
@@ -152,6 +185,8 @@ module.exports = {
         "fade-out": "fade-out 0.3s ease-out",
         "scale-in": "scale-in 0.2s ease-out",
         "blob": "blob 25s infinite alternate",
+        "enhanced-blob": "enhanced-blob 30s infinite alternate",
+        "enhanced-float": "enhanced-float 10s ease-in-out infinite",
       },
       fontFamily: {
         sans: [
@@ -192,6 +227,7 @@ module.exports = {
     'animation-delay-4000',
     'animation-delay-5000',
     'animation-delay-6000',
+    'animation-delay-7000',
     'animation-delay-8000',
   ]
 };

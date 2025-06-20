@@ -44,40 +44,40 @@
   color: #888;
 }
 
-/* Enhanced background accents with animation delays */
+/* Enhanced background accents with increased visibility */
 .bg-accent {
   position: absolute;
   border-radius: 50%;
   filter: blur(80px);
-  opacity: 0.15;
+  opacity: 0.35; /* Increased from 0.15 */
   z-index: -1;
 }
 
 .bg-accent-1 {
   top: 10vh;
   left: 5vw;
-  width: 50vw;
-  height: 40vh;
+  width: 60vw; /* Increased size */
+  height: 50vh; /* Increased size */
   background: linear-gradient(45deg, var(--cannabis-green-300), var(--cannabis-green-500));
-  animation: float 20s ease-in-out infinite alternate;
+  animation: float 18s ease-in-out infinite alternate;
 }
 
 .bg-accent-2 {
-  top: 30vh;
+  top: 25vh;
   right: 5vw;
-  width: 40vw;
-  height: 35vh;
+  width: 50vw; /* Increased size */
+  height: 45vh; /* Increased size */
   background: linear-gradient(120deg, var(--cannabis-green-200), #a5d6a7);
-  animation: float 25s ease-in-out infinite alternate-reverse;
+  animation: float 22s ease-in-out infinite alternate-reverse;
 }
 
 .bg-accent-3 {
-  bottom: 15vh;
-  left: 10vw;
-  width: 50vw;
-  height: 30vh;
+  bottom: 10vh;
+  left: 8vw;
+  width: 55vw; /* Increased size */
+  height: 40vh; /* Increased size */
   background: linear-gradient(200deg, var(--cannabis-green-100), var(--cannabis-green-300));
-  animation: float 30s ease-in-out infinite alternate;
+  animation: float 26s ease-in-out infinite alternate;
 }
 
 /* Animation delay utilities */
@@ -109,20 +109,27 @@
   0% {
     transform: translate(0, 0) scale(1);
   }
-  50% {
-    transform: translate(5%, 3%) scale(1.05);
+  33% {
+    transform: translate(8%, 5%) scale(1.08); /* Enhanced movement */
+  }
+  66% {
+    transform: translate(-6%, 3%) scale(0.92);
   }
   100% {
-    transform: translate(-3%, 1%) scale(0.95);
+    transform: translate(-2%, 2%) scale(0.96);
   }
 }
 
-/* Responsive adjustments */
+/* Enhanced responsive adjustments */
 @media (max-width: 768px) {
   .bg-accent-1, .bg-accent-2, .bg-accent-3 {
-    opacity: 0.07;
+    opacity: 0.15; /* Reduced but still more visible than before */
     filter: blur(60px);
-    width: 60vw;
+    width: 70vw; /* Increased mobile size */
+  }
+  
+  .bg-accent {
+    opacity: 0.20; /* Base mobile opacity increased */
   }
 }
 

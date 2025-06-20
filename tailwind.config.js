@@ -186,4 +186,12 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
+  safelist: [
+    'animation-delay-2000',
+    'animation-delay-3000',
+    'animation-delay-4000',
+    'animation-delay-5000',
+    'animation-delay-6000',
+    'animation-delay-8000',
+  ]
 };

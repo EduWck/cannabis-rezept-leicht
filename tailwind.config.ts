@@ -1,13 +1,15 @@
-
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
-export default {
+const config: Config = {
 	darkMode: ["class"],
 	content: [
 		"./pages/**/*.{ts,tsx}",
 		"./components/**/*.{ts,tsx}",
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
+		"./index.html",
+		"./src/**/*.{ts,tsx,js,jsx}"
 	],
 	prefix: "",
 	theme: {
@@ -165,15 +167,22 @@ export default {
 					"sans-serif",
 				],
 			},
-			utilities: {
+		},
+	},
+	plugins: [
+		animate,
+		// Eigene Utilities als Plugin:
+		function ({ addUtilities }) {
+			addUtilities({
 				".animation-delay-2000": {
 					"animation-delay": "2s",
 				},
 				".animation-delay-4000": {
 					"animation-delay": "4s",
 				},
-			},
+			});
 		},
-	},
-	plugins: [require("tailwindcss-animate")],
+	],
 } satisfies Config;
+
+export default config;

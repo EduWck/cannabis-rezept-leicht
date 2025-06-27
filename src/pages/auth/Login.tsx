@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { PatientLoginForm } from "@/components/auth/PatientLoginForm";
 import { StaffLoginForm } from "@/components/auth/StaffLoginForm";
+import { SignupForm } from "@/components/auth/SignupForm";
 import { DemoAccountsInfo } from "@/components/auth/DemoAccountsInfo";
 import { useLoginLogic } from "@/hooks/use-login-logic";
 import { useEffect, useState } from "react";
@@ -180,8 +181,9 @@ const Login = () => {
       )}
       
       <Tabs defaultValue="patient" className="w-full max-w-md">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="patient">Patient</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="patient">Anmelden</TabsTrigger>
+          <TabsTrigger value="signup">Registrieren</TabsTrigger>
           <TabsTrigger value="staff">Arzt / Admin</TabsTrigger>
         </TabsList>
         
@@ -192,6 +194,13 @@ const Login = () => {
             loading={loading}
             setLoading={setLoading}
           />
+        </TabsContent>
+        
+        <TabsContent value="signup">
+          <SignupForm onSuccess={() => toast({
+            title: "Registrierung erfolgreich",
+            description: "Sie können sich jetzt anmelden."
+          })} />
         </TabsContent>
         
         <TabsContent value="staff">

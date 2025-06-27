@@ -324,8 +324,14 @@ export type Database = {
     }
     Functions: {
       get_auth_user_role: {
-        Args: { user_id: string }
+        Args: Record<PropertyKey, never> | { user_id: string }
         Returns: string
+      }
+      place_order_and_update_stock: {
+        Args:
+          | Record<PropertyKey, never>
+          | { _patient_id: string; _prescription_id: string; _items: Json }
+        Returns: undefined
       }
     }
     Enums: {

@@ -19,16 +19,16 @@ const Footer = () => {
               Deine vertrauensvolle Plattform für den Zugang zu medizinischem Cannabis. Legal, sicher und diskret.
             </p>
             <div className="flex space-x-4">
-              <a href="https://facebook.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Facebook size={18} />
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Instagram size={18} />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Twitter size={18} />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-cannabis-green-400">
                 <Linkedin size={18} />
               </a>
             </div>

@@ -31,6 +31,8 @@ cd <YOUR_PROJECT_NAME>
 
 # Step 3: Copy the example environment file and add your Supabase credentials.
 cp .env.example .env
+# Then set `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
+# `VITE_SUPABASE_URL`, and `VITE_SUPABASE_PUBLISHABLE_KEY` in the `.env` file.
 
 # Step 4: Install the necessary dependencies.
 npm i

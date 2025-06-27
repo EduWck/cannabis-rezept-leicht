@@ -74,3 +74,19 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Configuring CORS for Supabase functions
+
+All serverless functions inside `supabase/functions` read allowed origins from the `ALLOWED_ORIGINS` environment variable. Provide a comma separated list of URLs.
+
+For local development:
+
+```bash
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+For production deployments set the variable to your production domain:
+
+```bash
+ALLOWED_ORIGINS=https://yourdomain.com
+```

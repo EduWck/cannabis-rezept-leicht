@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ export const SignupForm = ({ onSuccess }: SignupFormProps) => {
       return; // Error will be shown in form validation
     }
     
-    console.log("Submitting signup form...");
+    logger.debug("Submitting signup form...");
     const success = await signUp(email, password, firstName, lastName);
     
     if (success && onSuccess) {

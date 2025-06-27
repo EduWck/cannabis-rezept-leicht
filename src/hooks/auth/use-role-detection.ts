@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { User } from "@supabase/supabase-js";
 import { useState, useCallback } from "react";
@@ -10,8 +11,8 @@ export function useRoleDetection() {
   
   const detectUserRole = useCallback(async (currentUser: User, setProfile: (profile: Profile | null) => void, setIsLoading: (loading: boolean) => void) => {
     try {
-      console.log("Detecting user role for:", currentUser.id);
-      console.log("User metadata:", JSON.stringify(currentUser.user_metadata));
+      logger.debug("Detecting user role for:", currentUser.id);
+      logger.debug("User metadata:", JSON.stringify(currentUser.user_metadata));
       
       let detectedRole: UserRole | null = null;
       let userProfile: Profile | null = null;
@@ -21,19 +22,19 @@ export function useRoleDetection() {
       
       if (email.includes('admin')) {
         detectedRole = 'admin';
-        console.log("⭐ HIGHEST PRIORITY: Role detected from email: admin");
+        logger.debug("⭐ HIGHEST PRIORITY: Role detected from email: admin");
       } else if (email.includes('doctor') || email.includes('arzt')) {
         detectedRole = 'doctor';
-        console.log("⭐ HIGHEST PRIORITY: Role detected from email: doctor");
+        logger.debug("⭐ HIGHEST PRIORITY: Role detected from email: doctor");
       } else if (email.includes('pharmacy') || email.includes('apothek')) {
         detectedRole = 'pharmacy';
-        console.log("⭐ HIGHEST PRIORITY: Role detected from email: pharmacy");
+        logger.debug("⭐ HIGHEST PRIORITY: Role detected from email: pharmacy");
       } else if (email.includes('patient') || email.includes('patien')) {
         detectedRole = 'patient';
-        console.log("⭐ HIGHEST PRIORITY: Role detected from email: patient");
+        logger.debug("⭐ HIGHEST PRIORITY: Role detected from email: patient");
       }
       
-      console.log("Email-based role detection: ", detectedRole);
+      logger.debug("Email-based role detection: ", detectedRole);
       
       // PRIORITY 2: Check user metadata
       if (!detectedRole && currentUser.user_metadata?.role) {
@@ -43,13 +44,13 @@ export function useRoleDetection() {
         if (metadataRole === 'admin' || metadataRole === 'doctor' || 
             metadataRole === 'patient' || metadataRole === 'pharmacy') {
           detectedRole = metadataRole as UserRole;
-          console.log("Role from user metadata:", detectedRole);
+          logger.debug("Role from user metadata:", detectedRole);
         }
       }
       
       // PRIORITY 3: Check profile in database
       try {
-        console.log("Fetching profile from database");
+        logger.debug("Fetching profile from database");
         
         const { data, error } = await supabase
           .from("profiles")
@@ -58,12 +59,12 @@ export function useRoleDetection() {
           .maybeSingle();
 
         if (error) {
-          console.error("Error fetching profile from database:", error);
+          logger.error("Error fetching profile from database:", error);
           throw error;
         }
 
         if (data) {
-          console.log("Profile found in database:", data);
+          logger.debug("Profile found in database:", data);
           // Convert database role to UI role if needed
           if (data.role === 'admin' || data.role === 'doctor' || data.role === 'patient') {
             userProfile = data as Profile;
@@ -78,16 +79,16 @@ export function useRoleDetection() {
           // If we still don't have a role, use the one from the profile
           if (!detectedRole && userProfile.role) {
             detectedRole = userProfile.role;
-            console.log("Role from database profile:", detectedRole);
+            logger.debug("Role from database profile:", detectedRole);
           }
         } else {
-          console.log("No profile found in database, will create a new one");
+          logger.debug("No profile found in database, will create a new one");
         }
       } catch (profileError) {
-        console.error("Profile fetch failed, trying serverless function:", profileError);
+        logger.error("Profile fetch failed, trying serverless function:", profileError);
         
         try {
-          console.log("Attempting to fetch profile via serverless function");
+          logger.debug("Attempting to fetch profile via serverless function");
           const response = await supabase.functions.invoke('get-profile', {
             body: { user_id: currentUser.id }
           });
@@ -97,16 +98,16 @@ export function useRoleDetection() {
           }
           
           if (response.data) {
-            console.log("Profile fetched via function:", response.data);
+            logger.debug("Profile fetched via function:", response.data);
             userProfile = response.data as Profile;
             
             if (!detectedRole && userProfile.role) {
               detectedRole = userProfile.role;
-              console.log("Role from profile via function:", detectedRole);
+              logger.debug("Role from profile via function:", detectedRole);
             }
           }
         } catch (functionError) {
-          console.error("Function call for profile failed:", functionError);
+          logger.error("Function call for profile failed:", functionError);
         }
       }
       
@@ -124,7 +125,7 @@ export function useRoleDetection() {
           detectedRole = 'patient'; // Default fallback
         }
         
-        console.log("Using email-based fallback for role:", detectedRole);
+        logger.debug("Using email-based fallback for role:", detectedRole);
         
         toast({
           title: "Role set based on email",
@@ -136,7 +137,7 @@ export function useRoleDetection() {
       // CRITICAL: If detected role and profile role don't match,
       // ALWAYS use the detected role which has higher priority (based on email)
       if (!userProfile || userProfile.role !== detectedRole) {
-        console.log("Creating/updating profile with detected role:", detectedRole);
+        logger.debug("Creating/updating profile with detected role:", detectedRole);
         
         // Convert our UI role to a database-compatible role
         const databaseRole = detectedRole === 'pharmacy' ? 'admin' : detectedRole;
@@ -166,11 +167,11 @@ export function useRoleDetection() {
             .maybeSingle();
             
           if (existingProfile) {
-            console.log("Updating existing profile with role:", databaseRole);
+            logger.debug("Updating existing profile with role:", databaseRole);
             
             // If role is different, show notification
             if (existingProfile.role !== databaseRole) {
-              console.log(`⚠️ Role conflict: Changing from ${existingProfile.role} to ${databaseRole} (higher priority)`);
+              logger.debug(`⚠️ Role conflict: Changing from ${existingProfile.role} to ${databaseRole} (higher priority)`);
               toast({
                 title: "Role correction",
                 description: `Your role has been corrected from ${existingProfile.role} to ${detectedRole}.`
@@ -188,23 +189,23 @@ export function useRoleDetection() {
               .eq("id", currentUser.id);
               
             if (updateError) {
-              console.error("Error updating profile:", updateError);
+              logger.error("Error updating profile:", updateError);
               throw updateError;
             } else {
-              console.log("Profile successfully updated with role:", databaseRole);
+              logger.debug("Profile successfully updated with role:", databaseRole);
             }
           } else {
             // Create new profile
-            console.log("Creating new profile with role:", databaseRole);
+            logger.debug("Creating new profile with role:", databaseRole);
             const { error: insertError } = await supabase
               .from("profiles")
               .insert(profileData);
               
             if (insertError) {
-              console.error("Error creating profile:", insertError);
+              logger.error("Error creating profile:", insertError);
               throw insertError;
             } else {
-              console.log("Profile successfully created with role:", databaseRole);
+              logger.debug("Profile successfully created with role:", databaseRole);
               toast({
                 title: "Profile created",
                 description: "Your profile has been successfully created."
@@ -219,7 +220,7 @@ export function useRoleDetection() {
           };
           userProfile = uiProfileData;
         } catch (profileWriteError) {
-          console.error("Error writing profile to database:", profileWriteError);
+          logger.error("Error writing profile to database:", profileWriteError);
           toast({
             title: "Error updating",
             description: "Your profile could not be updated.",
@@ -232,8 +233,8 @@ export function useRoleDetection() {
       setUserRole(detectedRole);
       setProfile(userProfile);
       
-      console.log("Final detected role:", detectedRole);
-      console.log("Final profile:", userProfile);
+      logger.debug("Final detected role:", detectedRole);
+      logger.debug("Final profile:", userProfile);
       
       // Also update user metadata if needed to ensure consistency
       if (detectedRole && (!currentUser.user_metadata?.role || currentUser.user_metadata.role !== detectedRole)) {
@@ -243,16 +244,16 @@ export function useRoleDetection() {
           });
           
           if (error) {
-            console.error("Error updating user metadata:", error);
+            logger.error("Error updating user metadata:", error);
           } else {
-            console.log("User metadata updated with role:", detectedRole);
+            logger.debug("User metadata updated with role:", detectedRole);
           }
         } catch (metadataError) {
-          console.error("Error updating user metadata:", metadataError);
+          logger.error("Error updating user metadata:", metadataError);
         }
       }
     } catch (error) {
-      console.error("Error in role detection:", error);
+      logger.error("Error in role detection:", error);
     } finally {
       setIsLoading(false);
     }

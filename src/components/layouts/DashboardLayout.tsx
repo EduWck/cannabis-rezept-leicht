@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { Outlet } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import Navbar from "@/components/Navbar";
@@ -58,31 +59,31 @@ const DashboardLayout = () => {
   // Get menu items based on current URL path
   const getCurrentMenuItems = () => {
     const currentPath = window.location.pathname;
-    console.log("Current path:", currentPath);
+    logger.debug("Current path:", currentPath);
 
     // URL-based role detection
     if (currentPath.includes('/admin') || currentPath.includes('/users') || currentPath.includes('/all-orders') || currentPath.includes('/products') || currentPath.includes('/settings')) {
-      console.log("Using ADMIN sidebar");
+      logger.debug("Using ADMIN sidebar");
       return ADMIN_MENU_ITEMS;
     }
     
     if (currentPath.includes('/doctor') || currentPath.includes('/patients') || currentPath.includes('/calendar') || currentPath.includes('/requests')) {
-      console.log("Using DOCTOR sidebar");
+      logger.debug("Using DOCTOR sidebar");
       return DOCTOR_MENU_ITEMS;
     }
     
     if (currentPath.includes('/pharmacy')) {
-      console.log("Using PHARMACY sidebar");
+      logger.debug("Using PHARMACY sidebar");
       return PHARMACY_MENU_ITEMS;
     }
     
     if (currentPath.includes('/patient') || currentPath.includes('/profile') || currentPath.includes('/medical-findings') || currentPath.includes('/orders') || currentPath.includes('/appointments')) {
-      console.log("Using PATIENT sidebar");
+      logger.debug("Using PATIENT sidebar");
       return PATIENT_MENU_ITEMS;
     }
     
     // Default fallback
-    console.log("Using PATIENT sidebar (default)");
+    logger.debug("Using PATIENT sidebar (default)");
     return PATIENT_MENU_ITEMS;
   };
 

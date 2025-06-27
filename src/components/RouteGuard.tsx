@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useEffect, useState } from "react";
 import { useLocation, Outlet } from "react-router-dom";
@@ -18,7 +19,7 @@ const RouteGuard = ({ allowedRoles }: RouteGuardProps) => {
   const [isAuthorized, setIsAuthorized] = useState(true);
   const [authChecked, setAuthChecked] = useState(true);
   
-  console.log("RouteGuard TESTING MODE: All access granted");
+  logger.debug("RouteGuard TESTING MODE: All access granted");
   
   // Show loading state only when authorization check is in progress
   if (isLoading) {

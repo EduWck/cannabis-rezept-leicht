@@ -1,3 +1,4 @@
+import { logger } from "../_shared/logger.ts";
 
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
@@ -63,7 +64,7 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Error creating staff user:", error);
+    logger.error("Error creating staff user:", error);
     
     return new Response(
       JSON.stringify({ error: error.message || "Failed to create staff user" }),

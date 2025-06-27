@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
+import { SmtpClient } from "https://deno.land/x/smtp/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -56,16 +57,27 @@ serve(async (req) => {
       );
     }
     
-    // In a real app, you would send an actual email here
-    // For now, we'll just log the code
-    console.log(`Login code for ${email}: ${code}`);
-    
-    // For demo purposes, we'll return the code in the response
-    // In production, you would never do this!
+    // Send login code via email
+    const client = new SmtpClient();
+    await client.connectTLS({
+      hostname: Deno.env.get("SMTP_HOST") ?? "localhost",
+      port: Number(Deno.env.get("SMTP_PORT") ?? "25"),
+      username: Deno.env.get("SMTP_USERNAME") ?? "",
+      password: Deno.env.get("SMTP_PASSWORD") ?? "",
+    });
+
+    await client.send({
+      from: Deno.env.get("SMTP_FROM") ?? "no-reply@example.com",
+      to: email,
+      subject: "Your login code",
+      content: `Your login code is ${code}`,
+    });
+
+    await client.close();
+
     return new Response(
-      JSON.stringify({ 
-        message: "Login code sent successfully", 
-        code: code // Only for testing! Remove in production
+      JSON.stringify({
+        message: "Login code sent successfully",
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

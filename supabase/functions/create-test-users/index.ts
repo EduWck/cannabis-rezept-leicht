@@ -2,6 +2,9 @@
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
 
+const DEFAULT_PASSWORD =
+  Deno.env.get("DEFAULT_USER_PASSWORD") ?? crypto.randomUUID();
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -23,21 +26,21 @@ serve(async (req) => {
     const testUsers = [
       {
         email: "patient@example.com",
-        password: "password",
+        password: DEFAULT_PASSWORD,
         role: "patient",
         first_name: "Test",
         last_name: "Patient"
       },
       {
         email: "doctor@example.com",
-        password: "password",
+        password: DEFAULT_PASSWORD,
         role: "doctor",
         first_name: "Test",
         last_name: "Doctor"
       },
       {
         email: "admin@example.com",
-        password: "password",
+        password: DEFAULT_PASSWORD,
         role: "admin",
         first_name: "Test",
         last_name: "Admin"

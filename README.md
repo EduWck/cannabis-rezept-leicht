@@ -32,6 +32,9 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Copy the example environment file and add your Supabase credentials.
 cp .env.example .env
 
+# Optionally specify `DEFAULT_USER_PASSWORD` in the `.env` file.
+# This password will be applied to automatically created test users.
+
 # Step 4: Install the necessary dependencies.
 npm i
 

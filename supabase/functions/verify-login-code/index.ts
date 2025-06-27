@@ -2,6 +2,9 @@
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
 
+const DEFAULT_PASSWORD =
+  Deno.env.get("DEFAULT_USER_PASSWORD") ?? crypto.randomUUID();
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -102,7 +105,7 @@ serve(async (req) => {
       if (userRole === 'doctor' || userRole === 'admin') {
         createOptions = {
           ...createOptions,
-          password: 'password' // Use a simple password for test accounts
+          password: DEFAULT_PASSWORD
         };
       }
       
@@ -144,7 +147,7 @@ serve(async (req) => {
       if (userRole === 'doctor' || userRole === 'admin') {
         try {
           const { error: passwordError } = await supabase.auth.admin.updateUserById(userId, {
-            password: 'password' // Reset to a simple password for test accounts
+            password: DEFAULT_PASSWORD
           });
           
           if (passwordError) {

@@ -58,15 +58,13 @@ serve(async (req) => {
     }
     
     // In a real app, you would send an actual email here
-    // For now, we'll just log the code
+    // For now, we'll just log the code and not return it in the response
     logger.debug(`Login code for ${email}: ${code}`);
     
-    // For demo purposes, we'll return the code in the response
-    // In production, you would never do this!
+    // Only return a success message so the code is not exposed
     return new Response(
-      JSON.stringify({ 
-        message: "Login code sent successfully", 
-        code: code // Only for testing! Remove in production
+      JSON.stringify({
+        message: "Login code sent successfully"
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -38,7 +39,7 @@ const Login = () => {
     
     if (isDoctor && !doctorLoginDetected) {
       setDoctorLoginDetected(true);
-      console.log("DOCTOR LOGIN PARAM DETECTED in URL");
+      logger.debug("DOCTOR LOGIN PARAM DETECTED in URL");
       
       // Show a toast to inform the user
       toast({
@@ -55,7 +56,7 @@ const Login = () => {
   // Effect to redirect user when authenticated
   useEffect(() => {
     if (!authIsLoading && user && userRole && !redirectAttempted) {
-      console.log(`Benutzer authentifiziert mit Rolle: ${userRole}, leite weiter...`);
+      logger.debug(`Benutzer authentifiziert mit Rolle: ${userRole}, leite weiter...`);
       setRedirectAttempted(true);
       
       // Add toast notification to let the user know we're redirecting
@@ -66,7 +67,7 @@ const Login = () => {
       
       // Special handling for doctor accounts - prioritize them with less delay
       if (userRole === 'doctor' || doctorLoginDetected) {
-        console.log("DOCTOR ACCOUNT DETECTED: Using expedited redirect");
+        logger.debug("DOCTOR ACCOUNT DETECTED: Using expedited redirect");
         
         // Immediate toast to indicate rapid redirection
         toast({
@@ -81,14 +82,14 @@ const Login = () => {
       
       // For other roles, use the normal delay
       setTimeout(() => {
-        console.log(`REDIRECT ATTEMPT: Redirecting user with role ${userRole} to appropriate page`);
+        logger.debug(`REDIRECT ATTEMPT: Redirecting user with role ${userRole} to appropriate page`);
         redirectUserBasedOnRole(userRole);
       }, 800);
     } 
     // Handle case when user is loaded but no role detected yet
     else if (!authIsLoading && user && !userRole && loginDetectionCount < 10) {
       setLoginDetectionCount(prev => prev + 1);
-      console.log(`Benutzer authentifiziert, aber keine Rolle erkannt, Versuch ${loginDetectionCount}...`);
+      logger.debug(`Benutzer authentifiziert, aber keine Rolle erkannt, Versuch ${loginDetectionCount}...`);
       
       // Show a toast earlier in the process
       if (loginDetectionCount === 1) {
@@ -100,7 +101,7 @@ const Login = () => {
       
       // Try to get role from email on earlier attempts
       if (loginDetectionCount === 2 && user.email) {
-        console.log("Versuche Rolle aus E-Mail zu bestimmen...");
+        logger.debug("Versuche Rolle aus E-Mail zu bestimmen...");
         const email = user.email.toLowerCase();
         let detectedRole: UserRole | null = null;
         
@@ -113,7 +114,7 @@ const Login = () => {
         }
         
         if (detectedRole) {
-          console.log(`Fallback zur E-Mail-Erkennung für Rolle: ${detectedRole}`);
+          logger.debug(`Fallback zur E-Mail-Erkennung für Rolle: ${detectedRole}`);
           toast({
             title: "Rolle erkannt",
             description: `Sie werden als ${detectedRole} weitergeleitet...`
@@ -121,7 +122,7 @@ const Login = () => {
           
           // Increased timeout to ensure the state updates before redirect
           setTimeout(() => {
-            console.log(`REDIRECT ATTEMPT from email detection: Redirecting as ${detectedRole}`);
+            logger.debug(`REDIRECT ATTEMPT from email detection: Redirecting as ${detectedRole}`);
             redirectUserBasedOnRole(detectedRole as UserRole);
           }, 800);
         }
@@ -145,7 +146,7 @@ const Login = () => {
         <p>Sie sind bereits angemeldet. Weiterleitung...</p>
         <Button 
           onClick={() => {
-            console.log(`Manual redirect attempt for role: ${userRole}`);
+            logger.debug(`Manual redirect attempt for role: ${userRole}`);
             redirectUserBasedOnRole(userRole);
           }} 
           className="mt-4"

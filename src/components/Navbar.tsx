@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
@@ -38,7 +39,7 @@ export default function Navbar() {
   let user = null;
   let userRole = null;
   let signOut = async () => {
-    console.error("Sign out not available - AuthContext not found");
+    logger.error("Sign out not available - AuthContext not found");
   };
   let isLoading = false;
   
@@ -50,7 +51,7 @@ export default function Navbar() {
     signOut = auth.signOut;
     isLoading = auth.isLoading;
   } catch (error) {
-    console.error("AuthContext nicht verfügbar in NavBar:", error);
+    logger.error("AuthContext nicht verfügbar in NavBar:", error);
     // Fallback-Werte werden oben bereits definiert
   }
 

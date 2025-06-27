@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,10 +13,10 @@ export function useSignupMethods() {
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string): Promise<boolean> => {
     try {
       setIsProcessing(true);
-      console.log("Attempting to sign up with email:", email);
+      logger.debug("Attempting to sign up with email:", email);
       
       if (!email || !password) {
-        console.error("Email or password missing");
+        logger.error("Email or password missing");
         toast({
           title: "Registrierung fehlgeschlagen",
           description: "E-Mail und Passwort werden benötigt",
@@ -30,7 +31,7 @@ export function useSignupMethods() {
       // Set redirect URL for email confirmation
       const redirectUrl = `${window.location.origin}/login`;
       
-      console.log("Creating new user account...");
+      logger.debug("Creating new user account...");
       
       const { data, error } = await supabase.auth.signUp({
         email: normalizedEmail,
@@ -46,7 +47,7 @@ export function useSignupMethods() {
       });
 
       if (error) {
-        console.error("Signup error:", error.message);
+        logger.error("Signup error:", error.message);
         
         // Handle specific error cases
         if (error.message.includes('already registered')) {
@@ -65,12 +66,12 @@ export function useSignupMethods() {
         return false;
       }
 
-      console.log("Signup successful:", data.user?.id);
+      logger.debug("Signup successful:", data.user?.id);
       
       // If user was created successfully, create profile
       if (data.user) {
         try {
-          console.log("Creating user profile...");
+          logger.debug("Creating user profile...");
           
           const { error: profileError } = await supabase
             .from("profiles")
@@ -85,17 +86,17 @@ export function useSignupMethods() {
             });
             
           if (profileError) {
-            console.error("Error creating profile:", profileError);
+            logger.error("Error creating profile:", profileError);
             toast({
               title: "Warnung",
               description: "Konto wurde erstellt, aber Profil konnte nicht vollständig eingerichtet werden.",
               variant: "destructive"
             });
           } else {
-            console.log("Profile created successfully");
+            logger.debug("Profile created successfully");
           }
         } catch (profileError) {
-          console.error("Unexpected error creating profile:", profileError);
+          logger.error("Unexpected error creating profile:", profileError);
         }
       }
       
@@ -108,7 +109,7 @@ export function useSignupMethods() {
       
       return true;
     } catch (error: any) {
-      console.error("Unexpected signup error:", error.message);
+      logger.error("Unexpected signup error:", error.message);
       toast({
         title: "Unerwarteter Fehler", 
         description: "Bei der Registrierung ist ein unerwarteter Fehler aufgetreten.", 

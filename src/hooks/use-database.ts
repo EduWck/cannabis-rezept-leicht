@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
@@ -35,7 +36,7 @@ export function useDbQuery<T>() {
             result = response as T[];
           }
         } catch (error) {
-          console.error('Error fetching data:', error);
+          logger.error('Error fetching data:', error);
           const errorTitle = options?.errorTitle || "Fehler";
           const errorMessage = options?.errorMessage || "Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.";
           
@@ -57,7 +58,7 @@ export function useDbQuery<T>() {
       setLoading(false);
       return result;
     } catch (error) {
-      console.error('Error in executeQuery:', error);
+      logger.error('Error in executeQuery:', error);
       toast({
         title: options?.errorTitle || "Fehler",
         description: options?.errorMessage || "Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.",

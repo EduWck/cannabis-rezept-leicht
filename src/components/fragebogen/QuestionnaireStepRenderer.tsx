@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import PharmacyOverviewStep from "./PharmacyOverviewStep";
 import TreatmentTypeStep from "./TreatmentTypeStep";
@@ -141,11 +142,11 @@ const QuestionnaireStepRenderer = ({
   onSkipToFeedback,
   handlers
 }: QuestionnaireStepRendererProps) => {
-  console.log("=== QuestionnaireStepRenderer Debug ===");
-  console.log("Current step:", step);
-  console.log("Selected products:", selectedProducts);
-  console.log("Mock products:", mockProducts);
-  console.log("Mock pharmacies:", mockPharmacies);
+  logger.debug("=== QuestionnaireStepRenderer Debug ===");
+  logger.debug("Current step:", step);
+  logger.debug("Selected products:", selectedProducts);
+  logger.debug("Mock products:", mockProducts);
+  logger.debug("Mock pharmacies:", mockPharmacies);
 
   switch (step) {
     case 0:
@@ -262,11 +263,11 @@ const QuestionnaireStepRenderer = ({
         );
       }
     case 9:
-      console.log("=== Checkout Step Debug ===");
-      console.log("Passing to CheckoutStep - selectedProducts:", selectedProducts);
-      console.log("Passing to CheckoutStep - products:", mockProducts);
-      console.log("Passing to CheckoutStep - pharmacies:", mockPharmacies);
-      console.log("Total amount calculation result:", calculateTotalAmount(selectedProducts));
+      logger.debug("=== Checkout Step Debug ===");
+      logger.debug("Passing to CheckoutStep - selectedProducts:", selectedProducts);
+      logger.debug("Passing to CheckoutStep - products:", mockProducts);
+      logger.debug("Passing to CheckoutStep - pharmacies:", mockPharmacies);
+      logger.debug("Total amount calculation result:", calculateTotalAmount(selectedProducts));
       
       return (
         <CheckoutStep

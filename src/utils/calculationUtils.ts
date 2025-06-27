@@ -1,26 +1,27 @@
+import { logger } from "@/lib/logger";
 
 import { mockProducts } from '@/data/mockData';
 
 export const calculateTotalAmount = (selectedProducts: Record<string, { quantity: number; pharmacyId: string }>) => {
-  console.log("=== Calculating total amount ===");
-  console.log("Selected products:", selectedProducts);
-  console.log("Available mock products:", mockProducts);
+  logger.debug("=== Calculating total amount ===");
+  logger.debug("Selected products:", selectedProducts);
+  logger.debug("Available mock products:", mockProducts);
   
   let productTotal = 0;
   
   Object.entries(selectedProducts).forEach(([productId, selection]) => {
-    console.log(`Processing product ID: ${productId}`, selection);
+    logger.debug(`Processing product ID: ${productId}`, selection);
     
     const product = mockProducts.find(p => p.id === productId);
-    console.log(`Found product:`, product);
+    logger.debug(`Found product:`, product);
     
     if (product && selection.quantity > 0) {
       const price = product.pricePerGram;
       const total = selection.quantity * price;
       productTotal += total;
-      console.log(`Product ${product.name}: ${selection.quantity} x ${price} = ${total}`);
+      logger.debug(`Product ${product.name}: ${selection.quantity} x ${price} = ${total}`);
     } else {
-      console.log(`Product ${productId} not found or quantity is 0`);
+      logger.debug(`Product ${productId} not found or quantity is 0`);
     }
   });
   
@@ -28,12 +29,12 @@ export const calculateTotalAmount = (selectedProducts: Record<string, { quantity
   const shippingFee = productTotal < 100 ? 10.0 : 0;
   const finalTotal = productTotal + prescriptionFee + shippingFee;
   
-  console.log("=== Calculation Summary ===");
-  console.log("Product total:", productTotal);
-  console.log("Prescription fee:", prescriptionFee);
-  console.log("Shipping fee:", shippingFee);
-  console.log("Final total:", finalTotal);
-  console.log("=== End Calculation ===");
+  logger.debug("=== Calculation Summary ===");
+  logger.debug("Product total:", productTotal);
+  logger.debug("Prescription fee:", prescriptionFee);
+  logger.debug("Shipping fee:", shippingFee);
+  logger.debug("Final total:", finalTotal);
+  logger.debug("=== End Calculation ===");
   
   return finalTotal;
 };

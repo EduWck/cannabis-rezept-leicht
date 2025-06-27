@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState, useEffect } from "react";
 import { Session, User } from "@supabase/supabase-js";
@@ -17,12 +18,12 @@ export function useSession() {
     const setupAuthListener = () => {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (event, newSession) => {
-          console.log("Auth state changed:", event, newSession?.user?.id);
+          logger.debug("Auth state changed:", event, newSession?.user?.id);
           
           if (!mounted) return;
           
           if (event === 'SIGNED_OUT') {
-            console.log("User signed out, clearing session data");
+            logger.debug("User signed out, clearing session data");
             setSession(null);
             setUser(null);
             setProfile(null);
@@ -43,9 +44,9 @@ export function useSession() {
     // Check for existing session
     const checkSession = async () => {
       try {
-        console.log("Checking for existing session");
+        logger.debug("Checking for existing session");
         const { data: { session: currentSession } } = await supabase.auth.getSession();
-        console.log("Existing session check:", currentSession ? `Found session for user ${currentSession.user.id}` : "No session");
+        logger.debug("Existing session check:", currentSession ? `Found session for user ${currentSession.user.id}` : "No session");
         
         if (!mounted) return;
         
@@ -57,7 +58,7 @@ export function useSession() {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("Error checking session:", error);
+        logger.error("Error checking session:", error);
         if (mounted) {
           setIsLoading(false);
         }

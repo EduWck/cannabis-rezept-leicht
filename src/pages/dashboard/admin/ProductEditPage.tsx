@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -93,7 +94,7 @@ const ProductEditPage = () => {
 
     setIsLoading(true);
     try {
-      console.log("Saving product:", productData);
+      logger.debug("Saving product:", productData);
       
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));

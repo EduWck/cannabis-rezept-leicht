@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,18 +19,18 @@ const Index = () => {
   // Redirect logged in users appropriately
   useEffect(() => {
     if (!isLoading && user && userRole) {
-      console.log("Index page: user is logged in with role", userRole);
+      logger.debug("Index page: user is logged in with role", userRole);
       
       // Add redirect based on role
       if (userRole === "patient") {
-        console.log("Index: redirecting patient to dashboard/profile");
+        logger.debug("Index: redirecting patient to dashboard/profile");
         toast({
           title: "Weiterleitung",
           description: "Sie werden zum Patienten-Dashboard weitergeleitet..."
         });
         navigate("/dashboard/profile", { replace: true });
       } else if (userRole === "doctor") {
-        console.log("Index: redirecting doctor to dashboard");
+        logger.debug("Index: redirecting doctor to dashboard");
         toast({
           title: "Arzt-Weiterleitung",
           description: "Sie werden zum Arzt-Dashboard weitergeleitet..."
@@ -40,7 +41,7 @@ const Index = () => {
           navigate("/dashboard", { replace: true });
         }, 100);
       } else if (userRole === "admin") {
-        console.log("Index: redirecting admin to dashboard");
+        logger.debug("Index: redirecting admin to dashboard");
         toast({
           title: "Admin-Weiterleitung",
           description: "Sie werden zum Admin-Dashboard weitergeleitet..."

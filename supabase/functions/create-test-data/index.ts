@@ -1,3 +1,4 @@
+import { logger } from "../_shared/logger.ts";
 
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
@@ -21,7 +22,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
     // Create test users first to ensure they exist
-    console.log("Creating test users first");
+    logger.debug("Creating test users first");
     
     // Directly create test users without invoking edge function to avoid circular dependencies
     const testUsers = [
@@ -54,14 +55,14 @@ serve(async (req) => {
     // Process each user
     for (const user of testUsers) {
       try {
-        console.log(`Processing user: ${user.email} with role ${user.role}`);
+        logger.debug(`Processing user: ${user.email} with role ${user.role}`);
         
         // Check if user already exists
         const { data: existingUsers, error: searchError } = await supabase.auth
           .admin.listUsers({ filter: `email eq "${user.email}"` });
           
         if (searchError) {
-          console.error(`Error searching for user ${user.email}:`, searchError);
+          logger.error('Error searching for user:', searchError);
           userResults.push({ 
             email: user.email, 
             status: "error", 
@@ -73,7 +74,7 @@ serve(async (req) => {
         let userId;
         
         if (existingUsers && existingUsers.users.length > 0) {
-          console.log(`User ${user.email} already exists, updating...`);
+          logger.debug(`User ${user.email} already exists, updating...`);
           
           // Use existing user ID
           userId = existingUsers.users[0].id;
@@ -89,7 +90,7 @@ serve(async (req) => {
             .eq("id", userId);
             
           if (profileError) {
-            console.error(`Error updating profile for ${user.email}:`, profileError);
+            logger.error('Error updating profile:', profileError);
             userResults.push({
               email: user.email,
               status: "warning",
@@ -105,7 +106,7 @@ serve(async (req) => {
             id: userId
           });
         } else {
-          console.log(`Creating new user: ${user.email}`);
+          logger.debug(`Creating new user: ${user.email}`);
           // Create new user
           const { data, error } = await supabase.auth.admin.createUser({
             email: user.email,
@@ -115,7 +116,7 @@ serve(async (req) => {
           });
           
           if (error) {
-            console.error(`Error creating user ${user.email}:`, error);
+            logger.error('Error creating user:', error);
             userResults.push({ 
               email: user.email, 
               status: "error", 
@@ -137,7 +138,7 @@ serve(async (req) => {
             .eq("id", userId);
             
           if (profileError) {
-            console.error(`Error updating profile for ${user.email}:`, profileError);
+            logger.error('Error updating profile:', profileError);
             userResults.push({
               email: user.email,
               status: "warning",
@@ -154,7 +155,7 @@ serve(async (req) => {
           });
         }
       } catch (error) {
-        console.error(`Error processing user ${user.email}:`, error);
+        logger.error('Error processing user:', error);
         userResults.push({ 
           email: user.email, 
           status: "error", 
@@ -163,7 +164,7 @@ serve(async (req) => {
       }
     }
     
-    console.log("User results:", userResults);
+    logger.debug("User results:", userResults);
     
     // Find the test patient by email from our results
     const patientResult = userResults.find(user => user.email === "patient@example.com" && (user.status === "created" || user.status === "updated"));
@@ -180,7 +181,7 @@ serve(async (req) => {
     const patientId = patientResult.id;
     const doctorId = doctorResult.id;
     
-    console.log(`Creating test data for patient ID: ${patientId} and doctor ID: ${doctorId}`);
+    logger.debug(`Creating test data for patient ID: ${patientId} and doctor ID: ${doctorId}`);
     
     // Create test prescriptions with various statuses
     const { data: prescriptionData, error: prescriptionError } = await supabase
@@ -208,7 +209,7 @@ serve(async (req) => {
       .select();
       
     if (prescriptionError) {
-      console.error("Error creating test prescriptions:", prescriptionError);
+      logger.error("Error creating test prescriptions:", prescriptionError);
       throw prescriptionError;
     }
     
@@ -262,7 +263,7 @@ serve(async (req) => {
       ]);
       
     if (orderError) {
-      console.error("Error creating test orders:", orderError);
+      logger.error("Error creating test orders:", orderError);
       throw orderError;
     }
     
@@ -282,7 +283,7 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    console.error("Error creating test data:", error);
+    logger.error("Error creating test data:", error);
     
     return new Response(
       JSON.stringify({ 

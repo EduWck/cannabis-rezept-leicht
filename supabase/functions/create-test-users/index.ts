@@ -1,3 +1,4 @@
+import { logger } from "../_shared/logger.ts";
 
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
@@ -48,7 +49,7 @@ serve(async (req) => {
     
     for (const user of testUsers) {
       try {
-        console.log(`Processing user: ${user.email} with role ${user.role}`);
+        logger.debug(`Processing user: ${user.email} with role ${user.role}`);
         
         // First delete any existing users with this email to ensure clean state
         const { data: existingUsers } = await supabase.auth
@@ -56,13 +57,13 @@ serve(async (req) => {
         
         if (existingUsers && existingUsers.users.length > 0) {
           for (const existingUser of existingUsers.users) {
-            console.log(`Deleting existing user ${user.email} with ID: ${existingUser.id}`);
+            logger.debug(`Deleting existing user ${user.email} with ID: ${existingUser.id}`);
             await supabase.auth.admin.deleteUser(existingUser.id);
           }
         }
         
         // Create the user with password
-        console.log(`Creating user: ${user.email} with role: ${user.role}`);
+        logger.debug(`Creating user: ${user.email} with role: ${user.role}`);
         const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
           email: user.email,
           password: user.password,
@@ -75,10 +76,10 @@ serve(async (req) => {
         });
         
         if (createError) {
-          console.error(`Error creating user ${user.email}:`, createError);
-          results.push({ 
-            email: user.email, 
-            status: "error", 
+          logger.error('Error creating user:', createError);
+          results.push({
+            email: user.email,
+            status: "error",
             message: `Creation failed: ${createError.message}` 
           });
           continue;
@@ -109,7 +110,7 @@ serve(async (req) => {
             .insert([profileData]);
             
           if (profileInsertError) {
-            console.error(`Error creating profile for ${user.email}:`, profileInsertError);
+            logger.error('Error creating profile:', profileInsertError);
             results.push({
               email: user.email,
               status: "warning",
@@ -126,10 +127,10 @@ serve(async (req) => {
             id: newUser.user.id
           });
           
-          console.log(`Successfully created user and profile for ${user.email} with role ${user.role}`);
+          logger.debug(`Successfully created user and profile for ${user.email} with role ${user.role}`);
         }
       } catch (error) {
-        console.error(`Error processing user ${user.email}:`, error);
+        logger.error('Error processing user:', error);
         results.push({ 
           email: user.email, 
           status: "error", 
@@ -151,7 +152,7 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    console.error("Error creating test users:", error);
+    logger.error("Error creating test users:", error);
     
     return new Response(
       JSON.stringify({ 

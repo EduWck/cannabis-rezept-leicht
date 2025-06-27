@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,7 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
       // Auto-format known test accounts
       if (normalizedEmail === "doctor" || normalizedEmail === "arzt") {
         normalizedEmail = "doctor@example.com";
-        console.log("Doctor account detected, normalized to:", normalizedEmail);
+        logger.debug("Doctor account detected, normalized to:", normalizedEmail);
       } else if (normalizedEmail === "admin") {
         normalizedEmail = "admin@example.com";
       }
@@ -49,7 +50,7 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
         normalizedEmail = `${normalizedEmail}@example.com`;
       }
       
-      console.log("Attempting staff login with:", normalizedEmail);
+      logger.debug("Attempting staff login with:", normalizedEmail);
       
       // For test accounts, use the default password if none provided
       const finalPassword = password || "password";
@@ -73,7 +74,7 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
         
         // Force full page reload if it's a doctor account to ensure proper role detection
         if (normalizedEmail.includes('doctor')) {
-          console.log("Doctor login successful, adding extra redirect notification");
+          logger.debug("Doctor login successful, adding extra redirect notification");
           
           // Multiple notifications to ensure the user knows we're working on it
           toast({
@@ -97,7 +98,7 @@ export const StaffLoginForm = ({ signIn, loading, setLoading }: StaffLoginFormPr
         }
       }
     } catch (error: any) {
-      console.error("Login error:", error);
+      logger.error("Login error:", error);
       setError(error.message || "Ungültige Anmeldedaten");
       toast({
         title: "Login fehlgeschlagen",

@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 
 import { useState } from 'react';
 import PharmacySelector from "./PharmacySelector";
@@ -20,10 +21,10 @@ const PharmacyOverviewStep = ({
   const [selectedPharmacies, setSelectedPharmacies] = useState<string[]>([]);
   const [showAllPharmacies, setShowAllPharmacies] = useState(true);
 
-  console.log("=== PharmacyOverviewStep Debug ===");
-  console.log("Selected products:", selectedProducts);
-  console.log("Mock products:", mockProducts);
-  console.log("Mock pharmacies:", mockPharmacies);
+  logger.debug("=== PharmacyOverviewStep Debug ===");
+  logger.debug("Selected products:", selectedProducts);
+  logger.debug("Mock products:", mockProducts);
+  logger.debug("Mock pharmacies:", mockPharmacies);
 
   const handlePharmacyToggle = (pharmacyId: string) => {
     setSelectedPharmacies(prev => {

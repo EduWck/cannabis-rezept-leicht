@@ -1,6 +1,5 @@
 
 import { logger } from "@/lib/logger";
-
 import { useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,42 +23,14 @@ export function useRoleDetection() {
     try {
       logger.debug("Detecting role for user:", user.id);
 
-      // First try to get profile directly
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle(); // Use maybeSingle to avoid errors when no profile exists
 
       if (error) {
         logger.error("Error fetching profile:", error);
-        
-        // If profile doesn't exist, create it
-        if (error.code === 'PGRST116') {
-          logger.debug("Profile not found, creating new profile");
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert({
-              id: user.id,
-              email: user.email || '',
-              role: 'patient'
-            })
-            .select()
-            .single();
-
-          if (createError) {
-            logger.error("Error creating profile:", createError);
-            setIsLoading(false);
-            return;
-          }
-
-          logger.debug("Created new profile:", newProfile);
-          setProfile(newProfile);
-          setUserRole(newProfile.role as UserRole);
-          setIsLoading(false);
-          return;
-        }
-        
         setIsLoading(false);
         return;
       }
@@ -69,8 +40,24 @@ export function useRoleDetection() {
         setProfile(profile);
         setUserRole(profile.role as UserRole);
       } else {
-        logger.debug("No profile found for user");
-        setUserRole(null);
+        logger.debug("No profile found, creating new profile");
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email || '',
+            role: 'patient'
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          logger.error("Error creating profile:", createError);
+        } else {
+          logger.debug("Created new profile:", newProfile);
+          setProfile(newProfile);
+          setUserRole(newProfile.role as UserRole);
+        }
       }
     } catch (error) {
       logger.error("Unexpected error in role detection:", error);

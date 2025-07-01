@@ -1,6 +1,5 @@
 
 import { logger } from "@/lib/logger";
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,47 +18,31 @@ const Index = () => {
   const navigate = useNavigate();
   const [showContent, setShowContent] = useState(false);
 
-  // Show content immediately for non-logged in users or after brief delay
   useEffect(() => {
     if (!isLoading) {
       if (!user) {
-        // Not logged in - show content immediately
         setShowContent(true);
       } else {
-        // Logged in - show content briefly then redirect
         setShowContent(true);
         
         const redirectTimer = setTimeout(() => {
           if (userRole === "patient") {
             logger.debug("Index: redirecting patient to dashboard/profile");
-            toast({
-              title: "Weiterleitung",
-              description: "Sie werden zum Patienten-Dashboard weitergeleitet..."
-            });
             navigate("/dashboard/profile", { replace: true });
           } else if (userRole === "doctor") {
             logger.debug("Index: redirecting doctor to dashboard");
-            toast({
-              title: "Arzt-Weiterleitung", 
-              description: "Sie werden zum Arzt-Dashboard weitergeleitet..."
-            });
             navigate("/dashboard", { replace: true });
           } else if (userRole === "admin") {
             logger.debug("Index: redirecting admin to dashboard");
-            toast({
-              title: "Admin-Weiterleitung",
-              description: "Sie werden zum Admin-Dashboard weitergeleitet..."
-            });
             navigate("/dashboard", { replace: true });
           }
-        }, 2000); // 2 second delay
+        }, 1500);
 
         return () => clearTimeout(redirectTimer);
       }
     }
   }, [user, userRole, isLoading, navigate]);
 
-  // Show loading state only initially
   if (isLoading && !showContent) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
@@ -69,7 +52,6 @@ const Index = () => {
     );
   }
 
-  // Show content with optional redirect notification
   return (
     <div className="bg-background text-foreground">
       {user && userRole && (

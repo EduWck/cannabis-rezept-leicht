@@ -74,11 +74,15 @@ const CheckoutStep = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("=== Form Submit Started ===");
+    console.log("Contact info:", contactInfo);
+    console.log("Payment method:", paymentMethod);
     
     const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'street', 'houseNumber', 'postalCode', 'city'];
     const missingFields = requiredFields.filter(field => !contactInfo[field as keyof typeof contactInfo]);
     
     if (missingFields.length > 0) {
+      console.log("Missing fields:", missingFields);
       toast({
         title: "Fehlende Angaben",
         description: "Bitte füllen Sie alle erforderlichen Felder aus.",
@@ -89,6 +93,7 @@ const CheckoutStep = ({
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(contactInfo.email)) {
+      console.log("Invalid email:", contactInfo.email);
       toast({
         title: "Ungültige E-Mail",
         description: "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
@@ -99,6 +104,7 @@ const CheckoutStep = ({
     
     const phoneRegex = /^[+\d\s()-]{8,20}$/;
     if (!phoneRegex.test(contactInfo.phone)) {
+      console.log("Invalid phone:", contactInfo.phone);
       toast({
         title: "Ungültige Telefonnummer",
         description: "Bitte geben Sie eine gültige Telefonnummer ein.",
@@ -109,6 +115,7 @@ const CheckoutStep = ({
     
     const postalCodeRegex = /^\d{5}$/;
     if (!postalCodeRegex.test(contactInfo.postalCode)) {
+      console.log("Invalid postal code:", contactInfo.postalCode);
       toast({
         title: "Ungültige Postleitzahl",
         description: "Bitte geben Sie eine gültige Postleitzahl ein (5 Ziffern).",
@@ -117,10 +124,21 @@ const CheckoutStep = ({
       return;
     }
     
+    console.log("Validation passed, starting payment processing...");
     setIsProcessing(true);
     
+    toast({
+      title: "Zahlung wird verarbeitet",
+      description: "Bitte warten Sie einen Moment...",
+    });
+    
     setTimeout(() => {
+      console.log("Payment processing completed");
       setIsProcessing(false);
+      toast({
+        title: "Zahlung erfolgreich",
+        description: "Ihre Bestellung wurde erfolgreich abgeschlossen.",
+      });
       onComplete();
     }, 2000);
   };

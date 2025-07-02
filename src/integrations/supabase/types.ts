@@ -17,6 +17,7 @@ export type Database = {
           id: string
           notes: string | null
           patient_id: string
+          prescription_id: string | null
           start_time: string
           status: string | null
           updated_at: string
@@ -28,6 +29,7 @@ export type Database = {
           id?: string
           notes?: string | null
           patient_id: string
+          prescription_id?: string | null
           start_time: string
           status?: string | null
           updated_at?: string
@@ -39,6 +41,7 @@ export type Database = {
           id?: string
           notes?: string | null
           patient_id?: string
+          prescription_id?: string | null
           start_time?: string
           status?: string | null
           updated_at?: string
@@ -56,6 +59,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -324,8 +334,14 @@ export type Database = {
     }
     Functions: {
       get_auth_user_role: {
-        Args: { user_id: string }
+        Args: Record<PropertyKey, never> | { user_id: string }
         Returns: string
+      }
+      place_order_and_update_stock: {
+        Args:
+          | Record<PropertyKey, never>
+          | { _patient_id: string; _prescription_id: string; _items: Json }
+        Returns: undefined
       }
     }
     Enums: {

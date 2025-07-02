@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,7 +34,7 @@ const PatientProfile = () => {
           setProfile(data);
         }
       } catch (error) {
-        logger.error("Error fetching profile:", error);
+        console.error("Error fetching profile:", error);
         toast({
           title: "Fehler",
           description: "Profildaten konnten nicht geladen werden.",
@@ -87,7 +86,7 @@ const PatientProfile = () => {
         description: "Ihre Daten wurden erfolgreich gespeichert."
       });
     } catch (error) {
-      logger.error("Error updating profile:", error);
+      console.error("Error updating profile:", error);
       toast({
         title: "Fehler",
         description: "Profil konnte nicht aktualisiert werden.",

@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import CheckoutOrderSummary from "./CheckoutOrderSummary";
 import { Separator } from "@/components/ui/separator";
 
@@ -51,7 +49,6 @@ const CheckoutStep = ({
   onComplete, 
   onBack 
 }: CheckoutStepProps) => {
-  const { user } = useAuth();
   const [paymentMethod, setPaymentMethod] = useState<'creditCard' | 'paypal' | 'sepa'>('creditCard');
   const [isProcessing, setIsProcessing] = useState(false);
   
@@ -75,7 +72,7 @@ const CheckoutStep = ({
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     const requiredFields = ['firstName', 'lastName', 'email', 'phone', 'street', 'houseNumber', 'postalCode', 'city'];
@@ -121,41 +118,11 @@ const CheckoutStep = ({
     }
     
     setIsProcessing(true);
-
-    const { error } = await supabase.from('orders').insert({
-      patient_id: user.id,
-      total_amount: totalAmount,
-      shipping_address: {
-        firstName: contactInfo.firstName,
-        lastName: contactInfo.lastName,
-        email: contactInfo.email,
-        phone: contactInfo.phone,
-        street: contactInfo.street,
-        houseNumber: contactInfo.houseNumber,
-        postalCode: contactInfo.postalCode,
-        city: contactInfo.city,
-        country: contactInfo.country,
-      },
-      status: 'pending'
-    });
-
-    setIsProcessing(false);
-
-    if (error) {
-      toast({
-        title: 'Fehler',
-        description: 'Bestellung konnte nicht aufgegeben werden.',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    toast({
-      title: 'Bestellung erfolgreich',
-      description: 'Ihre Bestellung wurde erfolgreich aufgegeben.'
-    });
-
-    onComplete();
+    
+    setTimeout(() => {
+      setIsProcessing(false);
+      onComplete();
+    }, 2000);
   };
 
   return (

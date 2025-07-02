@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -148,7 +147,7 @@ export const PatientLoginForm = ({
     }
     
     try {
-      logger.debug(`Attempting to verify code for email: ${normalizedEmail} with code: ${code}`);
+      console.log(`Attempting to verify code for email: ${normalizedEmail} with code: ${code}`);
       const success = await verifyLoginCode(normalizedEmail, code.trim());
       
       if (success) {
@@ -166,7 +165,7 @@ export const PatientLoginForm = ({
         setLoading(false);
       }
     } catch (error: any) {
-      logger.error("Verification error:", error);
+      console.error("Verification error:", error);
       toast({
         title: "Fehler",
         description: error.message || "Verifizierung fehlgeschlagen",

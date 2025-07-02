@@ -65,25 +65,25 @@ const config: Config = {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// Custom cannabis brand colors using HSL variables
+				// Custom cannabis brand colors
 				"cannabis-green": {
-					DEFAULT: "hsl(var(--cannabis-green-500))",
-					50: "hsl(var(--cannabis-green-50))",
-					100: "hsl(var(--cannabis-green-100))",
-					200: "hsl(var(--cannabis-green-200))",
-					300: "hsl(var(--cannabis-green-300))",
-					400: "hsl(var(--cannabis-green-400))",
-					500: "hsl(var(--cannabis-green-500))",
-					600: "hsl(var(--cannabis-green-600))",
-					700: "hsl(var(--cannabis-green-700))",
-					800: "hsl(var(--cannabis-green-800))",
-					900: "hsl(var(--cannabis-green-900))"
+					DEFAULT: "#4CAF50",
+					50: "#E8F5E9",
+					100: "#C8E6C9",
+					200: "#A5D6A7",
+					300: "#81C784",
+					400: "#66BB6A",
+					500: "#4CAF50",
+					600: "#43A047",
+					700: "#388E3C",
+					800: "#2E7D32",
+					900: "#1B5E20"
 				},
 				"dark-gray": {
-					DEFAULT: "hsl(var(--dark-gray))",
-					light: "hsl(var(--dark-gray-light))",
-					medium: "hsl(var(--dark-gray-medium))",
-					dark: "hsl(var(--dark-gray-dark))"
+					DEFAULT: "#1A1F2C",
+					light: "#555555",
+					medium: "#333333",
+					dark: "#222222"
 				},
 			},
 			borderRadius: {

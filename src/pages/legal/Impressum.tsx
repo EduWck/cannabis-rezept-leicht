@@ -63,7 +63,7 @@ const Impressum = () => {
               
               <h2>Streitschlichtung</h2>
               <p>
-                Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="text-cannabis-green-500">https://ec.europa.eu/consumers/odr/</a>.<br />
+                Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noreferrer" className="text-cannabis-green-500">https://ec.europa.eu/consumers/odr/</a>.<br />
                 Unsere E-Mail-Adresse finden Sie oben im Impressum.
               </p>
               <p>

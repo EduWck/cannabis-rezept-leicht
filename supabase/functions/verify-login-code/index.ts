@@ -1,4 +1,3 @@
-import { logger } from "../_shared/logger.ts";
 
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
@@ -41,7 +40,7 @@ serve(async (req) => {
       .maybeSingle();
     
     if (fetchError || !authCode) {
-      logger.error("Invalid code or fetch error:", fetchError);
+      console.error("Invalid code or fetch error:", fetchError);
       return new Response(
         JSON.stringify({ error: "Invalid code" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -50,7 +49,7 @@ serve(async (req) => {
     
     // Check if code is expired
     if (new Date(authCode.expires_at) < new Date()) {
-      logger.error("Code has expired");
+      console.error("Code has expired");
       return new Response(
         JSON.stringify({ error: "Code has expired" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -63,25 +62,25 @@ serve(async (req) => {
     
     if (normalizedEmail.includes('admin')) {
       userRole = 'admin';
-      logger.debug(`Email contains 'admin', setting admin role for: ${normalizedEmail}`);
+      console.log(`Email contains 'admin', setting admin role for: ${normalizedEmail}`);
     } else if (normalizedEmail.includes('doctor') || normalizedEmail.includes('arzt')) {
       userRole = 'doctor';
-      logger.debug(`Email contains 'doctor/arzt', setting doctor role for: ${normalizedEmail}`);
+      console.log(`Email contains 'doctor/arzt', setting doctor role for: ${normalizedEmail}`);
     } else if (normalizedEmail.includes('patient') || normalizedEmail.includes('patien')) {
       userRole = 'patient';
-      logger.debug(`Email contains 'patient', setting patient role for: ${normalizedEmail}`);
+      console.log(`Email contains 'patient', setting patient role for: ${normalizedEmail}`);
     } else {
-      logger.debug(`No role indicator in email, setting default patient role for: ${normalizedEmail}`);
+      console.log(`No role indicator in email, setting default patient role for: ${normalizedEmail}`);
     }
     
-    logger.debug(`Determined role for ${normalizedEmail}: ${userRole}`);
+    console.log(`Determined role for ${normalizedEmail}: ${userRole}`);
     
     // Check if user exists
     const { data: existingUser, error: userError } = await supabase.auth
       .admin.listUsers({ filter: `email eq "${normalizedEmail}"` });
       
     if (userError) {
-      logger.error("Error checking for existing user:", userError);
+      console.error("Error checking for existing user:", userError);
       throw new Error(`Failed to check for existing user: ${userError.message}`);
     }
     
@@ -90,7 +89,7 @@ serve(async (req) => {
     
     if (!existingUser || existingUser.users.length === 0) {
       // User doesn't exist, create a new user
-      logger.debug("User doesn't exist, creating new user with email:", normalizedEmail);
+      console.log("User doesn't exist, creating new user with email:", normalizedEmail);
       
       // For doctor and admin, create with password for email/password login
       let createOptions = {
@@ -110,35 +109,35 @@ serve(async (req) => {
       const { data: newUser, error: signUpError } = await supabase.auth.admin.createUser(createOptions);
       
       if (signUpError) {
-        logger.error("Failed to create new user:", signUpError);
+        console.error("Failed to create new user:", signUpError);
         throw new Error(`Failed to create new user: ${signUpError.message}`);
       }
       
       userData = newUser;
       userId = newUser.user.id;
       
-      logger.debug(`New user created with ID: ${userId}, role: ${userRole}`);
+      console.log(`New user created with ID: ${userId}, role: ${userRole}`);
     } else {
       userData = existingUser.users[0];
       userId = userData.id;
-      logger.debug(`Found existing user with ID: ${userId}`);
+      console.log(`Found existing user with ID: ${userId}`);
       
       // IMPORTANT: Always update user role based on email as highest priority
       // This ensures role consistency and gives email precedence
       try {
-        logger.debug(`Updating user metadata for ${userId}, setting role to: ${userRole}`);
+        console.log(`Updating user metadata for ${userId}, setting role to: ${userRole}`);
         const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(userId, {
           user_metadata: { ...userData.user_metadata, role: userRole }
         });
         
         if (updateError) {
-          logger.error(`Error updating user metadata: ${updateError.message}`);
+          console.error(`Error updating user metadata: ${updateError.message}`);
         } else {
           userData = updatedUser;
-          logger.debug(`User ${userId} updated with role: ${userRole}`);
+          console.log(`User ${userId} updated with role: ${userRole}`);
         }
       } catch (updateError) {
-        logger.error("Error updating user metadata:", updateError);
+        console.error("Error updating user metadata:", updateError);
       }
       
       // For doctor and admin users, make sure they have a password set
@@ -149,12 +148,12 @@ serve(async (req) => {
           });
           
           if (passwordError) {
-            logger.error("Error setting password:", passwordError);
+            console.error("Error setting password:", passwordError);
           } else {
-            logger.debug("Password set for user");
+            console.log("Password set for user");
           }
         } catch (passwordError) {
-          logger.error("Error setting password:", passwordError);
+          console.error("Error setting password:", passwordError);
         }
       }
     }
@@ -169,11 +168,11 @@ serve(async (req) => {
           .maybeSingle();
           
         if (profileError) {
-          logger.error("Error checking profile:", profileError);
+          console.error("Error checking profile:", profileError);
         }
           
         if (!profileData) {
-          logger.debug("Profile doesn't exist, creating new profile for user:", userId);
+          console.log("Profile doesn't exist, creating new profile for user:", userId);
           
           const { error: insertError } = await supabase
             .from("profiles")
@@ -186,9 +185,9 @@ serve(async (req) => {
             });
             
           if (insertError) {
-            logger.error("Error creating profile:", insertError);
+            console.error("Error creating profile:", insertError);
           } else {
-            logger.debug("Profile successfully created with role:", userRole);
+            console.log("Profile successfully created with role:", userRole);
           }
         } else {
           // CRITICAL: Always update existing profile to ensure role is correct
@@ -202,18 +201,18 @@ serve(async (req) => {
             .eq("id", userId);
             
           if (updateProfileError) {
-            logger.error("Error updating profile:", updateProfileError);
+            console.error("Error updating profile:", updateProfileError);
           } else {
-            logger.debug("Profile successfully updated with role:", userRole);
+            console.log("Profile successfully updated with role:", userRole);
           }
           
           // Log if there was a role conflict that we resolved
           if (profileData.role !== userRole) {
-            logger.debug(`Role conflict resolved! Changed from ${profileData.role} to ${userRole} based on email.`);
+            console.log(`Role conflict resolved! Changed from ${profileData.role} to ${userRole} based on email.`);
           }
         }
       } catch (profileError) {
-        logger.error("Error handling profile:", profileError);
+        console.error("Error handling profile:", profileError);
       }
     }
 
@@ -223,7 +222,7 @@ serve(async (req) => {
       .delete()
       .eq("email", normalizedEmail);
     
-    logger.debug("Auth code deleted after successful verification");
+    console.log("Auth code deleted after successful verification");
     
     // Create a magic sign in link for the user
     // NEW: Customize redirect URL based on user role
@@ -232,7 +231,7 @@ serve(async (req) => {
     // For doctor role, directly redirect to dashboard 
     if (userRole === 'doctor') {
       redirectTo = `${new URL(req.url).origin}/dashboard`;
-      logger.debug("DOCTOR ROLE DETECTED: Setting direct dashboard redirect");
+      console.log("DOCTOR ROLE DETECTED: Setting direct dashboard redirect");
     }
     
     const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
@@ -247,14 +246,14 @@ serve(async (req) => {
     });
     
     if (linkError) {
-      logger.error("Error generating magic link:", linkError);
+      console.error("Error generating magic link:", linkError);
       return new Response(
         JSON.stringify({ error: linkError.message }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
-    logger.debug(`Magic link generated for email: ${normalizedEmail} with redirect to: ${redirectTo}`);
+    console.log(`Magic link generated for email: ${normalizedEmail} with redirect to: ${redirectTo}`);
     
     // Return success with user data and magic link
     return new Response(
@@ -277,7 +276,7 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    logger.error("Error verifying login code:", error);
+    console.error("Error verifying login code:", error);
     
     return new Response(
       JSON.stringify({ error: typeof error === 'object' ? error.message || "Failed to verify login code" : String(error) }),

@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 
 import { useEffect, useRef } from "react";
 import { User } from "@supabase/supabase-js";
@@ -16,7 +15,7 @@ export function useAuthProvider() {
   useEffect(() => {
     if (user && (!userRole || !roleDetectionAttempted.current)) {
       roleDetectionAttempted.current = true;
-      logger.debug("Attempting to detect role for user:", user.id);
+      console.log("Attempting to detect role for user:", user.id);
       
       // Use setTimeout to avoid potential deadlocks with auth state change
       setTimeout(() => {
@@ -27,7 +26,7 @@ export function useAuthProvider() {
       roleDetectionAttempted.current = false;
       
       if (userRole) {
-        logger.debug("User logged out, clearing role");
+        console.log("User logged out, clearing role");
         setUserRole(null);
       }
     }

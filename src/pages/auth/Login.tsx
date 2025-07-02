@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -6,7 +5,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2 } from "lucide-react";
 import { PatientLoginForm } from "@/components/auth/PatientLoginForm";
 import { StaffLoginForm } from "@/components/auth/StaffLoginForm";
-import { SignupForm } from "@/components/auth/SignupForm";
 import { DemoAccountsInfo } from "@/components/auth/DemoAccountsInfo";
 import { useLoginLogic } from "@/hooks/use-login-logic";
 import { useEffect, useState } from "react";
@@ -39,7 +37,7 @@ const Login = () => {
     
     if (isDoctor && !doctorLoginDetected) {
       setDoctorLoginDetected(true);
-      logger.debug("DOCTOR LOGIN PARAM DETECTED in URL");
+      console.log("DOCTOR LOGIN PARAM DETECTED in URL");
       
       // Show a toast to inform the user
       toast({
@@ -56,7 +54,7 @@ const Login = () => {
   // Effect to redirect user when authenticated
   useEffect(() => {
     if (!authIsLoading && user && userRole && !redirectAttempted) {
-      logger.debug(`Benutzer authentifiziert mit Rolle: ${userRole}, leite weiter...`);
+      console.log(`Benutzer authentifiziert mit Rolle: ${userRole}, leite weiter...`);
       setRedirectAttempted(true);
       
       // Add toast notification to let the user know we're redirecting
@@ -67,7 +65,7 @@ const Login = () => {
       
       // Special handling for doctor accounts - prioritize them with less delay
       if (userRole === 'doctor' || doctorLoginDetected) {
-        logger.debug("DOCTOR ACCOUNT DETECTED: Using expedited redirect");
+        console.log("DOCTOR ACCOUNT DETECTED: Using expedited redirect");
         
         // Immediate toast to indicate rapid redirection
         toast({
@@ -82,14 +80,14 @@ const Login = () => {
       
       // For other roles, use the normal delay
       setTimeout(() => {
-        logger.debug(`REDIRECT ATTEMPT: Redirecting user with role ${userRole} to appropriate page`);
+        console.log(`REDIRECT ATTEMPT: Redirecting user with role ${userRole} to appropriate page`);
         redirectUserBasedOnRole(userRole);
       }, 800);
     } 
     // Handle case when user is loaded but no role detected yet
     else if (!authIsLoading && user && !userRole && loginDetectionCount < 10) {
       setLoginDetectionCount(prev => prev + 1);
-      logger.debug(`Benutzer authentifiziert, aber keine Rolle erkannt, Versuch ${loginDetectionCount}...`);
+      console.log(`Benutzer authentifiziert, aber keine Rolle erkannt, Versuch ${loginDetectionCount}...`);
       
       // Show a toast earlier in the process
       if (loginDetectionCount === 1) {
@@ -101,7 +99,7 @@ const Login = () => {
       
       // Try to get role from email on earlier attempts
       if (loginDetectionCount === 2 && user.email) {
-        logger.debug("Versuche Rolle aus E-Mail zu bestimmen...");
+        console.log("Versuche Rolle aus E-Mail zu bestimmen...");
         const email = user.email.toLowerCase();
         let detectedRole: UserRole | null = null;
         
@@ -114,7 +112,7 @@ const Login = () => {
         }
         
         if (detectedRole) {
-          logger.debug(`Fallback zur E-Mail-Erkennung für Rolle: ${detectedRole}`);
+          console.log(`Fallback zur E-Mail-Erkennung für Rolle: ${detectedRole}`);
           toast({
             title: "Rolle erkannt",
             description: `Sie werden als ${detectedRole} weitergeleitet...`
@@ -122,7 +120,7 @@ const Login = () => {
           
           // Increased timeout to ensure the state updates before redirect
           setTimeout(() => {
-            logger.debug(`REDIRECT ATTEMPT from email detection: Redirecting as ${detectedRole}`);
+            console.log(`REDIRECT ATTEMPT from email detection: Redirecting as ${detectedRole}`);
             redirectUserBasedOnRole(detectedRole as UserRole);
           }, 800);
         }
@@ -146,7 +144,7 @@ const Login = () => {
         <p>Sie sind bereits angemeldet. Weiterleitung...</p>
         <Button 
           onClick={() => {
-            logger.debug(`Manual redirect attempt for role: ${userRole}`);
+            console.log(`Manual redirect attempt for role: ${userRole}`);
             redirectUserBasedOnRole(userRole);
           }} 
           className="mt-4"
@@ -182,9 +180,8 @@ const Login = () => {
       )}
       
       <Tabs defaultValue="patient" className="w-full max-w-md">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="patient">Anmelden</TabsTrigger>
-          <TabsTrigger value="signup">Registrieren</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="patient">Patient</TabsTrigger>
           <TabsTrigger value="staff">Arzt / Admin</TabsTrigger>
         </TabsList>
         
@@ -195,13 +192,6 @@ const Login = () => {
             loading={loading}
             setLoading={setLoading}
           />
-        </TabsContent>
-        
-        <TabsContent value="signup">
-          <SignupForm onSuccess={() => toast({
-            title: "Registrierung erfolgreich",
-            description: "Sie können sich jetzt anmelden."
-          })} />
         </TabsContent>
         
         <TabsContent value="staff">

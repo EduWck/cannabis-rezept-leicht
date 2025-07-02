@@ -1,4 +1,3 @@
-import { logger } from "../_shared/logger.ts";
 
 import { serve } from "https://deno.land/std@0.188.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.23.0";
@@ -50,7 +49,7 @@ serve(async (req) => {
       });
 
     if (insertError) {
-      logger.error("Error inserting auth code:", insertError);
+      console.error("Error inserting auth code:", insertError);
       return new Response(
         JSON.stringify({ error: "Failed to create login code" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -59,7 +58,7 @@ serve(async (req) => {
     
     // In a real app, you would send an actual email here
     // For now, we'll just log the code
-    logger.debug(`Login code for ${email}: ${code}`);
+    console.log(`Login code for ${email}: ${code}`);
     
     // For demo purposes, we'll return the code in the response
     // In production, you would never do this!
@@ -72,7 +71,7 @@ serve(async (req) => {
     );
     
   } catch (error) {
-    logger.error("Error sending login code:", error);
+    console.error("Error sending login code:", error);
     
     return new Response(
       JSON.stringify({ error: typeof error === 'object' && error.message ? error.message : "Failed to send login code" }),

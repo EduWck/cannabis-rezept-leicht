@@ -8,14 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import "./App.css";
 
 // Create a client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
+const queryClient = new QueryClient();
 
 function App() {
   useEffect(() => {
@@ -48,14 +41,7 @@ function App() {
           <div className="bg-accent bg-accent-3"></div>
           
           <BrowserRouter>
-            <Suspense fallback={
-              <div className="flex h-screen w-full items-center justify-center">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cannabis-green-500 mx-auto mb-4"></div>
-                  <p>Wird geladen...</p>
-                </div>
-              </div>
-            }>
+            <Suspense fallback={<div className="flex h-screen w-full items-center justify-center">Wird geladen...</div>}>
               <Routes>
                 {AppRoutes}
               </Routes>

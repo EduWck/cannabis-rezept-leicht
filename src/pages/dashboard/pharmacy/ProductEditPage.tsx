@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -289,7 +288,7 @@ const ProductEditPage = () => {
 
     setIsLoading(true);
     try {
-      logger.debug("Saving product:", productData);
+      console.log("Saving product:", productData);
       
       await new Promise(resolve => setTimeout(resolve, 1000));
       

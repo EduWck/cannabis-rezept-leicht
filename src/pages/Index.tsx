@@ -1,6 +1,5 @@
 
-import { logger } from "@/lib/logger";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import Hero from "@/components/Hero";
@@ -11,71 +10,48 @@ import TrustSection from "@/components/TrustSection";
 import OptionsSection from "@/components/OptionsSection";
 import ScrollToTopButton from "@/components/ScrollToTopButton";
 import { toast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
 
 const Index = () => {
   const { user, userRole, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [showContent, setShowContent] = useState(false);
 
+  // Redirect logged in users appropriately
   useEffect(() => {
-    if (!isLoading) {
-      if (!user) {
-        setShowContent(true);
-      } else {
-        setShowContent(true);
+    if (!isLoading && user && userRole) {
+      console.log("Index page: user is logged in with role", userRole);
+      
+      // Add redirect based on role
+      if (userRole === "patient") {
+        console.log("Index: redirecting patient to dashboard/profile");
+        toast({
+          title: "Weiterleitung",
+          description: "Sie werden zum Patienten-Dashboard weitergeleitet..."
+        });
+        navigate("/dashboard/profile", { replace: true });
+      } else if (userRole === "doctor") {
+        console.log("Index: redirecting doctor to dashboard");
+        toast({
+          title: "Arzt-Weiterleitung",
+          description: "Sie werden zum Arzt-Dashboard weitergeleitet..."
+        });
         
-        const redirectTimer = setTimeout(() => {
-          if (userRole === "patient") {
-            logger.debug("Index: redirecting patient to dashboard/profile");
-            navigate("/dashboard/profile", { replace: true });
-          } else if (userRole === "doctor") {
-            logger.debug("Index: redirecting doctor to dashboard");
-            navigate("/dashboard", { replace: true });
-          } else if (userRole === "admin") {
-            logger.debug("Index: redirecting admin to dashboard");
-            navigate("/dashboard", { replace: true });
-          }
-        }, 1500);
-
-        return () => clearTimeout(redirectTimer);
+        // Direct navigation for doctors - consistent with other redirects
+        setTimeout(() => {
+          navigate("/dashboard", { replace: true });
+        }, 100);
+      } else if (userRole === "admin") {
+        console.log("Index: redirecting admin to dashboard");
+        toast({
+          title: "Admin-Weiterleitung",
+          description: "Sie werden zum Admin-Dashboard weitergeleitet..."
+        });
+        navigate("/dashboard", { replace: true });
       }
     }
   }, [user, userRole, isLoading, navigate]);
 
-  if (isLoading && !showContent) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-cannabis-green-500 mb-4" />
-        <p className="text-muted-foreground">Wird geladen...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-background text-foreground">
-      {user && userRole && (
-        <div className="fixed top-4 right-4 z-50 bg-cannabis-green-100 dark:bg-cannabis-green-900 border border-cannabis-green-300 dark:border-cannabis-green-700 rounded-lg p-4 shadow-lg">
-          <div className="flex items-center space-x-3">
-            <Loader2 className="h-5 w-5 animate-spin text-cannabis-green-600" />
-            <div>
-              <p className="text-sm font-medium text-cannabis-green-800 dark:text-cannabis-green-200">
-                Willkommen zurück!
-              </p>
-              <p className="text-xs text-cannabis-green-600 dark:text-cannabis-green-400">
-                Weiterleitung zum Dashboard...
-              </p>
-            </div>
-            <button 
-              onClick={() => navigate("/dashboard")}
-              className="text-xs bg-cannabis-green-600 hover:bg-cannabis-green-700 text-white px-3 py-1 rounded"
-            >
-              Jetzt gehen
-            </button>
-          </div>
-        </div>
-      )}
-      
       <Hero />
       <ProcessSection />
       <BenefitsSection />

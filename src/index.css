@@ -45,23 +45,17 @@
     --bg-accent-1: 210 100% 97%;
     --bg-accent-2: 142 60% 97%;
 
-    /* Dark Gray Colors */
-    --dark-gray: 210 15% 15%;
-    --dark-gray-light: 210 10% 35%;
-    --dark-gray-medium: 210 12% 20%;
-    --dark-gray-dark: 210 18% 10%;
-
-    /* Cannabis Green Variables as HSL */
-    --cannabis-green-50: 122 39% 93%;
-    --cannabis-green-100: 122 39% 83%;
-    --cannabis-green-200: 122 40% 73%;
-    --cannabis-green-300: 122 40% 63%;
-    --cannabis-green-400: 122 39% 59%;
-    --cannabis-green-500: 122 39% 49%;
-    --cannabis-green-600: 122 43% 44%;
-    --cannabis-green-700: 122 47% 39%;
-    --cannabis-green-800: 122 52% 33%;
-    --cannabis-green-900: 122 65% 22%;
+    /* Cannabis Green Variables */
+    --cannabis-green-50: #E8F5E9;
+    --cannabis-green-100: #C8E6C9;
+    --cannabis-green-200: #A5D6A7;
+    --cannabis-green-300: #81C784;
+    --cannabis-green-400: #66BB6A;
+    --cannabis-green-500: #4CAF50;
+    --cannabis-green-600: #43A047;
+    --cannabis-green-700: #388E3C;
+    --cannabis-green-800: #2E7D32;
+    --cannabis-green-900: #1B5E20;
   }
 
   .dark {
@@ -101,17 +95,17 @@
     --bg-accent-1: 222 30% 18%;
     --bg-accent-2: 142 30% 20%;
 
-    /* Dark Mode Cannabis Green Variables as HSL */
-    --cannabis-green-50: 122 65% 22%;
-    --cannabis-green-100: 122 52% 33%;
-    --cannabis-green-200: 122 47% 39%;
-    --cannabis-green-300: 122 43% 44%;
-    --cannabis-green-400: 122 39% 49%;
-    --cannabis-green-500: 122 39% 59%;
-    --cannabis-green-600: 122 40% 63%;
-    --cannabis-green-700: 122 40% 73%;
-    --cannabis-green-800: 122 39% 83%;
-    --cannabis-green-900: 122 39% 93%;
+    /* Dark Mode Cannabis Green Variables */
+    --cannabis-green-50: #1B5E20;
+    --cannabis-green-100: #2E7D32;
+    --cannabis-green-200: #388E3C;
+    --cannabis-green-300: #43A047;
+    --cannabis-green-400: #4CAF50;
+    --cannabis-green-500: #66BB6A;
+    --cannabis-green-600: #81C784;
+    --cannabis-green-700: #A5D6A7;
+    --cannabis-green-800: #C8E6C9;
+    --cannabis-green-900: #E8F5E9;
   }
 }
 

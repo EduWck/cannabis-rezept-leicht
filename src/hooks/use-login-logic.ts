@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -31,7 +30,7 @@ export function useLoginLogic() {
       // Check for hash parameters that might indicate a magic link or token
       const hash = window.location.hash;
       if (hash && (hash.includes('access_token') || hash.includes('refresh_token'))) {
-        logger.debug("Hash-Parameter erkannt, möglicher Auth-Callback:", hash);
+        console.log("Hash-Parameter erkannt, möglicher Auth-Callback:", hash);
         toast({
           title: "Automatische Anmeldung",
           description: "Sie werden angemeldet..."
@@ -49,7 +48,7 @@ export function useLoginLogic() {
       // warten wir eine Weile und versuchen bis zu 5 Mal
       if (!userRole) {
         if (roleDetectionAttempts < 5) {
-          logger.debug(`Warte auf Rollenerkennung, Versuch ${roleDetectionAttempts + 1}/5...`);
+          console.log(`Warte auf Rollenerkennung, Versuch ${roleDetectionAttempts + 1}/5...`);
           
           // Zeige nach dem ersten Versuch eine Benachrichtigung
           if (roleDetectionAttempts === 0) {
@@ -81,7 +80,7 @@ export function useLoginLogic() {
               fallbackRole = 'patient'; // Default-Fallback
             }
             
-            logger.debug(`Nach 5 Versuchen: Fallback-Rolle aus E-Mail bestimmt: ${fallbackRole}`);
+            console.log(`Nach 5 Versuchen: Fallback-Rolle aus E-Mail bestimmt: ${fallbackRole}`);
             toast({
               title: "Rolle bestimmt",
               description: `Sie werden als ${fallbackRole} eingestuft und weitergeleitet.`
@@ -90,32 +89,32 @@ export function useLoginLogic() {
             // Weiterleitung mit Fallback-Rolle
             setPendingRedirect(true);
             setTimeout(() => {
-              logger.debug(`REDIRECT with fallback role: ${fallbackRole}`);
+              console.log(`REDIRECT with fallback role: ${fallbackRole}`);
               redirectUserBasedOnRole(fallbackRole as UserRole);
             }, 1200);
           }
         }
       } else {
         // Wir haben einen Benutzer und eine Rolle, also leiten wir weiter
-        logger.debug(`Benutzer angemeldet mit Rolle: ${userRole}, Weiterleitung...`);
+        console.log(`Benutzer angemeldet mit Rolle: ${userRole}, Weiterleitung...`);
         setPendingRedirect(true);
         
         // Special handling for doctor accounts
         if (userRole === 'doctor') {
-          logger.debug("DOCTOR LOGIN DETECTED - Using special delay for doctor accounts");
+          console.log("DOCTOR LOGIN DETECTED - Using special delay for doctor accounts");
           toast({
             title: "Arzt-Login erkannt",
             description: "Sie werden zum Arzt-Dashboard weitergeleitet..."
           });
           
           setTimeout(() => {
-            logger.debug(`DOCTOR REDIRECT from main detection - direct to dashboard`);
+            console.log(`DOCTOR REDIRECT from main detection - direct to dashboard`);
             navigate('/dashboard', { replace: true });
           }, 1200);
         } else {
           // Standard handling for other roles
           setTimeout(() => {
-            logger.debug(`REDIRECT from main detection: ${userRole}`);
+            console.log(`REDIRECT from main detection: ${userRole}`);
             redirectUserBasedOnRole(userRole);
           }, 800);
         }
@@ -125,10 +124,10 @@ export function useLoginLogic() {
 
   // Helper function to redirect users based on their role
   const redirectUserBasedOnRole = (role: UserRole) => {
-    logger.debug("Leite weiter basierend auf Rolle:", role);
+    console.log("Leite weiter basierend auf Rolle:", role);
     
     if (redirectAttempts.current > 5) {
-      logger.error("Zu viele Weiterleitungsversuche, mögliche Weiterleitungsschleife erkannt");
+      console.error("Zu viele Weiterleitungsversuche, mögliche Weiterleitungsschleife erkannt");
       toast({
         title: "Weiterleitungsfehler", 
         description: "Zu viele Weiterleitungen erkannt. Bitte laden Sie die Seite neu.", 
@@ -151,18 +150,18 @@ export function useLoginLogic() {
       (role === "doctor" && currentPath === doctorMainRoute) ||
       (role === "admin" && currentPath === adminMainRoute)
     ) {
-      logger.debug("Bereits auf der korrekten Route für die Rolle, keine Weiterleitung nötig");
+      console.log("Bereits auf der korrekten Route für die Rolle, keine Weiterleitung nötig");
       return;
     }
     
     // Special logs for doctor role to debug the issue
     if (role === "doctor") {
-      logger.debug("DOCTOR REDIRECT: Attempting to redirect doctor to dashboard");
-      logger.debug("Current path:", currentPath);
-      logger.debug("Target path:", doctorMainRoute);
+      console.log("DOCTOR REDIRECT: Attempting to redirect doctor to dashboard");
+      console.log("Current path:", currentPath);
+      console.log("Target path:", doctorMainRoute);
       
       // Force direct navigation for doctor role
-      logger.debug("Using direct navigation for doctor role");
+      console.log("Using direct navigation for doctor role");
       navigate("/dashboard", { replace: true });
       
       // Add a confirmation toast after redirection attempt
@@ -177,15 +176,15 @@ export function useLoginLogic() {
     // Redirect based on role with forced navigation
     switch(role) {
       case 'patient':
-        logger.debug("Leite Patient zu dashboard/profile weiter");
+        console.log("Leite Patient zu dashboard/profile weiter");
         navigate(patientMainRoute, { replace: true });
         break;
       case 'admin':
-        logger.debug("Leite Admin zum Dashboard weiter");
+        console.log("Leite Admin zum Dashboard weiter");
         navigate(adminMainRoute, { replace: true });
         break;
       default:
-        logger.debug("Unbekannte Rolle, leite zum Dashboard weiter");
+        console.log("Unbekannte Rolle, leite zum Dashboard weiter");
         navigate('/dashboard', { replace: true });
     }
     

@@ -53,10 +53,10 @@ const CookiePolicy = () => {
               
               <h3>Anleitung zur Cookie-Verwaltung in gängigen Browsern:</h3>
               <ul>
-                <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="text-cannabis-green-500">Google Chrome</a></li>
-                <li><a href="https://support.mozilla.org/de/kb/cookies-erlauben-und-ablehnen" target="_blank" rel="noopener noreferrer" className="text-cannabis-green-500">Mozilla Firefox</a></li>
-                <li><a href="https://support.apple.com/de-de/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-cannabis-green-500">Safari</a></li>
-                <li><a href="https://support.microsoft.com/de-de/help/4027947/microsoft-edge-delete-cookies" target="_blank" rel="noopener noreferrer" className="text-cannabis-green-500">Microsoft Edge</a></li>
+                <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noreferrer" className="text-cannabis-green-500">Google Chrome</a></li>
+                <li><a href="https://support.mozilla.org/de/kb/cookies-erlauben-und-ablehnen" target="_blank" rel="noreferrer" className="text-cannabis-green-500">Mozilla Firefox</a></li>
+                <li><a href="https://support.apple.com/de-de/guide/safari/sfri11471/mac" target="_blank" rel="noreferrer" className="text-cannabis-green-500">Safari</a></li>
+                <li><a href="https://support.microsoft.com/de-de/help/4027947/microsoft-edge-delete-cookies" target="_blank" rel="noreferrer" className="text-cannabis-green-500">Microsoft Edge</a></li>
               </ul>
               
               <h2>Änderungen an unserer Cookie-Richtlinie</h2>

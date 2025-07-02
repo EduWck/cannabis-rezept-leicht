@@ -1,4 +1,3 @@
-import { logger } from "@/lib/logger";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,10 +36,10 @@ interface CheckoutOrderSummaryProps {
 }
 
 const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: CheckoutOrderSummaryProps) => {
-  logger.debug("=== CheckoutOrderSummary Debug ===");
-  logger.debug("Selected products:", selectedProducts);
-  logger.debug("Available products:", products);
-  logger.debug("Available pharmacies:", pharmacies);
+  console.log("=== CheckoutOrderSummary Debug ===");
+  console.log("Selected products:", selectedProducts);
+  console.log("Available products:", products);
+  console.log("Available pharmacies:", pharmacies);
 
   const getProductPrice = (product: Product) => {
     if (product.type === "flower" && product.pricePerGram) {
@@ -65,29 +64,29 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
     let subtotal = 0;
     
     Object.entries(selectedProducts).forEach(([productId, selection]) => {
-      logger.debug(`Calculating subtotal for product ID: ${productId}`, selection);
+      console.log(`Calculating subtotal for product ID: ${productId}`, selection);
       
       const product = products.find(p => p.id === productId);
-      logger.debug(`Found product:`, product);
+      console.log(`Found product:`, product);
       
       if (product && selection.quantity > 0) {
         const productTotal = calculateProductTotal(product, selection.quantity);
         subtotal += productTotal;
-        logger.debug(`Product ${product.name}: ${selection.quantity} x ${getProductPrice(product)} = ${productTotal}`);
+        console.log(`Product ${product.name}: ${selection.quantity} x ${getProductPrice(product)} = ${productTotal}`);
       } else {
-        logger.debug(`Product ${productId} not found or quantity is 0`);
+        console.log(`Product ${productId} not found or quantity is 0`);
       }
     });
     
-    logger.debug("Final subtotal:", subtotal);
+    console.log("Final subtotal:", subtotal);
     return subtotal;
   };
 
   const selectedItems = Object.entries(selectedProducts).filter(([_, selection]) => selection.quantity > 0);
-  logger.debug("Selected items after filtering:", selectedItems);
+  console.log("Selected items after filtering:", selectedItems);
 
   if (selectedItems.length === 0) {
-    logger.debug("No selected items, showing empty state");
+    console.log("No selected items, showing empty state");
     return (
       <Card className="mb-6">
         <CardHeader>
@@ -126,10 +125,10 @@ const CheckoutOrderSummary = ({ selectedProducts, products, pharmacies }: Checko
                 const product = products.find(p => p.id === productId);
                 const pharmacy = pharmacies.find(p => p.id === selection.pharmacyId);
                 
-                logger.debug(`Rendering product ${productId}:`, product, "pharmacy:", pharmacy);
+                console.log(`Rendering product ${productId}:`, product, "pharmacy:", pharmacy);
                 
                 if (!product) {
-                  logger.debug(`Product ${productId} not found, skipping render`);
+                  console.log(`Product ${productId} not found, skipping render`);
                   return null;
                 }
 
